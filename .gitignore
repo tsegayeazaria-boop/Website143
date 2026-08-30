@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.verify/
+
+# Course content is not redistributable.
+# The handout carries: "© Unauthorized posting or distribution outside Harvard prohibited."
+# Prose, equation source, exercise statements and worked solutions live in content/
+# and are deliberately kept out of this public repository. See README.md.
+content/

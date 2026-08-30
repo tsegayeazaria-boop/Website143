@@ -1,0 +1,773 @@
+/* ============================================================================
+   Physics 143a — Derivation Atlas
+   Dark observatory. Ground is near-black with a blue bias; the three accents
+   are sampled from the physics: cyan = fields and waves, amber = quanta and
+   thermal energy, red = where classical physics fails.
+   Dark is the committed default; light is a fully designed secondary.
+   ========================================================================= */
+
+:root {
+  color-scheme: dark;
+
+  --ground:      #07090C;
+  --ground-deep: #040608;
+  --surface:     #0D1218;
+  --surface-2:   #121A22;
+  --hairline:    #1C2731;
+  --hairline-2:  #2A3947;
+
+  --ink:         #C6D2DC;
+  --ink-bright:  #EAF1F6;
+  --muted:       #78868F;
+  --faint:       #4A565F;
+
+  --wave:        #4FD6E3;   /* fields, waves, the classical continuum */
+  --wave-dim:    #2A7F8A;
+  --wave-glow:   rgba(79, 214, 227, 0.16);
+  --quantum:     #F2A65A;   /* quanta, ladders, thermal energy */
+  --quantum-dim: #9A6530;
+  --quantum-glow:rgba(242, 166, 90, 0.14);
+  --fail:        #E2635C;   /* where classical physics breaks */
+  --fail-dim:    #8E3A36;
+  --probability: #B78BE0;   /* wavefunctions, probability density */
+  --probability-dim: #6E4E92;
+
+  --grid:        rgba(198, 210, 220, 0.07);
+  --axis:        rgba(198, 210, 220, 0.34);
+
+  --serif: "Spectral", Georgia, "Times New Roman", Times, serif;
+  --mono:  "IBM Plex Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 34rem;
+  --rail-w: 3.5rem;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-slow: cubic-bezier(0.16, 0.84, 0.28, 1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --ground:      #F4F6F7;
+    --ground-deep: #E8ECEE;
+    --surface:     #FFFFFF;
+    --surface-2:   #EDF1F3;
+    --hairline:    #D5DDE1;
+    --hairline-2:  #B9C5CB;
+    --ink:         #1B2229;
+    --ink-bright:  #05090D;
+    --muted:       #5C6A74;
+    --faint:       #8A97A0;
+    --wave:        #0E7C8A;
+    --wave-dim:    #7FBFC7;
+    --wave-glow:   rgba(14, 124, 138, 0.10);
+    --quantum:     #A9631C;
+    --quantum-dim: #D8AE83;
+    --quantum-glow:rgba(169, 99, 28, 0.10);
+    --fail:        #B03A34;
+    --fail-dim:    #D9938F;
+    --probability: #6A3FA0;
+    --probability-dim: #B49BD4;
+    --grid:        rgba(27, 34, 41, 0.08);
+    --axis:        rgba(27, 34, 41, 0.38);
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --ground:      #F4F6F7;
+  --ground-deep: #E8ECEE;
+  --surface:     #FFFFFF;
+  --surface-2:   #EDF1F3;
+  --hairline:    #D5DDE1;
+  --hairline-2:  #B9C5CB;
+  --ink:         #1B2229;
+  --ink-bright:  #05090D;
+  --muted:       #5C6A74;
+  --faint:       #8A97A0;
+  --wave:        #0E7C8A;
+  --wave-dim:    #7FBFC7;
+  --wave-glow:   rgba(14, 124, 138, 0.10);
+  --quantum:     #A9631C;
+  --quantum-dim: #D8AE83;
+  --quantum-glow:rgba(169, 99, 28, 0.10);
+  --fail:        #B03A34;
+  --fail-dim:    #D9938F;
+  --probability: #6A3FA0;
+  --probability-dim: #B49BD4;
+  --grid:        rgba(27, 34, 41, 0.08);
+  --axis:        rgba(27, 34, 41, 0.38);
+}
+
+/* --------------------------------------------------------------- base --- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection { background: var(--wave-glow); color: var(--ink-bright); }
+
+a { color: var(--wave); text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--wave);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* --------------------------------------------------- layout scaffolding --- */
+
+.page { position: relative; }
+
+.measure {
+  width: min(var(--measure), calc(100vw - 3rem));
+  margin-inline: auto;
+}
+
+/* A block that breaks the measure to the full comfortable width. */
+.wide {
+  width: min(72rem, calc(100vw - 3rem));
+  margin-inline: auto;
+}
+
+/* Figures breathe wider than the reading measure without going full-bleed. */
+.breakout {
+  width: min(50rem, calc(100vw - 3rem));
+  margin-inline: auto;
+}
+
+.band { padding-block: clamp(4rem, 11vh, 8rem); }
+.band--tight { padding-block: clamp(2rem, 5vh, 3.5rem); }
+
+/* ---------------------------------------------------------- the rail --- */
+
+.rail {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: var(--rail-w);
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: 1.25rem;
+  gap: 0.75rem;
+  mix-blend-mode: normal;
+}
+.rail__track {
+  position: relative;
+  flex: 1;
+  width: 1px;
+  background: var(--hairline);
+}
+.rail__fill {
+  position: absolute;
+  inset-inline: -0.5px;
+  top: 0;
+  height: 0;
+  background: linear-gradient(180deg, var(--wave) 0%, var(--quantum) 55%, var(--probability) 100%);
+  width: 2px;
+  left: -0.5px;
+}
+.rail__tick {
+  position: absolute;
+  left: -3px;
+  width: 7px;
+  height: 1px;
+  background: var(--hairline-2);
+  transition: background 400ms var(--ease), width 400ms var(--ease);
+}
+.rail__tick[data-passed="1"] { background: var(--wave); width: 11px; left: -5px; }
+.rail__label {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+  transition: color 500ms var(--ease);
+}
+.rail__pct {
+  font-family: var(--mono);
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 60rem) { .rail { display: none; } }
+
+/* --------------------------------------------------------- top toolbar --- */
+
+.toolbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem clamp(0.75rem, 3vw, 1.5rem);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: color-mix(in srgb, var(--ground) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+  border-bottom: 1px solid transparent;
+  transition: border-color 500ms var(--ease), background 500ms var(--ease);
+}
+.toolbar[data-scrolled="1"] { border-bottom-color: var(--hairline); }
+.toolbar__now { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toolbar__spacer { flex: 1; }
+.theme-toggle {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+  transition: color 300ms var(--ease), border-color 300ms var(--ease);
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--hairline-2); }
+
+/* ---------------------------------------------------------- typography --- */
+
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  color: var(--ink-bright);
+  text-wrap: balance;
+  font-weight: 400;
+  margin: 0;
+}
+
+.display {
+  font-size: clamp(2.6rem, 7.5vw, 5.25rem);
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  font-weight: 300;
+}
+
+.section-head { margin-block: 0 2.5rem; }
+.section-head h2 {
+  font-size: clamp(1.9rem, 4.4vw, 3rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 300;
+}
+.section-head .kicker { margin-bottom: 0.9rem; }
+
+h3 {
+  font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  margin-block: 0 0.75rem;
+}
+h4 {
+  font-size: 1.0625rem;
+  line-height: 1.4;
+  color: var(--ink-bright);
+}
+
+.kicker {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--wave);
+}
+.kicker--quantum { color: var(--quantum); }
+.kicker--muted { color: var(--muted); }
+
+p { margin-block: 0 1.15em; }
+p:last-child { margin-bottom: 0; }
+.lede {
+  font-size: 1.25rem;
+  line-height: 1.65;
+  color: var(--ink-bright);
+  font-weight: 300;
+}
+.dropcap::first-letter {
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.82;
+  padding-right: 0.08em;
+  padding-top: 0.06em;
+  font-weight: 300;
+  color: var(--wave);
+}
+strong { font-weight: 600; color: var(--ink-bright); }
+em { font-style: italic; }
+.term { color: var(--ink-bright); font-weight: 600; font-style: normal; }
+
+.flow > * + * { margin-top: 1.15em; }
+
+hr.rule {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+  margin-block: 3rem;
+}
+
+/* ---------------------------------------------------------- equations --- */
+
+.eq {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin-block: 1.9rem;
+  padding: 1.1rem 0;
+  scroll-margin-top: 5rem;
+}
+.eq__body {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.15rem;
+}
+.eq__num {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.eq--hero {
+  background:
+    radial-gradient(120% 140% at 50% 0%, var(--wave-glow) 0%, transparent 70%),
+    var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  padding: 1.8rem 1.4rem;
+  margin-block: 2.4rem;
+}
+.eq--hero.eq--quantum {
+  background:
+    radial-gradient(120% 140% at 50% 0%, var(--quantum-glow) 0%, transparent 70%),
+    var(--surface);
+}
+.eq__caption {
+  grid-column: 1 / -1;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.6;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: 0.6rem;
+}
+
+mjx-container { color: var(--ink-bright); }
+mjx-container[display="true"] { margin: 0 !important; }
+mjx-container svg { max-width: 100%; }
+.eq__body mjx-container[display="true"] { display: block; text-align: center; }
+p mjx-container, li mjx-container, .step__claim mjx-container { color: inherit; }
+
+/* -------------------------------------------------------- step ladders --- */
+
+.steps {
+  counter-reset: step;
+  margin-block: 2rem;
+  border-top: 1px solid var(--hairline);
+}
+.steps__title {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-block: 0.9rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.step {
+  counter-increment: step;
+  display: grid;
+  grid-template-columns: 2.25rem 1fr;
+  gap: 0 1rem;
+  padding-block: 1.5rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.step::before {
+  content: counter(step, decimal-leading-zero);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  color: var(--wave);
+  padding-top: 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+.step__claim { grid-column: 2; color: var(--ink); }
+.step__claim > p:last-child { margin-bottom: 0; }
+.step__math {
+  grid-column: 2;
+  margin-top: 0.9rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.2rem;
+}
+.step__why {
+  grid-column: 2;
+  margin-top: 0.9rem;
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--hairline-2);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.75;
+  color: var(--muted);
+}
+.step__why mjx-container { font-size: 0.9em; }
+.step[data-tone="fail"]::before { color: var(--fail); }
+.step[data-tone="quantum"]::before { color: var(--quantum); }
+
+/* ------------------------------------------------------------ callouts --- */
+
+.callout {
+  margin-block: 2.25rem;
+  padding: 1.35rem 1.4rem;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-left: 2px solid var(--wave);
+  border-radius: 2px;
+}
+.callout--exercise { border-left-color: var(--quantum); }
+.callout--remark   { border-left-color: var(--hairline-2); }
+.callout--warning  { border-left-color: var(--fail); }
+.callout__tag {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--wave);
+  margin-bottom: 0.6rem;
+}
+.callout--exercise .callout__tag { color: var(--quantum); }
+.callout--remark .callout__tag   { color: var(--muted); }
+.callout--warning .callout__tag  { color: var(--fail); }
+.callout__body > *:last-child { margin-bottom: 0; }
+
+.answer {
+  margin-top: 1rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.9rem;
+}
+.answer > summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  list-style: none;
+}
+.answer > summary::-webkit-details-marker { display: none; }
+.answer > summary::before { content: "▸ "; color: var(--wave); }
+.answer[open] > summary::before { content: "▾ "; }
+.answer > summary:hover { color: var(--ink); }
+.answer__body { padding-top: 0.9rem; }
+
+/* ------------------------------------------------------------- figures --- */
+
+figure { margin: 0; }
+.fig {
+  margin-block: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.fig__frame {
+  background:
+    linear-gradient(180deg, var(--surface) 0%, var(--ground-deep) 100%);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+.fig__frame svg, .fig__frame canvas { display: block; width: 100%; height: auto; }
+figcaption {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+figcaption .figcaption__num { color: var(--wave); }
+
+/* -------------------------------------------------------------- stages --- */
+/* A stage pins a visual while its prose scrolls past. Scroll position inside
+   the stage is handed to the scene as a 0 -> 1 progress value.               */
+
+.stage { position: relative; }
+.stage__pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.stage__canvas {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(2.5rem, 7vh, 5rem) clamp(1rem, 4vw, 3rem);
+}
+/* Above the panel breakpoint the visual yields the right-hand column to the
+   prose card, so nothing is ever read through a moving diagram. */
+@media (min-width: 60rem) {
+  .stage:not(.stage--split) .stage__canvas { padding-right: min(32rem, 36vw); }
+}
+.stage__canvas svg, .stage__canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.stage__hud {
+  position: absolute;
+  left: clamp(1rem, 4vw, 2.5rem);
+  bottom: clamp(1rem, 4vh, 2rem);
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+  pointer-events: none;
+}
+.stage__scroll {
+  position: relative;
+  z-index: 2;
+  margin-top: -100vh;
+  margin-top: -100svh;
+  pointer-events: none;
+}
+.stage__scroll > * { pointer-events: auto; }
+.stage__panel {
+  width: min(26rem, calc(100vw - 3rem));
+  margin-left: auto;
+  margin-right: 0;
+  padding: 1.4rem 1.5rem;
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--hairline);
+  border-radius: 3px;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+.stage__panel + .stage__panel { margin-top: 55vh; }
+.stage__panels {
+  padding-block: 32vh 42vh;
+  width: min(74rem, calc(100vw - 3rem));
+  margin-inline: auto;
+}
+.stage__panel .kicker { margin-bottom: 0.5rem; }
+.stage__panel > *:last-child { margin-bottom: 0; }
+
+/* Split stage: visual pinned on the left, panels riding up the right. */
+.stage--split .stage__pin { justify-content: flex-start; }
+.stage--split .stage__canvas { width: min(58%, 60rem); }
+@media (max-width: 60rem) {
+  .stage--split .stage__canvas { width: 100%; }
+  .stage__panel { margin-inline: auto; }
+}
+
+/* --------------------------------------------------------- reveal anim --- */
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 1100ms var(--ease-slow), transform 1100ms var(--ease-slow);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal][data-shown="1"] { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] { opacity: 1; transform: none; transition: none; }
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* --------------------------------------------------------------- hero --- */
+
+.hero {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding-block: 6rem 4rem;
+}
+.hero__bg { position: absolute; inset: 0; z-index: 0; }
+.hero__bg canvas { width: 100%; height: 100%; display: block; }
+.hero__inner { position: relative; z-index: 1; }
+.hero__meta {
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.hero__sub {
+  font-size: 1.2rem;
+  line-height: 1.65;
+  color: var(--ink);
+  font-weight: 300;
+  max-width: 34rem;
+  margin-top: 1.75rem;
+}
+.hero__cue {
+  margin-top: 3.5rem;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.hero__cue-line {
+  display: block;
+  width: 3.5rem;
+  height: 1px;
+  background: linear-gradient(90deg, var(--wave), transparent);
+}
+
+/* ------------------------------------------------------------- tables --- */
+
+.table-wrap { overflow-x: auto; margin-block: 2rem; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+th, td {
+  text-align: left;
+  padding: 0.55rem 1rem 0.55rem 0;
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+th {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+}
+td { color: var(--ink); }
+td.num { text-align: right; }
+
+/* ------------------------------------------------------------ controls --- */
+
+.control {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.control label { text-transform: uppercase; white-space: nowrap; }
+.control output { color: var(--quantum); font-variant-numeric: tabular-nums; min-width: 6.5ch; }
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 1px;
+  background: var(--hairline-2);
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--quantum);
+  border: 2px solid var(--ground);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--quantum);
+  border: 2px solid var(--ground);
+}
+
+/* -------------------------------------------------------------- footer --- */
+
+.colophon {
+  border-top: 1px solid var(--hairline);
+  padding-block: 3.5rem 5rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+.colophon strong { color: var(--ink); font-weight: 400; }
+.colophon__notice { color: var(--faint); margin-top: 1.5rem; }
+
+/* --------------------------------------------------------- svg helpers --- */
+
+.s-grid   { stroke: var(--grid); stroke-width: 1; fill: none; }
+.s-axis   { stroke: var(--axis); stroke-width: 1; fill: none; }
+.s-wave   { stroke: var(--wave); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s-quantum{ stroke: var(--quantum); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s-fail   { stroke: var(--fail); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s-prob   { stroke: var(--probability); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.s-ghost  { stroke: var(--hairline-2); stroke-width: 1; fill: none; }
+.s-dash   { stroke-dasharray: 3 4; }
+.s-lbl    { font-family: var(--mono); font-size: 11px; fill: var(--muted); letter-spacing: 0.06em; }
+.s-lbl-b  { font-family: var(--mono); font-size: 11px; fill: var(--ink-bright); letter-spacing: 0.06em; }
+.s-lbl-w  { font-family: var(--mono); font-size: 11px; fill: var(--wave); letter-spacing: 0.06em; }
+.s-lbl-q  { font-family: var(--mono); font-size: 11px; fill: var(--quantum); letter-spacing: 0.06em; }
+.s-lbl-f  { font-family: var(--mono); font-size: 11px; fill: var(--fail); letter-spacing: 0.06em; }
+.s-lbl-p  { font-family: var(--mono); font-size: 11px; fill: var(--probability); letter-spacing: 0.06em; }
+.s-tick   { font-family: var(--mono); font-size: 9px; fill: var(--faint); letter-spacing: 0.04em; }
+.s-fill-w { fill: var(--wave); }
+.s-fill-q { fill: var(--quantum); }
+.s-fill-f { fill: var(--fail); }
+.s-fill-i { fill: var(--ink-bright); }
+
+/* ---------------------------------------------------------- scene hosts --- */
+
+.scene-host { display: block; width: 100%; }
+.stage__canvas .scene-host {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stage__canvas .scene-host > svg { width: 100%; height: 100%; }
+.stage__canvas .scene-host > canvas { width: 100%; height: 100%; display: block; }
+.fig__frame .scene-host > svg { width: 100%; height: auto; display: block; }
+.fig__frame .scene-host > canvas { width: 100%; display: block; }
+.hero__bg .scene-host { height: 100%; }

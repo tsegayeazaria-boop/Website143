@@ -1,0 +1,16 @@
+{
+  "name": "physics143a-derivation-atlas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Build tooling for an interactive, scroll-driven derivation atlas for Physics 143a Lecture 1.",
+  "scripts": {
+    "build": "node build.mjs",
+    "verify": "node verify.mjs",
+    "all": "node build.mjs && node verify.mjs"
+  },
+  "devDependencies": {
+    "mathjax-full": "^3.2.2",
+    "playwright": "^1.49.0"
+  }
+}
