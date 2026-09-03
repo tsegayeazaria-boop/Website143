@@ -20,9 +20,32 @@ import { AllPackages } from 'mathjax-full/js/input/tex/AllPackages.js';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
 
-if (!existsSync(join(ROOT, 'content', 'index.js'))) {
+/* This build emits more than one page from one engine and one design system.
+   Each entry names its content entry point, its output file, and which scene
+   files it needs, so neither page ships the other's scene code. */
+const DOCS = {
+  atlas: {
+    content: './content/index.js',
+    out: 'index.html',
+    scenes: (f) => /^(00-hero|1[1-7])/.test(f)
+  },
+  math: {
+    content: './content/math/index.js',
+    out: 'math.html',
+    scenes: (f) => /^m[0-9]/.test(f)
+  }
+};
+
+const DOC_NAME = process.argv[2] || 'atlas';
+const DOC = DOCS[DOC_NAME];
+if (!DOC) {
+  console.error('\nUnknown document "' + DOC_NAME + '". Known: ' + Object.keys(DOCS).join(', ') + '\n');
+  process.exit(1);
+}
+
+if (!existsSync(join(ROOT, ...DOC.content.replace('./', '').split('/')))) {
   console.error(
-    '\nMissing content/.\n\n' +
+    '\nMissing ' + DOC.content + '\n\n' +
     'The prose, equation source, exercise statements and worked solutions for this\n' +
     'site are course material from a handout marked "Unauthorized posting or\n' +
     'distribution outside Harvard prohibited", so content/ is deliberately kept out\n' +
@@ -195,6 +218,24 @@ function block(b, ctx = {}) {
              '<div class="callout__body">' + body + ans + '</div></aside>';
     }
 
+    case 'problem': {
+      /* A problem with staged reveals: try it, then a nudge, then the method,
+         then the whole thing. Each stage is its own <details> so nothing is
+         spoiled by opening the one above it. */
+      const tag = '<div class="problem__tag"><span>Problem ' + esc(b.n) + '</span>' +
+        (b.unlocks ? '<span class="problem__unlocks">unlocks ' + esc(b.unlocks) + '</span>' : '') +
+        '</div>';
+      const ask = '<div class="problem__ask">' + blocks(b.ask, ctx) + '</div>';
+      const stage = (label, list) => list && list.length
+        ? '<details><summary>' + esc(label) + '</summary>' +
+          '<div class="problem__body">' + blocks(list, ctx) + '</div></details>'
+        : '';
+      return '<div class="problem"' + reveal() + '>' + tag + ask +
+             stage('Hint', b.hint) +
+             stage('Method', b.method) +
+             stage('Full solution', b.solution) + '</div>';
+    }
+
     case 'fig': {
       usedScenes.add(b.scene);
       /* Width is set by the wrapper the section chooses, not by the figure, so a
@@ -263,17 +304,89 @@ function section(sec) {
 
 /* ------------------------------------------------------------- assemble -- */
 
-const { default: doc } = await import('./content/index.js');
+const { default: doc } = await import(DOC.content);
 
-const sceneSrc = readdirSync(join(ROOT, 'src', 'scenes'))
+const sceneFiles = readdirSync(join(ROOT, 'src', 'scenes'))
   .filter((f) => f.endsWith('.js'))
-  .sort()
+  .filter((f) => DOC.scenes(f))
+  .sort();
+const sceneSrc = sceneFiles
   .map((f) => '/* --- scenes/' + f + ' --- */\n' + readFileSync(join(ROOT, 'src', 'scenes', f), 'utf8'))
   .join('\n');
 
-const engineSrc = ['math.js', 'svg.js', 'scroll.js']
+const engineSrc = ['math.js', 'svg.js', 'field.js', 'scroll.js']
   .map((f) => '/* --- engine/' + f + ' --- */\n' + readFileSync(join(ROOT, 'src', 'engine', f), 'utf8'))
   .join('\n');
+
+/* ------------------------------------------------- assert the mathematics -- */
+/* field.js computes divergence and curl by finite differences, and the sandbox
+   prints those numbers to a reader learning what the operators mean. Check them
+   against fields whose answers are known in closed form, so an error in the
+   stencil fails the build instead of teaching the wrong thing. */
+
+function assertFieldMath() {
+  const sandbox = { window: {} };
+  const src = readFileSync(join(ROOT, 'src', 'engine', 'field.js'), 'utf8');
+  new Function('window', src)(sandbox.window);
+  const F = sandbox.window.A.field;
+
+  const near = (got, want, tol, what) => {
+    if (!(Math.abs(got - want) < (tol || 1e-4))) {
+      console.error('\nfield.js is wrong: ' + what +
+                    '\n  expected ' + want + ', got ' + got + '\n');
+      process.exit(1);
+    }
+  };
+
+  const pts = [[0.7, -1.3], [-2.1, 0.4], [1.5, 2.2]];
+  let checked = 0;
+  for (const f of F.catalogue) {
+    if (!f.known) continue;
+    for (const [x, y] of pts) {
+      near(F.div(f.fn, x, y), f.known.div, 1e-4, 'div of ' + f.id + ' at (' + x + ',' + y + ')');
+      near(F.curlZ(f.fn, x, y), f.known.curl, 1e-4, 'curl of ' + f.id + ' at (' + x + ',' + y + ')');
+      checked += 2;
+    }
+  }
+
+  /* The free vortex circles the origin and yet has zero curl away from it —
+     the single most counter-intuitive claim the page makes, so check it. */
+  const fv = F.byId('freevortex').fn;
+  for (const [x, y] of pts) {
+    near(F.curlZ(fv, x, y), 0, 1e-5, 'curl of the free vortex at (' + x + ',' + y + ')');
+    near(F.div(fv, x, y), 0, 1e-5, 'div of the free vortex at (' + x + ',' + y + ')');
+    checked += 2;
+  }
+
+  /* curl of a gradient vanishes for any scalar field. */
+  const g = (x, y) => Math.sin(1.3 * x) * Math.exp(-0.2 * y * y) + 0.4 * x * y;
+  const gradOf = (x, y) => F.grad(g, x, y, 1e-3);
+  for (const [x, y] of pts) {
+    near(F.curlZ(gradOf, x, y, 1e-3), 0, 1e-3, 'curl of a gradient at (' + x + ',' + y + ')');
+    checked += 1;
+  }
+
+  /* div of a plane wave polarised across its direction of travel is zero:
+     the transversality step of §1.1. */
+  const pw = F.byId('planewaveE').fn;
+  for (const [x, y] of pts) {
+    near(F.div(pw, x, y), 0, 1e-6, 'div of the transverse plane wave at (' + x + ',' + y + ')');
+    checked += 1;
+  }
+
+  /* Circulation per unit area converges on the curl, and flux per unit area on
+     the divergence — the definitions the pictures are built from. */
+  const vor = F.byId('vortex').fn, rad = F.byId('radial').fn;
+  for (const s of [0.2, 0.05]) {
+    near(F.circulation(vor, 1.0, -0.5, s) / (4 * s * s), 2, 2e-2, 'circulation/area -> curl at s=' + s);
+    near(F.flux(rad, 1.0, -0.5, s) / (4 * s * s), 2, 2e-2, 'flux/area -> div at s=' + s);
+    checked += 2;
+  }
+
+  return checked;
+}
+
+const fieldChecks = assertFieldMath();
 
 const css = readFileSync(join(ROOT, 'src', 'style.css'), 'utf8');
 const mjCss = adaptor.textContent(svgOut.styleSheet(mjDoc));
@@ -319,7 +432,7 @@ colophonHTML + '\n\n' +
 '<script>\n' + engineSrc + '\n' + sceneSrc + '\n<' + '/script>\n';
 
 if (!existsSync(join(ROOT, 'dist'))) mkdirSync(join(ROOT, 'dist'));
-writeFileSync(join(ROOT, 'dist', 'index.html'), html);
+writeFileSync(join(ROOT, 'dist', DOC.out), html);
 
 /* Duplicate-id guard: MathJax's local font cache mints ids per conversion; if
    two equations ever shared one, glyphs would silently swap. */
@@ -331,7 +444,9 @@ if (dupes.length) {
 }
 
 const kb = (Buffer.byteLength(html) / 1024).toFixed(0);
-console.log('built dist/index.html  ' + kb + ' KB');
+console.log('built dist/' + DOC.out + '  ' + kb + ' KB   (' + DOC_NAME + ', ' +
+            sceneFiles.length + ' scene files)');
+console.log('  field-math assertions passed: ' + fieldChecks);
 console.log('  sections ' + doc.sections.length + '   scenes ' + usedScenes.size +
             '   equations ' + mathCount + '   reveals ' + revealSeq);
 if (unused.length) console.log('  note: scenes implemented but unused: ' + unused.join(', '));

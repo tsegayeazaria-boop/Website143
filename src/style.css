@@ -771,3 +771,123 @@ input[type="range"]::-moz-range-thumb {
 .fig__frame .scene-host > svg { width: 100%; height: auto; display: block; }
 .fig__frame .scene-host > canvas { width: 100%; display: block; }
 .hero__bg .scene-host { height: 100%; }
+
+/* ------------------------------------------------- the field sandbox --- */
+/* An operator you can poke: pick a field, move the pointer, read the numbers.
+   The readout is monospace and tabular so digits do not jump as they update. */
+
+.sandbox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  width: 100%;
+}
+.sandbox__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 1rem;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sandbox__bar select {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline-2);
+  border-radius: 2px;
+  padding: 0.35rem 0.5rem;
+  cursor: pointer;
+  max-width: 100%;
+}
+.sandbox__toggle {
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--muted);
+  background: none;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+}
+.sandbox__toggle[aria-pressed="true"] { color: var(--wave); border-color: var(--wave-dim); }
+.sandbox__stage { position: relative; }
+.sandbox__stage svg { display: block; width: 100%; height: auto; cursor: crosshair; touch-action: none; }
+.sandbox__readout {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.5rem 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.8rem;
+}
+.sandbox__cell { display: flex; flex-direction: column; gap: 0.15rem; }
+.sandbox__cell dt {
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.sandbox__cell dd { margin: 0; color: var(--ink-bright); }
+.sandbox__cell dd.is-zero { color: var(--muted); }
+.sandbox__cell dd.is-pos { color: var(--wave); }
+.sandbox__cell dd.is-neg { color: var(--fail); }
+.sandbox__note {
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.7;
+  color: var(--quantum);
+}
+
+/* --------------------------------------------- staged problem reveals --- */
+
+.problem {
+  margin-block: 2rem;
+  padding: 1.3rem 1.4rem;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-left: 2px solid var(--probability);
+  border-radius: 2px;
+}
+.problem__tag {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--probability);
+  margin-bottom: 0.7rem;
+}
+.problem__unlocks { color: var(--muted); letter-spacing: 0.1em; }
+.problem__ask > *:last-child { margin-bottom: 0; }
+.problem details {
+  margin-top: 0.85rem;
+  border-top: 1px solid var(--hairline);
+  padding-top: 0.75rem;
+}
+.problem details > summary {
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  list-style: none;
+}
+.problem details > summary::-webkit-details-marker { display: none; }
+.problem details > summary::before { content: "▸ "; color: var(--probability); }
+.problem details[open] > summary::before { content: "▾ "; }
+.problem details > summary:hover { color: var(--ink); }
+.problem__body { padding-top: 0.8rem; }
+.problem__body > *:last-child { margin-bottom: 0; }

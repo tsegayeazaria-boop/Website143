@@ -11,8 +11,19 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
-const PAGE = 'file://' + join(ROOT, 'dist', 'index.html');
-const SHOTS = join(ROOT, '.verify');
+
+/* Which page to drive: `node verify.mjs` for the atlas, `node verify.mjs math`
+   for the maths companion. Matches build.mjs's document names. */
+const DOCS = { atlas: 'index.html', math: 'math.html' };
+const DOC_NAME = process.argv.slice(2).find((a) => !a.startsWith('--')) || 'atlas';
+const OUT = DOCS[DOC_NAME];
+if (!OUT) {
+  console.error('Unknown document "' + DOC_NAME + '". Known: ' + Object.keys(DOCS).join(', '));
+  process.exit(1);
+}
+
+const PAGE = 'file://' + join(ROOT, 'dist', OUT);
+const SHOTS = join(ROOT, '.verify', DOC_NAME);
 const EXEC = '/opt/pw-browsers/chromium';
 
 /* Google Fonts is a legitimate external request and the only one allowed. */
@@ -21,8 +32,8 @@ const ALLOWED = [/^file:/, /^data:/, /^https:\/\/fonts\.googleapis\.com/, /^http
 const args = process.argv.slice(2);
 const shotsOnly = args.includes('--shots');
 
-if (!existsSync(join(ROOT, 'dist', 'index.html'))) {
-  console.error('dist/index.html not found — run `node build.mjs` first.');
+if (!existsSync(join(ROOT, 'dist', OUT))) {
+  console.error('dist/' + OUT + ' not found — run `node build.mjs ' + DOC_NAME + '` first.');
   process.exit(1);
 }
 rmSync(SHOTS, { recursive: true, force: true });
@@ -66,7 +77,7 @@ async function sweep(theme) {
   await page.waitForSelector('[data-atlas-ready="1"]', { timeout: 20000 });
 
   const total = await page.evaluate(() => document.querySelectorAll('[data-scene]').length);
-  console.log('\n[' + theme + '] ' + total + ' scenes, sweeping...');
+  console.log('\n[' + DOC_NAME + '/' + theme + '] ' + total + ' scenes, sweeping...');
 
   /* Step the whole document in viewport-sized increments, letting each frame
      settle so scroll-driven scenes actually run their update path. */
@@ -106,6 +117,38 @@ async function sweep(theme) {
 
   if (report.overflow > 1) fail('[' + theme + '] horizontal overflow of ' + report.overflow + 'px at 1440');
   else pass('[' + theme + '] no horizontal overflow at 1440');
+
+  /* Text that spills outside its own viewBox is silently clipped by the SVG
+     viewport — no error, no visual cue, the label simply is not there. This scan
+     caught thirteen real cases while the atlas was being built, so it runs every
+     time. Elements still sitting at their mount position (y ~ 0, positioned later
+     by the scene's update) are not yet placed and are skipped. */
+  const clipped = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll('svg[viewBox]').forEach((sv) => {
+      const vb = sv.getAttribute('viewBox').split(/[\s,]+/).map(Number);
+      sv.querySelectorAll('text').forEach((el) => {
+        let bb;
+        try { bb = el.getBBox(); } catch (e) { return; }
+        if (!bb.width) return;
+        if (bb.y < 0 && bb.y > -14 && Math.abs(bb.y + bb.height) < 6) return;
+        if (bb.x < -2 || bb.x + bb.width > vb[2] + 2 ||
+            bb.y < -2 || bb.y + bb.height > vb[3] + 2) {
+          out.push((sv.getAttribute('aria-label') || '?').slice(0, 20) + ' | "' +
+                   el.textContent.slice(0, 34) + '" | x ' + Math.round(bb.x) + '..' +
+                   Math.round(bb.x + bb.width) + '/' + vb[2] + ' y ' + Math.round(bb.y) +
+                   '..' + Math.round(bb.y + bb.height) + '/' + vb[3]);
+        }
+      });
+    });
+    return out;
+  });
+  if (clipped.length) {
+    fail('[' + theme + '] ' + clipped.length + ' SVG label(s) clipped by their viewBox:\n        ' +
+         clipped.slice(0, 10).join('\n        '));
+  } else {
+    pass('[' + theme + '] no SVG labels clipped by their viewBox');
+  }
 
   if (blocked.size) console.log('  note  sandbox blocked (fine in the browser): ' + [...blocked].join(', '));
 
