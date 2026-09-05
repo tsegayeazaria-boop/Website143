@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/double-slit.js"></script>
 </head>
-<body data-page="2-7" data-stub="1">
+<body data-page="2-7">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,237 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.7 · Physics · ~30 min</span>
     <h1>Double-slit interference</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Two slits, one wave, and a screen. Everything on this page comes from asking
+    how far the wave had to travel to reach a given point by each route, and adding the two
+    arrivals with the phasor arithmetic of section 1.1.</p>
   </header>
-  <section class="band" id="soon" data-section="Double-slit interference">
+
+  <section class="band" id="path-difference" data-section="Path difference">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="path-difference-h" data-short="Path difference">The extra distance</h2>
+
+      <p>Light of one wavelength falls on a barrier with two narrow slits a distance $d$ apart. A
+      screen sits a distance $L$ away. Each slit acts as a source of waves — section 2.8 explains
+      why — and a point on the screen receives one wave from each. The two have travelled
+      different distances, so they arrive out of step by an amount that depends on where you look.</p>
+
+      <script type="text/x-derive" data-id="ds-path" data-title="The extra distance one wave travels">
+> The screen is far away compared with the slit separation, so the two paths to a given point are very nearly parallel — they head off at the same angle $\theta$.
+\k{cond}{L \gg d} \qquad\Longrightarrow\qquad \k{par}{\text{the two rays are parallel}}
+---
+> Drop a perpendicular from the nearer slit onto the other ray. Beyond that line the two paths are equal, so all of the difference is in the short segment before it.
+\k{seg}{\text{path difference}} = \k{hyp}{\text{the segment cut off on the far ray}}
+---
+> That segment is one side of a right triangle whose hypotenuse is $d$ and whose angle at the slits is $\theta$.
+\k{seg}{\text{path difference}} = \k{d}{d}\,\k{sin}{\sin\theta}
+---
+> So the whole geometry of the experiment reduces to one length.
+! result
+\k{delta}{\Delta} = \k{d}{d}\,\k{sin}{\sin\theta}
+      </script>
+
+      <p>The assumption $L \gg d$ is called the <span class="term">far-field</span> condition. It
+      is what lets two rays that actually converge on one point be treated as parallel, and it
+      holds comfortably in a laboratory: slits a quarter of a millimetre apart, a screen two
+      metres away.</p>
+
+      <p class="takeaway"><strong>In the far field the two paths differ by $d\sin\theta$, and that
+      single length controls everything else.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="conditions" data-section="Bright and dark">
+    <div class="measure">
+      <h2 id="conditions-h" data-short="Bright and dark">Where it is bright and where it is dark</h2>
+
+      <script type="text/x-derive" data-id="ds-conditions" data-title="The two conditions">
+> Two waves reinforce when they arrive in step, which happens when one has travelled a whole number of extra wavelengths.
+\k{cond}{d\sin\theta} = \k{m}{m}\,\k{lam}{\lambda}, \qquad \k{list}{m = 0, \pm1, \pm2, \ldots}
+---
+> They cancel when one arrives exactly half a cycle behind, which is an extra half wavelength on top of any whole number.
+\k{cond2}{d\sin\theta} = \k{m2}{\left(m + \tfrac{1}{2}\right)}\,\k{lam}{\lambda}
+---
+> The integer $m$ is the order of the fringe. $m = 0$ is the point straight ahead, where the two paths are exactly equal and every wavelength arrives in step.
+! result
+\k{bright}{\text{bright: } d\sin\theta = m\lambda}, \qquad \k{dark}{\text{dark: } d\sin\theta = \left(m + \tfrac12\right)\lambda}
+      </script>
+
+      <p>Now convert angles into positions on the screen, which is what you actually measure.</p>
+
+      <script type="text/x-derive" data-id="ds-small-angle" data-title="Fringe positions on the screen">
+> A point a distance $y$ up the screen is seen from the slits at an angle whose tangent is $y/L$.
+\k{tan}{\tan\theta} = \k{y}{\frac{y}{L}}
+---
+> The fringes are close to straight ahead, so the angle is small, and for a small angle the sine and the tangent are both very nearly the angle itself.
+\k{sin}{\sin\theta} \approx \k{tan}{\frac{y}{L}}
+---
+> Put that into the bright-fringe condition.
+\k{cond}{d\,\frac{y_m}{L}} = \k{m}{m}\,\k{lam}{\lambda}
+---
+> Solve for the position of the $m$th bright fringe.
+\k{ym}{y_m} = \k{res}{\frac{m\lambda L}{d}}
+---
+> Neighbouring fringes differ by one in $m$, so subtracting consecutive positions gives their spacing — the same for every pair, so the pattern is evenly spaced.
+! result
+\k{dy}{\Delta y} = \k{res2}{\frac{\lambda L}{d}}
+      </script>
+
+      <div class="eq" id="eq-2-7-1">
+        <div class="eq__body">$$ \Delta y = \frac{\lambda L}{d} $$</div>
+        <div class="eq__num">(2.7.1)</div>
+      </div>
+
+      <p>Read the three dependences. Longer wavelength, wider fringes — so red fringes are more
+      spread out than blue. Further screen, wider fringes, simply because the whole pattern is
+      being projected larger. Wider slit separation, <em>narrower</em> fringes: pushing the slits
+      apart squeezes the pattern together, which is the opposite of what most people guess.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>A helium–neon laser, $\lambda = 633\unit{nm}$, slits $d = 0.25\unit{mm}$ apart, screen
+        $L = 2.00\unit{m}$ away.</p>
+        <p>$\Delta y = (633\times10^{-9})(2.00)/(0.25\times10^{-3}) = 5.06\times10^{-3}\unit{m}
+        = 5.06\unit{mm}$ — comfortably visible.</p>
+        <p>The first-order fringe is at $\theta$ with $\sin\theta = \lambda/d =
+        2.53\times10^{-3}$, that is $0.145^{\circ}$. The small-angle approximation is
+        excellent here: $\sin$ and $\tan$ of that angle agree to better than one part in a
+        million.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Bright fringes sit where $d\sin\theta = m\lambda$, evenly spaced
+      on the screen by $\Delta y = \lambda L/d$.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="intensity" data-section="The brightness between">
+    <div class="measure">
+      <h2 id="intensity-h" data-short="The brightness between">How bright it is in between</h2>
+
+      <p>Knowing where the fringes are is not the whole pattern. To get the brightness everywhere,
+      add the two waves properly — which is exactly the phasor sum derived in section 1.1.</p>
+
+      <script type="text/x-derive" data-id="ds-phase" data-title="From path difference to phase difference">
+> A whole wavelength of extra path puts a wave one whole cycle behind, which is $2\pi$ of phase. Phase and path are proportional.
+\k{ratio}{\frac{\delta}{2\pi}} = \k{ratio2}{\frac{\Delta}{\lambda}}
+---
+> Substitute the path difference found above.
+\k{delta}{\delta} = \k{res}{\frac{2\pi\,d\sin\theta}{\lambda}}
+---
+> And $2\pi/\lambda$ is the wavenumber $k$ of section 2.3, so the phase difference is just $k$ times the extra distance.
+! result
+\k{delta}{\delta} = \k{res2}{k\,d\sin\theta}
+      </script>
+
+      <script type="text/x-derive" data-id="ds-add-fields" data-title="Adding the two arrivals">
+> Two equal waves arriving with a phase difference $\delta$ — exactly the situation of the phasor sum in section 1.1.
+\k{E}{E} = \k{E1}{E_0 e^{i\omega t}} + \k{E2}{E_0 e^{i(\omega t + \delta)}}
+---
+> Section 1.1 showed the result is one wave whose amplitude is a cosine of half the phase difference.
+\k{E}{E} = \k{amp}{2E_0\cos\!\left(\frac{\delta}{2}\right)}\;\k{car}{e^{i(\omega t + \delta/2)}}
+---
+> At $\delta = 0$ the amplitude is $2E_0$: the two waves add fully. At $\delta = \pi$ the cosine is zero and they cancel completely — which matches the dark-fringe condition, since $\delta = \pi$ is a half-wavelength of extra path.
+! result
+\k{amp}{\text{amplitude} = 2E_0\cos\!\left(\frac{\delta}{2}\right)}
+      </script>
+
+      <p>Brightness is not amplitude. What a detector or an eye responds to is the average over
+      many cycles of the square of the field, and that average is worth doing once.</p>
+
+      <script type="text/x-derive" data-id="ds-intensity" data-title="From amplitude to brightness">
+> Intensity is the time average of the square of the field, over a period far longer than one cycle of the light.
+\k{I}{I} \propto \k{avg}{\left\langle \left(\mathcal{E}\cos(\omega t + \phi)\right)^{2}\right\rangle}
+---
+> Take the constant out of the average, and use $\cos^{2}u = \tfrac12\left(1 + \cos 2u\right)$.
+\k{I}{I} \propto \k{E2}{\mathcal{E}^{2}}\,\k{avg}{\left\langle \tfrac{1}{2} + \tfrac{1}{2}\cos(2\omega t + 2\phi)\right\rangle}
+---
+> The oscillating part averages to nothing over many cycles, and the constant averages to itself.
+\k{I}{I} \propto \k{half}{\tfrac{1}{2}}\,\k{E2}{\mathcal{E}^{2}}
+---
+> So intensity goes as the square of the amplitude. Put in the amplitude found above.
+\k{I}{I} \propto \k{sq}{\left(2E_0\cos\tfrac{\delta}{2}\right)^{2}} = \k{res}{4E_0^{2}\cos^{2}\tfrac{\delta}{2}}
+---
+> Writing $I_0$ for the peak brightness straight ahead, where $\delta = 0$.
+! result
+\k{I}{I} = \k{res2}{I_0\cos^{2}\!\left(\frac{\delta}{2}\right)}, \qquad \k{delta}{\delta = \frac{2\pi d\sin\theta}{\lambda}}
+      </script>
+
+      <div class="eq" id="eq-2-7-2">
+        <div class="eq__body">$$ I(\theta) = I_0 \cos^{2}\!\left(\frac{\pi d\sin\theta}{\lambda}\right) $$</div>
+        <div class="eq__num">(2.7.2)</div>
+      </div>
+
+      <p>One thing worth noticing: the peak brightness is $4E_0^{2}$, four times what one slit
+      alone would give — not twice. And the dark fringes are exactly zero. Averaged across the
+      screen it comes to $2E_0^{2}$, which is what two slits' worth of energy should give: the
+      interference moves the light around without creating or destroying any.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>With the numbers above, the fringe spacing was $5.06\unit{mm}$. What is the brightness
+        a quarter of the way from a bright fringe to the next dark one — at
+        $y = 1.27\unit{mm}$?</p>
+        <p>$\sin\theta \approx y/L = 6.33\times10^{-4}$, so
+        $\delta = 2\pi(0.25\times10^{-3})(6.33\times10^{-4})/(633\times10^{-9}) = \pi/2$.</p>
+        <p>$I = I_0\cos^{2}(\pi/4) = I_0/2$. Half brightness, a quarter of the way from a
+        maximum to a minimum.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="double-slit"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that pushing the slits apart squeezes the fringes together while moving
+        the screen back spreads them out, and that shortening the wavelength — going from red
+        towards blue — also crowds them.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>The brightness is $I_0\cos^{2}(\delta/2)$ with
+      $\delta = 2\pi d\sin\theta/\lambda$: full cancellation in the dark fringes and four times
+      one slit's brightness in the bright ones.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Find the fringe spacing for $\lambda = 500\unit{nm}$, $L = 1.5\unit{m}$,
+            $d = 0.30\unit{mm}$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\Delta y = \lambda L/d = (500\times10^{-9})(1.5)/(3\times10^{-4}) =
+            2.5\times10^{-3}\unit{m} = 2.5\unit{mm}$.
+            </div></details></li>
+          <li>Red light or blue light — which gives wider fringes, and why?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Red, since $\Delta y \propto \lambda$ and red light has the longer wavelength. It needs
+            a larger angle to accumulate one wavelength of extra path.
+            </div></details></li>
+          <li>The whole apparatus is submerged in water, refractive index $n = 1.33$. What happens
+            to the pattern?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The frequency is set by the source and does not change, but the speed drops by a factor
+            $n$, so the wavelength does too: $\lambda' = \lambda/n$. The fringes therefore crowd
+            together by the same factor, $\Delta y' = \Delta y/1.33$.
+            </div></details></li>
+          <li>At what phase difference is the brightness a quarter of its peak?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\cos^{2}(\delta/2) = \tfrac14$ needs $\cos(\delta/2) = \tfrac12$, so
+            $\delta/2 = \pi/3$ and $\delta = 2\pi/3$ — a third of a cycle out of step.
+            </div></details></li>
+          <li>If one slit were made narrower than the other, would the dark fringes still be
+            completely dark?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            No. The cancellation in the derivation relied on the two amplitudes being equal, so
+            that $E_0 - E_0 = 0$. With unequal amplitudes the total at a minimum is
+            $E_1 - E_2 \neq 0$, and the fringes have a dim floor rather than reaching zero. The
+            bright fringes also become less bright relative to the background.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

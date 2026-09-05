@@ -151,6 +151,30 @@ landing within ¾ of a pixel of the glyphs they replace, that nothing overflows
 sideways at 390, 768 and 1440 px, and that reduced motion and a missing network
 both degrade to something readable. Screenshots land in `.verify/site/`.
 
+## What is in it
+
+14 pages, 112 animated derivations, 19 interactive demonstrations. Every equation
+that appears is derived on the page it appears on; the only things taken as given
+are Newton's laws, Hooke's law, and — where it is used — that a particle's
+momentum is `p = hbar k`.
+
+| Page | Derivations | Demonstrations |
+|---|---|---|
+| index | — | dependency map |
+| 1.1 complex numbers and Euler's formula | 8 | complex multiplication, rotating phasor |
+| 1.2 second-order linear equations | 10 | initial conditions |
+| 1.3 linear algebra, from the beginning | 22 | two pictures of a vector, a matrix acting on a grid, eigen-directions, the inner product of two functions |
+| 1.4 Fourier series and transforms | 12 | harmonic builder, a pulse beside its transform |
+| 2.1 the simple harmonic oscillator | 6 | mass, spring, phasor and energy |
+| 2.2 coupled oscillators and normal modes | 14 | free-body diagram, the motion decomposed into modes |
+| 2.3 travelling and plane waves | 6 | a wave with one crest tracked |
+| 2.4 waves on strings | 11 | a pulse meeting a join |
+| 2.5 standing waves | 4 | a standing wave and its two travelling halves |
+| 2.6 wave packets and group velocity | 6 | a packet under a dispersion relation you set |
+| 2.7 double-slit interference | 6 | fringes on a screen |
+| 2.8 single-slit diffraction | 7 | the pattern as the slit narrows |
+| 3 quick reference | — | — |
+
 ## Writing a derivation
 
 Derivations are written as a list of equation states and animate between them as

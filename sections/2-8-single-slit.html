@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/single-slit.js"></script>
 </head>
-<body data-page="2-8" data-stub="1">
+<body data-page="2-8">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,270 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.8 · Physics · ~30 min</span>
     <h1>Single-slit diffraction</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Section 2.7 assumed each slit was a point source. It is not, and this page is
+    about what its actual width does. The answer is the most counter-intuitive result on the
+    site: narrowing a slit makes the light coming out of it spread <em>wider</em>.</p>
   </header>
-  <section class="band" id="soon" data-section="Single-slit diffraction">
+
+  <section class="band" id="huygens" data-section="Where the minima are">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="huygens-h" data-short="Where the minima are">Every point in the slit is a source</h2>
+
+      <p>Huygens' idea: every point of a wavefront acts as a source of a new wave, and the wave
+      further on is the sum of all of them. Applied to a slit of width $a$, that means a
+      continuous line of sources filling the slit, all in step with each other, all sending waves
+      towards the screen.</p>
+
+      <p>Finding the dark places is easier than it looks, because they can be found by pairing
+      sources off.</p>
+
+      <script type="text/x-derive" data-id="ss-minima" data-title="Pairing the sources off">
+> Take the source at the very top of the slit and the one exactly halfway down. They are separated by $a/2$, so by the same geometry as section 2.7 their paths differ by that times the sine of the angle.
+\k{pair}{\text{path difference of the pair}} = \k{half}{\frac{a}{2}}\,\k{sin}{\sin\theta}
+---
+> Choose the angle that makes this exactly half a wavelength. Then those two waves arrive exactly out of step and cancel completely.
+\k{cond}{\frac{a}{2}\sin\theta} = \k{lam}{\frac{\lambda}{2}}
+---
+> Now notice that the same is true of every pair: the source just below the top and the source just below the middle are also $a/2$ apart, and so on all the way down. Every source in the top half is cancelled by its partner in the bottom half.
+! hl cond
+\k{all}{\text{the whole slit cancels, in pairs}}
+---
+> Multiply through by two: this is the first dark direction.
+\k{first}{a\sin\theta} = \k{lam2}{\lambda}
+---
+> Splitting the slit into four strips instead of two, and pairing within each half, gives the next one at $a\sin\theta = 2\lambda$, and so on.
+! result
+\k{gen}{a\sin\theta = m\lambda}, \qquad \k{m}{m = \pm1, \pm2, \ldots}
+      </script>
+
+      <p>Note carefully what $m = 0$ is not. In section 2.7, $m = 0$ was the central <em>bright</em>
+      fringe. Here the formula gives minima, and $m = 0$ is excluded — straight ahead every source
+      is in step with every other, which is the brightest point of all. The pairing argument
+      breaks down there because the path difference is zero for every pair.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$a = 0.10\unit{mm}$, $\lambda = 633\unit{nm}$, screen at $L = 2.0\unit{m}$.</p>
+        <p>First minimum: $\sin\theta = \lambda/a = 6.33\times10^{-3}$, so
+        $\theta = 0.363^{\circ}$.</p>
+        <p>On the screen that is $y_1 = L\tan\theta = 12.7\unit{mm}$, so the central bright band is
+        $25.3\unit{mm}$ wide — from the first dark fringe on one side to the first on the
+        other.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Pairing each source with one half a slit away shows the whole
+      slit cancels when $a\sin\theta = m\lambda$, for every non-zero integer $m$.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="width" data-section="Narrower means wider">
+    <div class="measure">
+      <h2 id="width-h" data-short="Narrower means wider">Narrower slit, wider pattern</h2>
+
+      <script type="text/x-derive" data-id="ss-width" data-title="The width of the central band">
+> The central bright band runs from the first minimum on one side to the first on the other.
+\k{full}{\text{angular width}} = \k{two}{2}\,\k{th}{\theta_1}
+---
+> For a slit much wider than a wavelength the angle is small, so the sine is the angle.
+\k{th}{\theta_1} \approx \k{sin}{\sin\theta_1} = \k{ratio}{\frac{\lambda}{a}}
+---
+> Which gives the width in angle, and on a screen a distance $L$ away, in metres.
+! result
+\k{full}{\text{angular width} \approx \frac{2\lambda}{a}}, \qquad \k{screen}{\text{width on screen} \approx \frac{2\lambda L}{a}}
+      </script>
+
+      <p>The slit width is in the <em>denominator</em>. Halve $a$ and the patch of light doubles in
+      width. That is the opposite of the geometric intuition — that a narrower hole should give a
+      narrower beam — and it is worth being clear about why the intuition fails: light is not made
+      of rays travelling in straight lines. A narrower slit forces the wave into a smaller region,
+      and section 1.4 already showed what that costs.</p>
+
+      <script type="text/x-derive" data-id="ss-limit" data-title="What happens when the slit reaches one wavelength">
+> The first minimum sits where the sine takes this value.
+\k{sin}{\sin\theta_1} = \k{ratio}{\frac{\lambda}{a}}
+---
+> As the slit narrows towards a single wavelength, that ratio climbs to one.
+\k{lim}{a \to \lambda} \qquad\Longrightarrow\qquad \k{sin}{\sin\theta_1 \to 1}
+---
+> A sine of one means ninety degrees: the first dark fringe has swung all the way round to the side.
+\k{res}{\theta_1 \to 90^{\circ}}
+---
+> So there is no dark fringe anywhere on the screen. The light spreads into the entire half-space beyond the slit, with no structure at all — a hole the size of a wavelength radiates in every direction, like a single point source.
+! result
+\k{res2}{a \le \lambda \;\Rightarrow\; \text{no minima at all}}
+      </script>
+
+      <p>This retrospectively justifies section 2.7. There the two slits were treated as point
+      sources whose light spread across the whole screen — which is exactly what happens when each
+      slit is narrow enough that its own first minimum is off the screen entirely.</p>
+
+      <p class="takeaway"><strong>The central band is about $2\lambda/a$ wide in angle, so
+      narrowing the slit widens the pattern; at $a = \lambda$ it fills the whole half-space.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="sinc" data-section="The whole pattern">
+    <div class="measure">
+      <h2 id="sinc-h" data-short="The whole pattern">The brightness everywhere</h2>
+
+      <p>The pairing argument gives the minima but says nothing about how bright it is between
+      them. For that, add up all the sources properly. There are infinitely many, so the sum is an
+      integral — and section 1.4 has already done this integral.</p>
+
+      <script type="text/x-derive" data-id="ss-integral" data-title="Adding up the whole slit">
+> Each strip of the slit at position $x$ contributes a wave, and its phase depends on how much further it has to travel: $x\sin\theta$ more than the strip at the centre.
+\k{dE}{\dd E} \propto \k{e}{e^{ikx\sin\theta}}\;\k{dx}{\dd x}
+---
+> Add up every strip across the slit.
+\k{E}{E} \propto \k{int}{\int_{-a/2}^{a/2}} \k{e}{e^{ikx\sin\theta}}\;\k{dx}{\dd x}
+---
+> That is exactly the transform of a rectangle, computed in section 1.4, with $k\sin\theta$ playing the role of the transform variable.
+\k{E}{E} \propto \k{res}{a\,\operatorname{sinc}\!\left(\frac{k a \sin\theta}{2}\right)}
+---
+> Write the argument as $\beta$, using $k = 2\pi/\lambda$.
+! result
+\k{beta}{\beta \equiv \frac{\pi a \sin\theta}{\lambda}}, \qquad \k{E}{E \propto \frac{\sin\beta}{\beta}}
+      </script>
+
+      <script type="text/x-derive" data-id="ss-intensity" data-title="And the brightness">
+> Brightness is the square of the amplitude, as section 2.7 showed by averaging over a cycle.
+\k{I}{I} = \k{I0}{I_0}\left(\k{sinc}{\frac{\sin\beta}{\beta}}\right)^{\k{two}{2}}
+---
+> Check it against the pairing argument. The numerator vanishes when $\beta$ is a whole multiple of $\pi$.
+\k{cond}{\beta = m\pi} \qquad\Longrightarrow\qquad \k{sub}{\frac{\pi a\sin\theta}{\lambda} = m\pi}
+---
+> Cancel the $\pi$: exactly the minima found by pairing, which is a real check since the two derivations share nothing.
+\k{same}{a\sin\theta = m\lambda}
+---
+> And at $\beta = 0$ the ratio $\sin\beta/\beta$ tends to one, not zero — the central maximum, twice as wide as every other band and far brighter.
+! result
+\k{I}{I(\theta) = I_0\left(\frac{\sin\beta}{\beta}\right)^{2}}, \qquad \k{beta}{\beta = \frac{\pi a\sin\theta}{\lambda}}
+      </script>
+
+      <div class="eq" id="eq-2-8-1">
+        <div class="eq__body">$$ I(\theta) = I_0\left(\frac{\sin\beta}{\beta}\right)^{2},
+        \qquad \beta = \frac{\pi a \sin\theta}{\lambda} $$</div>
+        <div class="eq__num">(2.8.1)</div>
+      </div>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>How bright is the first side band, halfway between the first and second minima?</p>
+        <p>Those sit at $\beta = \pi$ and $\beta = 2\pi$, so try $\beta = 3\pi/2$:
+        $\sin\beta = -1$, and $I/I_0 = (1/(3\pi/2))^{2} = (0.2122)^{2} = 0.045$.</p>
+        <p>Under five per cent of the central peak. The true maximum is very slightly closer in,
+        at $\beta = 4.493$, where $I/I_0 = 0.0472$. Almost all of the light is in the central
+        band.</p>
+        <p>And at $\beta = \pi/2$, halfway out to the first minimum: $I/I_0 = (1/(\pi/2))^{2} =
+        0.405$.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="single-slit"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that narrowing the slit widens the central bright band, that the side
+        bands are always faint by comparison, and that when the slit shrinks to about one
+        wavelength the first dark band runs off the edge of the screen entirely.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>Summing every point of the slit gives
+      $I = I_0(\sin\beta/\beta)^{2}$, whose zeros are exactly the minima the pairing argument
+      found.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="fourier" data-section="The same fact twice">
+    <div class="measure">
+      <h2 id="fourier-h" data-short="The same fact twice">Two other ways to see it</h2>
+
+      <p>The result of the last subsection was not a new calculation. It was the transform of a
+      rectangle from section 1.4, and that is worth saying explicitly.</p>
+
+      <script type="text/x-derive" data-id="ss-transform" data-title="The pattern is the transform of the aperture">
+> The slit is described by a function that is 1 where light gets through and 0 where it does not.
+\k{ap}{f(x)} = \k{rect}{\begin{cases} 1 & \abs{x} \lt a/2 \\ 0 & \text{otherwise}\end{cases}}
+---
+> The field far away, in the direction $\theta$, was the integral of that function against $e^{ikx\sin\theta}$.
+\k{E}{E(\theta)} \propto \k{int}{\int_{-\infty}^{\infty}} \k{ap}{f(x)}\,\k{e}{e^{ik_{\perp}x}}\;\k{dx}{\dd x}, \qquad \k{kp}{k_{\perp} \equiv k\sin\theta}
+---
+> Which is the definition of the Fourier transform from equation (1.4.2), with $k_\perp$ as the variable.
+! result
+\k{E}{E(\theta)} \propto \k{F}{F(k_{\perp})}, \qquad \k{stmt}{\text{the pattern is the transform of the hole}}
+      </script>
+
+      <p>That is a general statement, not one about slits: the far-field pattern of <em>any</em>
+      aperture is the Fourier transform of its shape. A circular hole gives the transform of a
+      disc, which is why stars seen through a telescope are little rings.</p>
+
+      <p>And read through section 1.4's width relation, the same fact is the uncertainty
+      principle.</p>
+
+      <script type="text/x-derive" data-id="ss-uncertainty" data-title="A slit is a position measurement">
+> A photon that got through the slit was somewhere inside it, so its position is known to about the slit width.
+\k{dx}{\Delta x} \approx \k{a}{a}
+---
+> Its sideways wavenumber afterwards is spread over the central band, out to the first minimum at $\sin\theta = \lambda/a$.
+\k{dk}{\Delta k_{\perp}} \approx \k{k}{k}\,\k{sin}{\frac{\lambda}{a}} = \k{sub}{\frac{2\pi}{\lambda}\cdot\frac{\lambda}{a}} = \k{res}{\frac{2\pi}{a}}
+---
+> Multiply the two together: the slit width cancels, exactly as the width relation of section 1.4 says it must.
+\k{prod}{\Delta x\,\Delta k_{\perp}} \approx \k{res2}{2\pi}
+---
+> With $p = \hbar k$ from section 2.6, that is a statement about momentum.
+! result
+\k{prod2}{\Delta x\,\Delta p_{\perp}} \approx \k{h}{h}
+      </script>
+
+      <p>So the counter-intuitive result of this page — narrower slit, wider spread — is the
+      uncertainty principle seen in ordinary light. Confining the wave sideways forces a spread in
+      its sideways momentum, and that spread is the diffraction. Nothing quantum is needed for the
+      effect; the quantum content is only the substitution $p = \hbar k$.</p>
+
+      <p class="takeaway"><strong>The far-field pattern of an aperture is the Fourier transform of
+      its shape, and the widening as the slit narrows is the width relation of section 1.4 in
+      physical form.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Find the first minimum for $a = 0.05\unit{mm}$ and $\lambda = 500\unit{nm}$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\sin\theta = \lambda/a = 0.01$, so $\theta = 0.573^{\circ}$. On a screen $2\unit{m}$
+            away that is $y = 20\unit{mm}$, and the central band is $40\unit{mm}$ wide.
+            </div></details></li>
+          <li>The slit is made twice as wide. What happens to the central bright band?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Its width $2\lambda L/a$ halves. More light gets through, and it is concentrated into
+            half the area — so the central band is both narrower and brighter.
+            </div></details></li>
+          <li>Why is there no minimum at $m = 0$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Straight ahead every part of the slit is exactly in step with every other, so
+            everything adds rather than cancelling. The pairing argument needs a non-zero path
+            difference to work, and $\sin\theta = 0$ gives none.
+            </div></details></li>
+          <li>Is the second minimum at twice the angle of the first?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Its <em>sine</em> is twice as large: $\sin\theta_2 = 2\lambda/a$. For small angles that
+            makes the angle very nearly double, but for wide angles it does not — and if
+            $2\lambda/a$ exceeds one there is no second minimum at all.
+            </div></details></li>
+          <li>How does $a\sin\theta = \lambda$ relate to $\Delta x\,\Delta p \gtrsim \hbar$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            They are the same statement. The slit fixes the sideways position to $\Delta x \approx
+            a$; the spread of directions out to the first minimum is $\Delta k_\perp \approx
+            k\lambda/a = 2\pi/a$; their product is about $2\pi$, independent of $a$. Multiplying by
+            $\hbar$ turns it into the momentum form.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

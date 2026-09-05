@@ -13,8 +13,10 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/wave-packet.js"></script>
+<script defer src="../demos/gaussian-transform.js"></script>
 </head>
-<body data-page="2-6" data-stub="1">
+<body data-page="2-6">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +30,285 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.6 · Physics · ~40 min</span>
     <h1>Wave packets, phase and group velocity</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">A pure sine wave is infinitely long and carries no information about
+    <em>when</em>. Anything that arrives at a definite moment is a sum of many wavelengths — and
+    once there are many, they need not travel together.</p>
   </header>
-  <section class="band" id="soon" data-section="Wave packets, phase and …">
+
+  <section class="band" id="two-waves" data-section="Two waves">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="two-waves-h" data-short="Two waves">Two waves are already enough</h2>
+
+      <p>Take two waves of almost the same wavelength and add them. Section 1.2 permits it, and
+      the result already shows the effect this page is about.</p>
+
+      <script type="text/x-derive" data-id="wp-two-waves" data-title="Adding two nearly equal waves">
+> Two waves, with wavenumbers and frequencies close together.
+\k{y}{y} = \k{a}{\cos(k_1 x - \omega_1 t)} + \k{b}{\cos(k_2 x - \omega_2 t)}
+---
+> Apply $\cos P + \cos Q = 2\cos\frac{P-Q}{2}\cos\frac{P+Q}{2}$, as in section 2.5.
+\k{y}{y} = \k{amp}{2}\,\k{slow}{\cos\!\left(\frac{\Delta k}{2}x - \frac{\Delta\omega}{2}t\right)}\;\k{fast}{\cos\!\left(\bar k x - \bar\omega t\right)}
+---
+> Two factors, and they are very different in character. The second wiggles fast, at the average wavenumber; the first varies slowly, because $\Delta k$ is small.
+! hl slow
+\k{y}{y} = \underbrace{\k{amp}{2}\,\k{slow}{\cos\!\left(\tfrac{\Delta k}{2}x - \tfrac{\Delta\omega}{2}t\right)}}_{\text{the envelope}}\;\k{fast}{\cos\!\left(\bar k x - \bar\omega t\right)}
+---
+> Each factor is itself a travelling wave, and section 2.3 gives each one's speed as its $\omega$ over its $k$. They are not the same speed.
+! result
+\k{fast}{v_{\text{crests}} = \frac{\bar\omega}{\bar k}}, \qquad \k{slow}{v_{\text{envelope}} = \frac{\Delta\omega}{\Delta k}}
+      </script>
+
+      <p>The fast factor is the <span class="term">carrier</span>: the individual crests. The slow
+      factor is the <span class="term">envelope</span>: the swelling and dying of the amplitude,
+      the beats you hear when two nearly-tuned strings are played together. The two travel at
+      different speeds, and which one matters depends on what you are asking about.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Two waves with $k_1 = 10$ and $k_2 = 11\unit{rad/m}$, so $\bar k = 10.5$ and
+        $\Delta k = 1$.</p>
+        <p>In a non-dispersive medium with $\omega = 2k$: $\bar\omega = 21$ and $\Delta\omega = 2$,
+        so the crests move at $21/10.5 = 2\unit{m/s}$ and the envelope at $2/1 = 2\unit{m/s}$.
+        The same — nothing comes apart.</p>
+        <p>In a medium with $\omega = k^{2}$: $\omega_1 = 100$, $\omega_2 = 121$, so
+        $\bar\omega = 110.5$ and $\Delta\omega = 21$. The crests move at $110.5/10.5 =
+        10.5\unit{m/s}$ but the envelope at $21/1 = 21\unit{m/s}$ — twice as fast. The crests
+        slide backwards through their own envelope.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Two waves added give a fast carrier inside a slow envelope, and
+      the two need not travel at the same speed.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="many-waves" data-section="Many waves">
+    <div class="measure">
+      <h2 id="many-waves-h" data-short="Many waves">Building a packet</h2>
+
+      <p>Two waves give an envelope that repeats forever. To get a single lump — a
+      <span class="term">wave packet</span> — you need a continuous spread of wavenumbers, and
+      section 1.4 already says how they combine:</p>
+
+      <div class="eq" id="eq-2-6-1">
+        <div class="eq__body">$$ y(x, t) = \frac{1}{2\pi}\int_{-\infty}^{\infty}
+        F(k)\,e^{i\left(kx - \omega(k)t\right)}\;\dd k $$</div>
+        <div class="eq__num">(2.6.1)</div>
+      </div>
+
+      <p>At $t = 0$ this is exactly the inverse Fourier transform of section 1.4, so $F(k)$ is the
+      transform of the shape you want. Everything section 1.4 proved about widths therefore
+      applies immediately.</p>
+
+      <script type="text/x-derive" data-id="wp-gaussian-packet" data-title="The shape of a Gaussian packet">
+> Choose the spectrum to be a Gaussian centred on $k_0$, of width $\Delta k$ — a bundle of wavenumbers about a central one.
+\k{F}{F(k)} = \k{g}{e^{-(k - k_0)^{2}/2\sigma_k^{2}}}
+---
+> Put it into equation (2.6.1) at $t = 0$ and pull the central wave out in front, writing $k = k_0 + q$.
+\k{y}{y(x, 0)} = \k{car}{e^{ik_0x}}\;\k{int}{\frac{1}{2\pi}\int e^{-q^{2}/2\sigma_k^{2}}\,e^{iqx}\;\dd q}
+---
+> That integral is the inverse transform of a Gaussian, which section 1.4 showed is another Gaussian — of reciprocal width.
+\k{y}{y(x, 0)} = \k{car}{e^{ik_0x}}\;\k{env}{\frac{\sigma_k}{\sqrt{2\pi}}\,e^{-\sigma_k^{2}x^{2}/2}}
+---
+> So the packet is a single plane wave of wavenumber $k_0$, multiplied by a Gaussian envelope whose width is one over the width of the spectrum.
+! result
+\k{env}{\sigma_x} = \k{recip}{\frac{1}{\sigma_k}}
+      </script>
+
+      <script type="text/x-derive" data-id="wp-uncertainty" data-title="A short packet needs a wide range of wavelengths">
+> Section 1.4 showed that for a Gaussian the two widths multiply to exactly one half, and that no shape does better.
+\k{prod}{\Delta x\,\Delta k} \;\k{ge}{\ge}\; \k{half}{\frac{1}{2}}
+---
+> That is a statement about waves, with no physics in it yet. Now bring in the one experimental fact that connects a particle's momentum to a wavelength.
+\k{p}{p} = \k{hbar}{\hbar}\,\k{k}{k}
+---
+> Multiply the width relation through by $\hbar$, which is a constant and so passes straight through.
+\k{hbar}{\hbar}\,\k{prod}{\Delta x\,\Delta k} \;\k{ge}{\ge}\; \k{hbar}{\hbar}\,\k{half}{\frac{1}{2}}
+---
+> And $\hbar\,\Delta k$ is the spread in momentum.
+! result
+\k{prod2}{\Delta x\,\Delta p} \;\k{ge}{\ge}\; \k{res}{\frac{\hbar}{2}}
+      </script>
+
+      <p>That is the uncertainty principle, and the derivation shows what it is and is not. It is
+      not a statement about clumsy measurement. It is the width relation of section 1.4 — a fact
+      about any wave whatsoever — with $p = \hbar k$ substituted in. Anything that behaves like a
+      wave obeys it; a plucked string obeys the version without the $\hbar$.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>An electron localised to $\Delta x = 1\unit{nm}$.</p>
+        <p>$\Delta p \ge \hbar/(2\Delta x) = 1.055\times10^{-34}/(2\times10^{-9}) =
+        5.3\times10^{-26}\unit{kg\,m/s}$.</p>
+        <p>Dividing by the electron mass, $\Delta v \ge 5.8\times10^{4}\unit{m/s}$ — about
+        $58\unit{km/s}$ of unavoidable spread in speed, just from having been pinned down to a
+        nanometre.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="gaussian-transform"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice, in the same figure as section 1.4, that the packet on the left and its
+        spread of wavenumbers on the right can never both be made narrow.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>A localised packet must contain a spread of wavenumbers, with
+      $\Delta x\,\Delta k \ge \tfrac12$ — and with $p = \hbar k$ that is the uncertainty
+      principle.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="group-velocity" data-section="Group velocity">
+    <div class="measure">
+      <h2 id="group-velocity-h" data-short="Group velocity">How fast the packet goes</h2>
+
+      <p>Now the question that matters: how fast does the lump travel? Not, in general, at
+      $\omega/k$. The two-wave calculation suggested $\Delta\omega/\Delta k$; here is the same
+      answer for a continuous packet, and it comes from a Taylor expansion.</p>
+
+      <script type="text/x-derive" data-id="wp-group-velocity" data-title="The envelope travels at dω/dk">
+> The packet is a narrow spread of wavenumbers about some centre $k_0$. Expand the dispersion relation about that centre and keep the first two terms.
+\k{w}{\omega(k)} \approx \k{w0}{\omega_0} + \k{slope}{\left.\frac{\dd\omega}{\dd k}\right|_{k_0}}\k{dk}{(k - k_0)}
+---
+> Put that into the phase of equation (2.6.1), and write $k = k_0 + (k - k_0)$ in the first term too.
+\k{phase}{kx - \omega t} \approx \k{carrier}{\left(k_0 x - \omega_0 t\right)} + \k{dk}{(k - k_0)}\left(\k{x}{x} - \k{slope}{\frac{\dd\omega}{\dd k}}\k{t}{t}\right)
+---
+> The first bracket does not depend on $k$, so it comes outside the integral entirely — it is one plane wave, the carrier.
+\k{y}{y(x,t)} \approx \k{carrier}{e^{i(k_0x - \omega_0 t)}}\;\k{int}{\frac{1}{2\pi}\int F(k)\,e^{i(k-k_0)\left(x - \frac{\dd\omega}{\dd k}t\right)}\;\dd k}
+---
+> Everything left inside the integral depends on $x$ and $t$ only through the combination in the bracket. Whatever shape that integral has, it is a function of that combination alone.
+! hl slope
+\k{y}{y(x,t)} \approx \k{carrier}{e^{i(k_0x-\omega_0t)}}\;\k{env}{E\!\left(x - \frac{\dd\omega}{\dd k}\,t\right)}
+---
+> A function of $x - ut$ is a shape moving at speed $u$, by exactly the argument of section 2.3. So the envelope moves at the slope of the dispersion relation, while the carrier moves at $\omega_0/k_0$.
+! result
+\k{vg}{v_{\text{g}} = \frac{\dd\omega}{\dd k}}, \qquad \k{vp}{v_{\text{p}} = \frac{\omega}{k}}
+      </script>
+
+      <p>The <span class="term">phase velocity</span> $v_{\text{p}} = \omega/k$ is the speed of an
+      individual crest. The <span class="term">group velocity</span>
+      $v_{\text{g}} = \dd\omega/\dd k$ is the speed of the lump — and therefore of the energy, and
+      of any signal you could send. When the two differ, crests appear at one edge of the packet,
+      slide through it, and vanish at the other.</p>
+
+      <script type="text/x-derive" data-id="wp-examples" data-title="Three media, three answers">
+> A non-dispersive medium: a string, or light in vacuum.
+\k{w}{\omega = vk} \qquad\Longrightarrow\qquad \k{vg}{v_{\text{g}} = \frac{\dd\omega}{\dd k} = v} = \k{vp}{v_{\text{p}}}
+---
+> Deep water waves, where gravity supplies the restoring force.
+\k{w2}{\omega = \sqrt{gk}} \qquad\Longrightarrow\qquad \k{vg2}{v_{\text{g}} = \frac{1}{2}\sqrt{\frac{g}{k}}} = \k{half}{\tfrac{1}{2}}\k{vp2}{v_{\text{p}}}
+---
+> A free quantum particle, whose dispersion relation comes from $E = p^{2}/2m$ with $E = \hbar\omega$ and $p = \hbar k$.
+\k{w3}{\omega = \frac{\hbar k^{2}}{2m}} \qquad\Longrightarrow\qquad \k{vg3}{v_{\text{g}} = \frac{\hbar k}{m} = \frac{p}{m}} = \k{two}{2}\,\k{vp3}{v_{\text{p}}}
+---
+> Read the last one: the group velocity of the packet is the ordinary classical velocity $p/m$ of the particle. The phase velocity is half that and has no physical meaning of its own.
+! result
+\k{vg3}{v_{\text{g}} = \frac{p}{m}}
+      </script>
+
+      <p>That last line is worth pausing on. If a quantum particle is a wave packet, the thing that
+      moves at the speed you would call "the particle's speed" is the envelope, not the crests. A
+      calculation that used the phase velocity would get the wrong answer by a factor of two.</p>
+
+      <p class="takeaway"><strong>The crests move at $\omega/k$ and the packet moves at
+      $\dd\omega/\dd k$; it is the second that carries the energy and the
+      information.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="spreading" data-section="Why packets spread">
+    <div class="measure">
+      <h2 id="spreading-h" data-short="Why packets spread">Why packets spread out</h2>
+
+      <p>The derivation above stopped after two terms of the Taylor expansion. The next term is
+      what makes a packet fall apart.</p>
+
+      <script type="text/x-derive" data-id="wp-spreading" data-title="What the next term does">
+> Keep one more term of the expansion of the dispersion relation.
+\k{w}{\omega(k)} \approx \k{w0}{\omega_0} + \k{v}{\omega'_0\,(k-k_0)} + \k{curv}{\tfrac{1}{2}\omega''_0\,(k-k_0)^{2}}
+---
+> The first two terms gave the carrier and an envelope moving rigidly at $v_{\text{g}}$. The new term adds an extra phase to each component, and it is not the same for all of them.
+\k{extra}{\text{extra phase}} = \k{curv}{-\tfrac{1}{2}\omega''_0\,(k - k_0)^{2}\,t}
+---
+> Components at the edges of the packet's spread, $k - k_0 \approx \pm\Delta k$, pick this up fastest. They stay in step with the centre only while that phase is less than about a radian.
+\k{cond}{\tfrac{1}{2}\abs{\omega''_0}\,\Delta k^{2}\,t} \;\k{lt}{\lesssim}\; \k{one}{1}
+---
+> Beyond that time the components no longer add up in the same place, and the packet has visibly widened.
+! result
+\k{tspread}{t_{\text{spread}} \sim \frac{2}{\abs{\omega''_0}\,\Delta k^{2}}}
+      </script>
+
+      <p>Two things follow. A non-dispersive medium has $\omega'' = 0$ exactly, so
+      $t_{\text{spread}}$ is infinite and a pulse holds its shape forever — which is why a shout
+      arrives as a shout. And a <em>narrow</em> packet spreads <em>faster</em>, since
+      $\Delta k$ is large when $\Delta x$ is small: pinning a packet down tightly is precisely
+      what makes it fall apart quickly.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>An electron confined to $\Delta x = 1\unit{nm}$. Its dispersion relation is
+        $\omega = \hbar k^{2}/2m$, so $\omega'' = \hbar/m$ — a constant.</p>
+        <p>From $\Delta x\,\Delta k = \tfrac12$, $\Delta k = 5\times10^{8}\unit{m^{-1}}$.</p>
+        <p>$t_{\text{spread}} \sim 2m/(\hbar\,\Delta k^{2}) =
+        2(9.11\times10^{-31})/\left[(1.055\times10^{-34})(2.5\times10^{17})\right]
+        \approx 6.9\times10^{-14}\unit{s}$.</p>
+        <p>Under a tenth of a picosecond. Confine it to a micrometre instead — a thousand times
+        wider — and the time grows by a million, to about $70\unit{ns}$.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="wave-packet"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the crests and the envelope are tracked separately and move at
+        different speeds as soon as the dispersion is turned up, and that the envelope also
+        widens as it goes — faster when the packet started narrower.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>Curvature in $\omega(k)$ makes a packet spread, and a narrower
+      packet spreads sooner because it needs a wider spread of wavenumbers.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Give the group velocity for $\omega = ck$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\dd\omega/\dd k = c$, the same as the phase velocity $\omega/k = c$. Non-dispersive:
+            packets keep their shape and travel with the crests.
+            </div></details></li>
+          <li>For $\omega = ak^{2}$, what is $v_{\text{g}}/v_{\text{p}}$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $v_{\text{g}} = 2ak$ and $v_{\text{p}} = ak$, so the ratio is 2. The envelope outruns
+            its own crests, which appear at the back and disappear at the front.
+            </div></details></li>
+          <li>Why can a single pure sine wave not be used to send a signal?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            It has the same amplitude everywhere and for all time, so there is no feature to mark
+            an arrival. Sending anything means switching it on, and that requires a range of
+            wavenumbers — at which point group velocity, not phase velocity, decides when it gets
+            there.
+            </div></details></li>
+          <li>Which velocity carries the energy?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The group velocity. The energy is where the amplitude is, and that is the envelope.
+            Phase velocity can exceed $c$ in some media without violating anything, because no
+            energy or information moves at it.
+            </div></details></li>
+          <li>Confine a particle to $\Delta x = 0.1\unit{nm}$, about the size of an atom. What is
+            the minimum $\Delta p$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\Delta p \ge \hbar/(2\Delta x) = 1.055\times10^{-34}/(2\times10^{-10}) =
+            5.3\times10^{-25}\unit{kg\,m/s}$ — ten times the nanometre answer, and for an electron
+            a speed spread of about $580\unit{km/s}$. This is why atoms have the size they do.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

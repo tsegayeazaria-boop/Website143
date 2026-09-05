@@ -475,6 +475,24 @@ async function checkPage(browser, p, theme) {
       pass(`${tag} ${derive.align.length} transitions align within ${worst.toFixed(2)}px`);
     }
     if (derive.stats.worstMs > 20) note(`${tag} slowest derivation frame ${derive.stats.worstMs.toFixed(1)}ms`);
+
+    /* The "all steps at once" panels render lazily when first opened, so open
+       them all and check they actually filled with typeset steps. */
+    const ladders = await page.evaluate(async () => {
+      const ds = [...document.querySelectorAll('details.derive__all')];
+      ds.forEach((d) => { d.open = true; });
+      await new Promise((r) => setTimeout(r, 350));
+      const out = { panels: ds.length, empty: 0, untypeset: 0 };
+      ds.forEach((d) => {
+        const steps = d.querySelectorAll('.step');
+        if (steps.length < 2) out.empty++;
+        if (d.querySelectorAll('.katex').length < steps.length) out.untypeset++;
+      });
+      ds.forEach((d) => { d.open = false; });
+      return out;
+    });
+    if (ladders.empty) fail(`${tag} ${ladders.empty} "all steps at once" panel(s) did not fill`);
+    if (ladders.untypeset) fail(`${tag} ${ladders.untypeset} "all steps at once" panel(s) left maths untypeset`);
   }
 
   /* Demos: each must draw something, and react when its first control moves. */

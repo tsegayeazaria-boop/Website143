@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+
 </head>
-<body data-page="ref" data-stub="1">
+<body data-page="ref">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,302 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 3 · Reference · ~10 min</span>
     <h1>Quick reference and glossary</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Every numbered equation on the site, every symbol that appears in one, and the
+    conventions that decide what the signs mean. Each equation links back to the page that derives
+    it — nothing here is meant to be believed on its own.</p>
   </header>
-  <section class="band" id="soon" data-section="Quick reference and glos…">
+
+  <section class="band" id="equations" data-section="Every equation">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="equations-h" data-short="Every equation">Every numbered equation</h2>
+      <p>Grouped by section, in the order they are derived.</p>
+    </div>
+    <div class="wide">
+      <div class="table-wrap table-wrap--ref">
+        <table>
+          <thead><tr><th>Equation</th><th>What the symbols are</th><th>Derived in</th></tr></thead>
+          <tbody>
+            <tr><td>$x(t) = C_1\cos\omega t + C_2\sin\omega t = A\cos(\omega t + \varphi)
+              = \operatorname{Re}[c\,e^{i\omega t}]$</td>
+              <td>the three forms of the solution of $\ddot x + \omega^{2}x = 0$; $C_1 = x(0)$ and
+              $C_2 = \dot x(0)/\omega$; $A = \abs{c}$, $\varphi = \arg c$</td>
+              <td><a href="1-2-odes.html#eq-1-2-1">(1.2.1)</a></td></tr>
+
+            <tr><td>$\vb v = v_1\vu e_1 + v_2 \vu e_2$</td>
+              <td>a vector as an arrow and as a pair of components in a chosen basis</td>
+              <td><a href="1-3-linear-algebra.html#eq-1-3-1">(1.3.1)</a></td></tr>
+            <tr><td>$f(\vb u + \vb v) = f(\vb u) + f(\vb v)$, &nbsp; $f(c\vb v) = c f(\vb v)$</td>
+              <td>the definition of a linear map — the only kind a matrix can represent</td>
+              <td><a href="1-3-linear-algebra.html#eq-1-3-2">(1.3.2)</a></td></tr>
+            <tr><td>$\mat A = \begin{pmatrix} a & b \\ c & d\end{pmatrix}$, columns
+              $f(\vu e_1)$ and $f(\vu e_2)$</td>
+              <td>the columns of a matrix are where the basis vectors land</td>
+              <td><a href="1-3-linear-algebra.html#eq-1-3-3">(1.3.3)</a></td></tr>
+            <tr><td>$\mat R(\theta) = \begin{pmatrix}\cos\theta & -\sin\theta \\
+              \sin\theta & \cos\theta\end{pmatrix}$</td>
+              <td>anticlockwise rotation of the plane by $\theta$</td>
+              <td><a href="1-3-linear-algebra.html#eq-1-3-4">(1.3.4)</a></td></tr>
+            <tr><td>$\mat A\vb v = \lambda\vb v$, &nbsp; $\det(\mat A - \lambda\mat I) = 0$</td>
+              <td>$\lambda$ the eigenvalue (stretch factor), $\vb v \ne \vb 0$ the eigenvector
+              (a direction the matrix does not turn)</td>
+              <td><a href="1-3-linear-algebra.html#eq-1-3-5">(1.3.5)</a></td></tr>
+            <tr><td>$\mat K\vb a = \omega^{2}\mat M\vb a$ &nbsp;&nbsp; beside &nbsp;&nbsp;
+              $\hat H\psi = E\psi$</td>
+              <td>the normal-mode problem and the Schrödinger equation are the same eigenvalue
+              problem</td>
+              <td><a href="1-3-linear-algebra.html#eq-1-3-6">(1.3.6)</a></td></tr>
+
+            <tr><td>$f(t) = a_0 + \sum_n\left[a_n\cos n\omega_0 t + b_n\sin n\omega_0 t\right]$</td>
+              <td>$\omega_0 = 2\pi/T$ the fundamental; $a_0$ the average;
+              $a_n = \frac{2}{T}\int f\cos n\omega_0 t\,\dd t$ and likewise for $b_n$</td>
+              <td><a href="1-4-fourier.html#eq-1-4-1">(1.4.1)</a></td></tr>
+            <tr><td>$F(k) = \int f(x)e^{-ikx}\dd x$, &nbsp;
+              $f(x) = \frac{1}{2\pi}\int F(k)e^{ikx}\dd k$</td>
+              <td>the Fourier transform pair; $\Delta x\,\Delta k \ge \tfrac12$, with equality only
+              for a Gaussian</td>
+              <td><a href="1-4-fourier.html#eq-1-4-2">(1.4.2)</a></td></tr>
+
+            <tr><td>$\ddot x + \omega^{2}x = 0$, &nbsp; $\omega = \sqrt{k/m}$, &nbsp;
+              $E = \tfrac12 kA^{2}$</td>
+              <td>$k$ the spring constant (N/m), $m$ the mass, $A$ the amplitude; the frequency
+              does not depend on the amplitude</td>
+              <td><a href="2-1-sho.html#eq-2-1-1">(2.1.1)</a></td></tr>
+
+            <tr><td>$m\ddot x_1 = -(k+\kappa)x_1 + \kappa x_2$</td>
+              <td>$\kappa$ the coupling spring; the middle spring's force depends on
+              $x_2 - x_1$ alone</td>
+              <td><a href="2-2-coupled.html#eq-2-2-1">(2.2.1)</a></td></tr>
+            <tr><td>$m\ddot x_2 = \kappa x_1 - (k+\kappa)x_2$</td>
+              <td>the mirror image, by Newton's third law</td>
+              <td><a href="2-2-coupled.html#eq-2-2-2">(2.2.2)</a></td></tr>
+            <tr><td>$\mat M\ddot{\vb x} = -\mat K\vb x$</td>
+              <td>$\mat M = m\mat I$ the mass matrix; $\mat K$ the stiffness matrix, symmetric
+              because one spring joins the masses</td>
+              <td><a href="2-2-coupled.html#eq-2-2-3">(2.2.3)</a></td></tr>
+            <tr><td>$\left(\mat K - \omega^{2}\mat M\right)\vb a = \vb 0$</td>
+              <td>the normal-mode condition, from the guess $\vb x = \vb a e^{i\omega t}$;
+              $\vb a$ the mode shape</td>
+              <td><a href="2-2-coupled.html#eq-2-2-4">(2.2.4)</a></td></tr>
+            <tr><td>$\omega_1 = \sqrt{k/m}$, &nbsp; $\omega_2 = \sqrt{(k+2\kappa)/m}$</td>
+              <td>in phase, middle spring idle; out of phase, stretched twice as hard; shapes
+              $(1,1)$ and $(1,-1)$</td>
+              <td><a href="2-2-coupled.html#eq-2-2-5">(2.2.5)</a></td></tr>
+            <tr><td>$\mat K = \begin{pmatrix} k_1 + \kappa & -\kappa \\ -\kappa &
+              k_2+\kappa\end{pmatrix}$</td>
+              <td>the general case: unequal masses and wall springs, same method</td>
+              <td><a href="2-2-coupled.html#eq-2-2-6">(2.2.6)</a></td></tr>
+
+            <tr><td>$y = A\cos(kx - \omega t + \varphi)$, &nbsp; $v = \omega/k = \lambda f$</td>
+              <td>$k = 2\pi/\lambda$ (rad/m), $\omega = 2\pi/T$ (rad/s); minus travels $+x$, plus
+              travels $-x$</td>
+              <td><a href="2-3-traveling-waves.html#eq-2-3-1">(2.3.1)</a></td></tr>
+            <tr><td>$\dfrac{\partial^{2}y}{\partial t^{2}} = v^{2}\dfrac{\partial^{2}y}{\partial x^{2}}$</td>
+              <td>the wave equation; satisfied only if $\omega = vk$, the dispersion relation of a
+              non-dispersive medium</td>
+              <td><a href="2-3-traveling-waves.html#eq-2-3-2">(2.3.2)</a></td></tr>
+
+            <tr><td>$y_{\text{inc}} = g(t - x/v_1)$, &nbsp; $y_{\text{ref}} = R\,g(t + x/v_1)$,
+              &nbsp; $y_{\text{tr}} = \mathcal{T}\,g(t - x/v_2)$</td>
+              <td>the three waves at a join; $g$ any pulse shape at all</td>
+              <td><a href="2-4-strings.html#eq-2-4-1">(2.4.1)</a></td></tr>
+            <tr><td>$R = \dfrac{Z_1 - Z_2}{Z_1+Z_2}$, &nbsp;
+              $\mathcal{T} = \dfrac{2Z_1}{Z_1+Z_2}$, &nbsp; $Z = \sqrt{\Ten\mu}$</td>
+              <td>$\Ten$ tension (N), $\mu$ mass per unit length (kg/m), $v = \sqrt{\Ten/\mu}$;
+              $1 + R = \mathcal{T}$ and $R^{2} + (Z_2/Z_1)\mathcal{T}^{2} = 1$</td>
+              <td><a href="2-4-strings.html#eq-2-4-2">(2.4.2)</a></td></tr>
+
+            <tr><td>$\lambda_n = \dfrac{2L}{n}$, &nbsp; $f_n = \dfrac{nv}{2L}$ &nbsp;
+              (both ends held)</td>
+              <td>$L$ the length; the string holds a whole number of half wavelengths</td>
+              <td><a href="2-5-standing-waves.html#fixed-fixed">§2.5</a></td></tr>
+            <tr><td>$\lambda_n = \dfrac{4L}{2n-1}$, &nbsp; $f_n = \dfrac{(2n-1)v}{4L}$ &nbsp;
+              (one end free)</td>
+              <td>an odd number of quarter wavelengths; the even harmonics are missing</td>
+              <td><a href="2-5-standing-waves.html#fixed-free">§2.5</a></td></tr>
+
+            <tr><td>$y(x,t) = \dfrac{1}{2\pi}\displaystyle\int F(k)e^{i(kx - \omega(k)t)}\dd k$</td>
+              <td>a wave packet; $F(k)$ is the transform of its shape at $t=0$</td>
+              <td><a href="2-6-wave-packets.html#eq-2-6-1">(2.6.1)</a></td></tr>
+            <tr><td>$v_{\text{p}} = \dfrac{\omega}{k}$, &nbsp;
+              $v_{\text{g}} = \dfrac{\dd\omega}{\dd k}$, &nbsp;
+              $\Delta x\,\Delta p \ge \dfrac{\hbar}{2}$</td>
+              <td>crests move at $v_{\text{p}}$, the packet and its energy at $v_{\text{g}}$;
+              curvature in $\omega(k)$ makes the packet spread</td>
+              <td><a href="2-6-wave-packets.html#group-velocity">§2.6</a></td></tr>
+
+            <tr><td>$d\sin\theta = m\lambda$, &nbsp; $\Delta y = \dfrac{\lambda L}{d}$</td>
+              <td>$d$ slit separation, $L$ screen distance, $m$ the order; wider separation gives
+              narrower fringes</td>
+              <td><a href="2-7-double-slit.html#eq-2-7-1">(2.7.1)</a></td></tr>
+            <tr><td>$I = I_0\cos^{2}\!\left(\dfrac{\delta}{2}\right)$, &nbsp;
+              $\delta = \dfrac{2\pi d\sin\theta}{\lambda}$</td>
+              <td>$\delta$ the phase difference between the two arrivals; peak is four times one
+              slit alone</td>
+              <td><a href="2-7-double-slit.html#eq-2-7-2">(2.7.2)</a></td></tr>
+
+            <tr><td>$a\sin\theta = m\lambda$ &nbsp; ($m \ne 0$), &nbsp;
+              $I = I_0\left(\dfrac{\sin\beta}{\beta}\right)^{2}$, &nbsp;
+              $\beta = \dfrac{\pi a\sin\theta}{\lambda}$</td>
+              <td>$a$ the slit width; the minima, and the whole pattern; central band about
+              $2\lambda/a$ wide in angle — <em>wider</em> for a narrower slit</td>
+              <td><a href="2-8-single-slit.html#eq-2-8-1">(2.8.1)</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="glossary" data-section="Every symbol">
+    <div class="measure">
+      <h2 id="glossary-h" data-short="Every symbol">Every symbol</h2>
+      <p>Four letters do double duty on this site. They are marked <strong>reused</strong>, and
+      every page that uses one says which meaning is in force at the top.</p>
+    </div>
+    <div class="wide">
+      <div class="table-wrap table-wrap--ref">
+        <table>
+          <thead><tr><th>Symbol</th><th>Meaning</th><th>Units</th><th>Where</th></tr></thead>
+          <tbody>
+            <tr><td>$t$</td><td>time</td><td>s</td><td>everywhere</td></tr>
+            <tr><td>$x$, $x_1$, $x_2$</td><td>displacement of an oscillator from equilibrium</td>
+              <td>m</td><td>1.2, 2.1, 2.2</td></tr>
+            <tr><td>$y(x,t)$</td><td>transverse displacement of a string</td><td>m</td>
+              <td>2.3–2.6</td></tr>
+            <tr><td>$\dot x$, $\ddot x$</td><td>first and second derivatives with respect to time
+              </td><td>m/s, m/s²</td><td>1.2, 2.1, 2.2</td></tr>
+            <tr><td>$\partial/\partial x$</td><td>partial derivative: differentiate holding the
+              other variable fixed</td><td>—</td><td>2.3, 2.4</td></tr>
+            <tr><td>$\omega$</td><td>angular frequency</td><td>rad/s</td><td>everywhere</td></tr>
+            <tr><td>$f$</td><td>frequency, $\omega/2\pi$</td><td>Hz</td><td>2.1, 2.3–2.8</td></tr>
+            <tr><td>$T$</td><td>period, $1/f$ &nbsp;<strong>reused</strong>: never used for
+              tension</td><td>s</td><td>everywhere except 2.4</td></tr>
+            <tr><td>$k$ &nbsp;<strong>reused</strong></td><td>spring constant on 2.1–2.2;
+              wavenumber $2\pi/\lambda$ on 1.4 and 2.3–2.8</td><td>N/m; rad/m</td>
+              <td>2.1, 2.2; 1.4, 2.3–2.8</td></tr>
+            <tr><td>$\kappa$</td><td>stiffness of the coupling spring</td><td>N/m</td>
+              <td>2.2</td></tr>
+            <tr><td>$m$ &nbsp;<strong>reused</strong></td><td>a mass; also the integer order of a
+              fringe on 2.7–2.8</td><td>kg; —</td><td>2.1, 2.2; 2.7, 2.8</td></tr>
+            <tr><td>$A$</td><td>amplitude</td><td>m (or whatever oscillates)</td>
+              <td>1.2, 2.1, 2.3</td></tr>
+            <tr><td>$\varphi$</td><td>phase constant</td><td>rad</td><td>1.2, 2.1, 2.3</td></tr>
+            <tr><td>$c$</td><td>complex amplitude: length $A$, angle $\varphi$</td><td>m</td>
+              <td>1.1, 1.2, 2.1</td></tr>
+            <tr><td>$C_1 \ldots C_4$</td><td>real constants fixed by the initial conditions</td>
+              <td>m</td><td>1.2, 2.1, 2.2</td></tr>
+            <tr><td>$E$</td><td>energy</td><td>J</td><td>2.1</td></tr>
+            <tr><td>$\lambda$ &nbsp;<strong>reused</strong></td><td>wavelength everywhere; an
+              eigenvalue on 1.3 only</td><td>m; depends</td><td>2.3–2.8; 1.3</td></tr>
+            <tr><td>$\Ten$</td><td>tension in a string (written this way so $T$ can stay a period)
+              </td><td>N</td><td>2.4, 2.5</td></tr>
+            <tr><td>$\mu$</td><td>mass per unit length of a string</td><td>kg/m</td>
+              <td>2.4, 2.5</td></tr>
+            <tr><td>$Z$</td><td>impedance, $\sqrt{\Ten\mu} = \Ten/v$</td><td>kg/s</td>
+              <td>2.4</td></tr>
+            <tr><td>$v$, $v_{\text{p}}$, $v_{\text{g}}$</td><td>wave speed; phase velocity; group
+              velocity</td><td>m/s</td><td>2.3–2.6</td></tr>
+            <tr><td>$R$, $\mathcal{T}$</td><td>reflection and transmission coefficients — ratios of
+              amplitudes, not of energies</td><td>—</td><td>2.4</td></tr>
+            <tr><td>$L$ &nbsp;<strong>reused</strong></td><td>length of a string on 2.5; distance
+              to the screen on 2.7–2.8</td><td>m</td><td>2.5; 2.7, 2.8</td></tr>
+            <tr><td>$\vb v$, $v_1$, $v_2$</td><td>a vector and its components; basis vectors
+              $\vu e_1$, $\vu e_2$</td><td>—</td><td>1.3</td></tr>
+            <tr><td>$\mat A$, $\mat I$, $\mat P$, $\mat D$</td><td>a matrix; the identity; the
+              matrix of eigenvectors; the diagonal matrix of eigenvalues</td><td>—</td>
+              <td>1.3</td></tr>
+            <tr><td>$\det$</td><td>determinant, $ad - bc$: the area scale factor, zero when the
+              plane is squashed flat</td><td>—</td><td>1.3, 2.2</td></tr>
+            <tr><td>$\mat M$, $\mat K$</td><td>mass and stiffness matrices</td><td>kg; N/m</td>
+              <td>2.2</td></tr>
+            <tr><td>$\vb a$, $\vb a^{(1)}$, $\vb a^{(2)}$</td><td>normal-mode shapes</td>
+              <td>—</td><td>2.2</td></tr>
+            <tr><td>$q_1$, $q_2$</td><td>normal coordinates, $(x_1 \pm x_2)/2$</td><td>m</td>
+              <td>2.2</td></tr>
+            <tr><td>$\inner{f}{g}$</td><td>inner product of two functions, $\int fg\,\dd x$ —
+              a dot product for functions</td><td>depends</td><td>1.3, 1.4</td></tr>
+            <tr><td>$a_0$, $a_n$, $b_n$</td><td>Fourier coefficients; $a_0$ is the average</td>
+              <td>depends</td><td>1.4</td></tr>
+            <tr><td>$F(k)$</td><td>Fourier transform of $f(x)$</td><td>depends</td>
+              <td>1.4, 2.6, 2.8</td></tr>
+            <tr><td>$\Delta x$, $\Delta k$, $\Delta p$</td><td>widths: standard deviations of
+              $\abs{f}^{2}$ and $\abs{F}^{2}$</td><td>m; rad/m; kg m/s</td><td>1.4, 2.6, 2.8</td></tr>
+            <tr><td>$\hbar$</td><td>the reduced Planck constant, $1.055\times10^{-34}$</td>
+              <td>J s</td><td>2.6, 2.8</td></tr>
+            <tr><td>$d$</td><td>separation of the two slits</td><td>m</td><td>2.7</td></tr>
+            <tr><td>$a$ &nbsp;<strong>reused</strong></td><td>slit width on 2.8; also a matrix
+              entry on 1.3</td><td>m; —</td><td>2.8; 1.3</td></tr>
+            <tr><td>$\theta$, $y$</td><td>angle from the axis; position on the screen</td>
+              <td>rad; m</td><td>2.7, 2.8</td></tr>
+            <tr><td>$\delta$, $\beta$</td><td>phase difference between two slits;
+              $\pi a\sin\theta/\lambda$ for one slit</td><td>rad</td><td>2.7; 2.8</td></tr>
+            <tr><td>$I$, $I_0$ &nbsp;<strong>reused</strong></td><td>intensity and its peak value
+              on 2.7–2.8; $\mat I$ is the identity matrix on 1.3</td><td>W/m²; —</td>
+              <td>2.7, 2.8; 1.3</td></tr>
+            <tr><td>$i$</td><td>the imaginary unit, $i^{2} = -1$ (never $j$)</td><td>—</td>
+              <td>1.1 onwards</td></tr>
+            <tr><td>$z$, $z^{*}$, $\abs{z}$</td><td>a complex number, its conjugate, its
+              modulus</td><td>depends</td><td>1.1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="conventions" data-section="Conventions">
+    <div class="measure">
+      <h2 id="conventions-h" data-short="Conventions">Conventions</h2>
+      <p>Sign conventions are choices, not facts, and different books choose differently. These
+      are the ones in force here.</p>
+      <ul>
+        <li><strong>$\cos(kx - \omega t)$ travels towards $+x$</strong>; $\cos(kx + \omega t)$
+          travels towards $-x$. Follow a point of constant phase to check.</li>
+        <li><strong>Oscillations use $e^{+i\omega t}$</strong> and the real part is taken at the
+          end. Quantum mechanics conventionally uses $e^{-i\omega t}$ instead; nothing physical
+          changes, but signs in intermediate steps flip.</li>
+        <li><strong>The transform is $F(k) = \int f(x)e^{-ikx}\dd x$</strong> with the $1/2\pi$ on
+          the inverse. Some books split it as $1/\sqrt{2\pi}$ on each; the physics is the same and
+          the width relation is unaffected.</li>
+        <li><strong>Displacements are measured from equilibrium.</strong> In section 2.2 that is
+          what lets the equilibrium spring forces be ignored.</li>
+        <li><strong>$R$ and $\mathcal{T}$ are amplitude ratios.</strong> The energy fractions are
+          $R^{2}$ and $(Z_2/Z_1)\mathcal{T}^{2}$, which is why $\mathcal{T}$ may exceed one
+          without anything being wrong.</li>
+        <li><strong>Eigenvectors have no fixed length.</strong> Any multiple of an eigenvector is
+          an eigenvector, so $(1,1)$ and $(3,3)$ describe the same mode.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>In $\omega = \sqrt{k/m}$ and in $v = \omega/k$, what is $k$ in each?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            A spring constant in newtons per metre in the first, a wavenumber in radians per metre
+            in the second. Check the units: $\sqrt{(\mathrm{N/m})/\mathrm{kg}}$ is $\mathrm{s^{-1}}$,
+            while $(\mathrm{rad/s})/(\mathrm{rad/m})$ is $\mathrm{m/s}$. The units always settle
+            it.
+            </div></details></li>
+          <li>A problem says "a string of length $L$ with tension $T$". What should you check?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Whether $T$ is a tension in newtons or a period in seconds. This site writes tension as
+            $\Ten$ to avoid the clash, but most books do not. The units, or the formula it appears
+            in, decide: $v = \sqrt{T/\mu}$ only makes sense with a force.
+            </div></details></li>
+          <li>Where on the site does $\lambda$ not mean a wavelength?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Section 1.3, where it is an eigenvalue. Section 2.2 uses the eigenvalue machinery on a
+            physical system and sidesteps the collision by writing $\omega^{2}$ throughout instead
+            of $\lambda$.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

@@ -402,7 +402,7 @@
       { id: '1-1', part: 1, num: '1.1', title: 'Complex numbers and Euler’s formula',
         file: 'sections/1-1-complex.html', minutes: 25, feeds: ['2-1', '2-7', '2-8'] },
       { id: '1-2', part: 1, num: '1.2', title: 'Second-order linear differential equations',
-        file: 'sections/1-2-odes.html', minutes: 25, feeds: ['2-1', '2-2'] },
+        file: 'sections/1-2-odes.html', minutes: 30, feeds: ['2-1', '2-2'] },
       { id: '1-3', part: 1, num: '1.3', title: 'Linear algebra, from the beginning',
         file: 'sections/1-3-linear-algebra.html', minutes: 75, feeds: ['1-4', '2-2'] },
       { id: '1-4', part: 1, num: '1.4', title: 'Fourier series and Fourier transforms',
