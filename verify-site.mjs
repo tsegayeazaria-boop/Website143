@@ -477,6 +477,35 @@ async function checkPage(browser, p, theme) {
     }
     if (derive.stats.worstMs > 20) note(`${tag} slowest derivation frame ${derive.stats.worstMs.toFixed(1)}ms`);
 
+    /* Companion pictures. A registered picture that never built, or that never
+       followed the equation to its last step, is as much a failure as an
+       equation that never got there — and silently so, since the derivation
+       around it still works. */
+    const withViz = derive.list.filter((d) => d.viz);
+    if (withViz.length) {
+      const unbuilt = withViz.filter((d) => !d.vizBuilt);
+      if (unbuilt.length) fail(`${tag} pictures that never built: ${unbuilt.map((d) => d.id).join(', ')}`);
+      /* Driven directly through every step, rather than inferred from where a
+         scroll sweep happened to leave them. */
+      const sweep = await page.evaluate(() => window.__derive.vizSweep());
+      const threw = sweep.filter((v) => v.error);
+      if (threw.length) fail(`${tag} pictures that failed a step: ` + threw.map((v) => `${v.id} ${v.error}`).join('; '));
+      const blank = sweep.filter((v) => v.built && v.empty);
+      if (blank.length) fail(`${tag} pictures that drew nothing: ` + blank.map((v) => v.id).join(', '));
+      /* A picture whose every step looks identical is not following the
+         algebra, whatever else it is doing. One state per step is not
+         required — a HOLD step deliberately repeats the one before it — but
+         a multi-step derivation must reach more than one state. */
+      const frozen = sweep.filter((v) => v.built && v.N > 1 && v.distinct < 2);
+      if (frozen.length) fail(`${tag} pictures that never changed across their steps: ` + frozen.map((v) => v.id).join(', '));
+      /* Side by side is the point; stacking is the documented fallback for a
+         derivation too wide to share a row, so record how often it happens. */
+      const stacked = withViz.filter((d) => d.share === 0).length;
+      const steps = sweep.reduce((n, v) => n + v.states.length, 0);
+      pass(`${tag} ${withViz.length} pictures drew ${steps} states` +
+           (stacked ? `, ${stacked} stacked` : ''));
+    }
+
     /* The "all steps at once" panels render lazily when first opened, so open
        them all and check they actually filled with typeset steps. */
     const ladders = await page.evaluate(async () => {

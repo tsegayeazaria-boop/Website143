@@ -30,6 +30,22 @@
   var seq = 0;
   var stats = { frames: 0, worstMs: 0, totalMs: 0 };
 
+  /* Companion pictures. A derivation with an entry here gets a drawing beside
+     its equation, driven by the same step index and the same eased fraction,
+     so the picture cannot drift out of step with the algebra. Registration is
+     by derivation id and is the whole attachment mechanism: no markup changes,
+     and a derivation with no entry builds exactly as it did before.
+
+     fn(root, api) is called once, on the first frame the picture is needed,
+     and returns update(k, f, t):
+       k  the step being held, or morphed away from
+       f  eased 0->1 fraction into the morph toward k+1; 0 while holding
+       t  seconds, for anything that oscillates on its own
+     api carries { id, reduced, step(k), width, height, onResize }. */
+  var vizzes = {};
+  A.viz = function (id, fn) { vizzes[id] = fn; };
+  A.vizRegistry = vizzes;
+
   /* Classes that draw a line rather than a glyph. KaTeX renamed most of its
      structural classes in 0.17, so detection below leans on text nodes, svg
      children and painted borders instead; this list is only a fast path. */
@@ -115,8 +131,28 @@
   function ladder(d) {
     var wrap = elt('div', 'steps');
     wrap.appendChild(elt('div', 'steps__title', 'All ' + d.steps.length + ' steps at once'));
-    d.steps.forEach(function (s) {
+    var makeViz = vizzes[d.id] || null;
+    d.steps.forEach(function (s, i) {
       var st = elt('div', 'step');
+      /* Reduced motion, or the reader who would rather read than scroll, still
+         gets the picture — one still frame per step beside its equation,
+         rather than nothing. Each is its own instance, built and then frozen
+         on its step; nothing here animates. */
+      if (makeViz) {
+        var vh = elt('div', 'derive__viz derive__viz--still');
+        vh.setAttribute('aria-hidden', 'true');
+        try {
+          var v = makeViz(vh, {
+            id: d.id, reduced: true, still: true,
+            step: function (k) { return d.steps[M.clamp(k | 0, 0, d.steps.length - 1)]; },
+            hl: function (k) { return (d.steps[M.clamp(k | 0, 0, d.steps.length - 1)] || {}).hl || []; }
+          });
+          if (typeof v === 'function') v = { update: v };
+          if (v && v.update) { v.update(i, 0, 0); st.appendChild(vh); }
+        } catch (err) {
+          console.error('[derive] ' + d.id + ': still picture for step ' + (i + 1) + ' failed:', err);
+        }
+      }
       var math = elt('div', 'step__math');
       if (window.katex) {
         try {
@@ -229,8 +265,22 @@
     var fx = elt('div', 'derive__fx katex');
     board.appendChild(fx);
 
+    /* The picture sits beside the equation, never inside the board: anything
+       inside is walked by collectUnits and animated as though it were part of
+       the equation. The row's split is computed per derivation in layoutBoard,
+       from the widest layer, before any layer is measured. */
+    var row = elt('div', 'derive__body');
+    var vizEl = null;
+    if (vizzes[d.id]) {
+      vizEl = elt('div', 'derive__viz');
+      vizEl.setAttribute('aria-hidden', 'true');
+      row.appendChild(vizEl);
+      stage.setAttribute('data-viz', '1');
+    }
+    row.appendChild(board);
+
     box.appendChild(hud);
-    box.appendChild(board);
+    box.appendChild(row);
     canvas.appendChild(box);
     pin.appendChild(canvas);
     stage.appendChild(pin);
@@ -267,7 +317,12 @@
     d.el = d.el || {};
 
     d.mode = 'stage';
-    d.el = { stage: stage, board: board, fx: fx, count: count, dots: dotEls, panels: panelEls };
+    d.el = { stage: stage, board: board, fx: fx, count: count, dots: dotEls,
+             panels: panelEls, row: row, viz: vizEl };
+    d.vizFn = vizzes[d.id] || null;
+    d.viz = null;
+    d.vizK = -1; d.vizF = -1;
+    d.share = -1;
     d.layers = layers;
     d.trans = new Array(d.steps.length - 1);
     d.smooth = 0; d.lastT = -1; d.shown = -1; d.maxStep = 0; d.dirty = true;
@@ -286,6 +341,33 @@
 
   /* ================================================================ layout */
 
+  /* How much of the row the picture may take. The equation is served first:
+     it keeps whatever width renders its widest step at MIN_SCALE, and the
+     picture gets the rest, within bounds. Measured across all 112 derivations,
+     natural widths run median 357px to max 846px against a 653px row at 1440,
+     so most pictures get the full share and only the widest few taper. */
+  var MIN_SCALE = 0.62;
+  var VIZ_MAX = 0.46;
+  var VIZ_MIN = 0.26;
+  /* Under this the two columns stop being two columns and stack instead. */
+  var ROW_MIN = 400;
+
+  /* Zero means stack — picture above equation, each at full width. Otherwise
+     the fraction of the row the picture takes. The equation is served first:
+     it keeps whatever renders its widest step at MIN_SCALE. If what is left
+     would be too narrow to draw in, the two do not share a row at all; a
+     picture squeezed to a stamp beside an equation squeezed to nothing serves
+     neither, and stacking gives both their full width. */
+  function vizShare(d, rowW, gap) {
+    if (!d.el.viz) return 0;
+    if (d.mobile || rowW < ROW_MIN) return 0;
+    var widest = 0;
+    d.layers.forEach(function (L) { if (L.natW > widest) widest = L.natW; });
+    if (!widest) return VIZ_MAX;
+    var free = 1 - (widest * MIN_SCALE + gap + 8) / rowW;
+    return free < VIZ_MIN ? 0 : Math.min(free, VIZ_MAX);
+  }
+
   function layoutBoard(d) {
     var board = d.el.board;
     /* Everything below is a measurement, and a board that is not rendered
@@ -295,13 +377,30 @@
     /* The breakpoint decides where the focus line sits, and a reader can cross it
        at any time, so read it here rather than once at build. */
     d.mobile = window.matchMedia('(max-width: 59.999rem)').matches;
-    var avail = Math.max(80, board.clientWidth - 8);
     var maxH = 0;
+    /* Natural widths first, and deliberately before the split is written: a
+       layer is absolutely positioned at width:max-content, so its unscaled
+       width does not depend on the board, while everything measured after
+       this point does. Narrowing the board moves every glyph — it changes
+       --s, every ink rectangle, every clone's font size, and even the travel
+       cap that decides which terms are matched at all — so the split has to
+       be settled before a single rectangle is read. */
     d.layers.forEach(function (L) {
       L.el.style.setProperty('--s', '1');
       L.natW = L.el.offsetWidth;
       L.natH = L.el.offsetHeight;
     });
+    if (d.el.viz) {
+      var rowW = d.el.row.clientWidth || board.clientWidth;
+      var gap = parseFloat(getComputedStyle(d.el.row).columnGap) || 0;
+      var share = vizShare(d, rowW, gap);
+      if (share !== d.share) {
+        d.share = share;
+        d.el.row.setAttribute('data-split', share ? 'row' : 'stack');
+        d.el.viz.style.flexBasis = share ? (share * 100).toFixed(2) + '%' : '';
+      }
+    }
+    var avail = Math.max(80, board.clientWidth - 8);
     d.layers.forEach(function (L) {
       L.scale = L.natW > avail ? avail / L.natW : 1;
       L.el.style.setProperty('--s', String(L.scale));
@@ -314,6 +413,12 @@
       if (d.trans[i]) { d.trans[i].el.remove(); d.trans[i] = null; }
     }
     d.applied = null;
+    /* The picture's own box is fixed by CSS aspect-ratio, so this only tells a
+       built visual its new size; nothing here can feed back into the board. */
+    if (d.viz && d.viz.resize) {
+      var vr = d.el.viz.getBoundingClientRect();
+      d.viz.resize(vr.width, vr.height);
+    }
     return true;
   }
 
@@ -766,6 +871,53 @@
     });
   }
 
+  /* The picture's step, and the picture. Two details earn their comments.
+
+     First the normalisation: the branch above puts the *board* on step k+1
+     once f passes 0.996, while s.k is still k. Passing s.k straight through
+     would leave the picture a step behind the equation for the top twelfth of
+     every interval — the part a reader is most likely to stop on.
+
+     Second the guard: by stepAt's shape a step is held for 52% of its
+     interval, and without a change test 112 pictures would redraw at 60Hz
+     while nothing moved. morph() short-circuits the same way. */
+  function driveViz(d, s, t) {
+    var last = d.steps.length - 1;
+    var vk = s.f >= 0.996 ? Math.min(s.k + 1, last) : s.k;
+    var vf = s.f >= 0.996 ? 0 : s.f;
+    if (!d.viz) {
+      /* Built on the first frame it is wanted, not at install: a page builds
+         all of its derivations in one tick and §1.3 has twenty-two. */
+      var api = {
+        id: d.id,
+        reduced: !!(A.reduced && A.reduced()),
+        step: function (k) { return d.steps[M.clamp(k | 0, 0, last)]; },
+        hl: function (k) { return (d.steps[M.clamp(k | 0, 0, last)] || {}).hl || []; }
+      };
+      try {
+        d.viz = d.vizFn(d.el.viz, api) || null;
+        if (typeof d.viz === 'function') d.viz = { update: d.viz };
+      } catch (err) {
+        d.vizFn = null;
+        d.errors.push({ step: -1, message: 'viz failed to build: ' + err.message });
+        console.error('[derive] ' + d.id + ': viz failed to build:', err);
+        return;
+      }
+      if (!d.viz || typeof d.viz.update !== 'function') { d.vizFn = null; return; }
+      var r = d.el.viz.getBoundingClientRect();
+      if (d.viz.resize) d.viz.resize(r.width, r.height);
+    }
+    if (!d.viz.animates && d.vizK === vk && Math.abs(d.vizF - vf) < 1e-4) return;
+    d.vizK = vk; d.vizF = vf;
+    try {
+      d.viz.update(vk, vf, t);
+    } catch (err) {
+      d.vizFn = null; d.viz = null;
+      d.errors.push({ step: vk, message: 'viz update failed: ' + err.message });
+      console.error('[derive] ' + d.id + ': viz update failed:', err);
+    }
+  }
+
   function frameFor(d) {
     return function (p, t) {
       var t0 = performance.now();
@@ -788,6 +940,7 @@
       else if (s.f >= 0.996) hold(d, Math.min(s.k + 1, d.steps.length - 1));
       else morph(d, s.k, s.f);
       setHud(d, s.f < 0.5 ? s.k : Math.min(s.k + 1, d.steps.length - 1));
+      if (d.vizFn) driveViz(d, s, t);
 
       var ms = performance.now() - t0;
       stats.frames++; stats.totalMs += ms;
@@ -837,6 +990,35 @@
   };
 
   /* ------------------------------------------------------- diagnostics ---- */
+
+  /* A fingerprint of what a picture is currently drawing. The outer bounding
+     box is far too coarse — a dot sliding along a line does not change it —
+     so this reads the attributes that actually carry the geometry, on every
+     element, and reports the ink extent separately so "drew nothing" and
+     "never moved" stay distinguishable. */
+  var GEO = ['d', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry',
+             'width', 'height', 'points', 'transform', 'opacity', 'fill-opacity',
+             'stroke-opacity', 'stroke-dasharray', 'class', 'visibility'];
+  function vizPrint(host) {
+    var svg = host.querySelector('svg');
+    if (!svg) return 'no-svg';
+    var h = 0, n = 0;
+    var nodes = svg.querySelectorAll('*');
+    for (var i = 0; i < nodes.length; i++) {
+      var e = nodes[i], str = e.tagName;
+      for (var j = 0; j < GEO.length; j++) {
+        var v = e.getAttribute(GEO[j]);
+        if (v != null) str += '|' + GEO[j] + '=' + v;
+      }
+      if (e.firstChild && e.firstChild.nodeType === 3) str += '|t=' + e.textContent;
+      for (var c = 0; c < str.length; c++) h = (h * 31 + str.charCodeAt(c)) | 0;
+      n++;
+    }
+    var b;
+    try { b = svg.getBBox(); } catch (err) { b = { width: 0, height: 0 }; }
+    return n + ':' + h + ':' + Math.round(b.width) + 'x' + Math.round(b.height);
+  }
+
   /* The alignment check is the invariant the whole effect rests on: at each
      end of a transition the moving clones must sit exactly where the real
      glyphs are, or the handover between overlay and layer would flicker. */
@@ -849,6 +1031,13 @@
           maxStep: d.maxStep || 0, shown: d.shown,
           reachedEnd: (d.maxStep || 0) >= d.steps.length - 1,
           errors: d.errors,
+          /* A registered picture that never built, or never reached the last
+             step, is as much a failure as an equation that did neither. */
+          viz: !!(d.vizFn || d.viz),
+          vizBuilt: !!d.viz,
+          vizStep: d.vizK,
+          vizAtEnd: d.vizK >= d.steps.length - 1,
+          share: d.share,
           steps: d.steps.map(function (s) {
             return { declared: s.declared, missing: s.declared.filter(function (t) { return s.found.indexOf(t) === -1; }) };
           })
@@ -856,6 +1045,35 @@
       });
     },
     get stats() { return { frames: stats.frames, worstMs: stats.worstMs, meanMs: stats.frames ? stats.totalMs / stats.frames : 0 }; },
+    /* Drive every built picture through every step and report what it drew.
+       Scrolling cannot test this: the picture follows the smoothed position,
+       so a test that scrolls in jumps can leave it mid-ease through no fault
+       of its own. Asking it directly is both deterministic and stricter — it
+       catches a state table that throws on one step or draws nothing on
+       another, which a scroll sweep would sail straight past. */
+    vizSweep: function () {
+      var out = [];
+      list.forEach(function (d) {
+        if (d.mode !== 'stage' || !d.vizFn) return;
+        if (!d.viz) { out.push({ id: d.id, built: false, states: [], distinct: 0, error: 'never built' }); return; }
+        var states = [], error = null;
+        for (var k = 0; k < d.steps.length; k++) {
+          try {
+            d.viz.update(k, 0, 1 + k);
+          } catch (err) { error = 'step ' + (k + 1) + ': ' + err.message; break; }
+          states.push(vizPrint(d.el.viz));
+        }
+        /* Restore whatever the reader was looking at. */
+        d.vizK = -1; d.vizF = -1;
+        out.push({
+          id: d.id, built: true, N: d.steps.length, states: states,
+          distinct: states.filter(function (v, i, a) { return a.indexOf(v) === i; }).length,
+          empty: states.filter(function (v) { return v === 'no-svg' || /:0x0$/.test(v) || /^0:/.test(v); }).length,
+          error: error
+        });
+      });
+      return out;
+    },
     check: function () {
       var out = [];
       list.forEach(function (d) {

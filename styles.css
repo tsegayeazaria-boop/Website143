@@ -688,7 +688,48 @@ input[type="range"]::-moz-range-thumb {
 }
 .derive__dot[aria-current="step"] { background: var(--wave); border-color: var(--wave); }
 
-.derive__board { position: relative; width: 100%; user-select: none; }
+/* Picture left, equation right. The split is written as a flex-basis by
+   layoutBoard, from each derivation's own widest step, so a short equation
+   gives its picture room and a wide one keeps the room for itself. Under
+   ~64rem the row stacks instead: two columns in 400px would starve both. */
+.derive__body { display: flex; align-items: center; gap: 1.1rem; width: 100%; min-width: 0; }
+/* Stacked, the cross axis is width: the board's children are absolutely
+   positioned, so without stretch it measures zero and the equation is scaled
+   into nothing. */
+.derive__body[data-split="stack"] { flex-direction: column; align-items: stretch; gap: 0.7rem; }
+.derive__body[data-split="stack"] > .derive__board { flex: 0 0 auto; width: 100%; }
+.derive__viz {
+  flex: 0 0 auto;
+  min-width: 0;
+  align-self: center;
+  aspect-ratio: 4 / 3;
+  color: var(--ink);
+}
+/* An explicit box, so the picture's size can never depend on the equation's:
+   a content-sized picture would loop board width -> scale -> height -> reflow
+   with layoutBoard caching a width that is already stale. */
+/* A fixed band rather than a ratio: the pin clips, so the picture's height
+   must be something the equation can be laid out around, not a consequence of
+   the width. The SVG letterboxes inside it. */
+.derive__body[data-split="stack"] > .derive__viz {
+  flex: 0 0 auto;
+  width: 100%;
+  aspect-ratio: auto;
+  height: min(20svh, 8.5rem);
+  align-self: center;
+}
+.derive__viz > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* The same picture as a still, in the ladder. The ladder is a two-column grid
+   whose first column is the step number, so it has to be told where to sit. */
+.derive__viz--still {
+  grid-column: 2;
+  width: min(20rem, 100%);
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin-bottom: 0.7rem;
+  opacity: 0.92;
+}
+.derive__board { position: relative; flex: 1 1 auto; min-width: 0; user-select: none; }
 .derive__layer {
   position: absolute;
   left: 50%; top: 50%;
@@ -727,6 +768,9 @@ input[type="range"]::-moz-range-thumb {
 @media (max-width: 59.999rem) {
   .stage--derive .stage__pin { align-items: flex-start; height: auto; }
   .stage--derive .stage__canvas { height: 44svh; padding: 0.75rem 1rem 0.5rem; }
+  /* A stacked picture needs its own band; the pin clips, so buy the height
+     rather than letting the equation get pushed out of sight. */
+  .stage--derive[data-viz="1"] .stage__canvas { height: 56svh; }
   .stage--derive .stage__scroll { margin-top: 0; }
   .stage--derive .stage__panels { padding-block: 8vh 30vh; }
   .stage--derive .stage__panel { margin-inline: auto; }
