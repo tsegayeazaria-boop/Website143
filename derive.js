@@ -288,6 +288,13 @@
 
   function layoutBoard(d) {
     var board = d.el.board;
+    /* Everything below is a measurement, and a board that is not rendered
+       measures as zero — which would then be cached as though it were the truth,
+       freezing the derivation in a broken state. Refuse, and stay dirty. */
+    if (!board.clientWidth || !board.getClientRects().length) return false;
+    /* The breakpoint decides where the focus line sits, and a reader can cross it
+       at any time, so read it here rather than once at build. */
+    d.mobile = window.matchMedia('(max-width: 59.999rem)').matches;
     var avail = Math.max(80, board.clientWidth - 8);
     var maxH = 0;
     d.layers.forEach(function (L) {
@@ -307,6 +314,7 @@
       if (d.trans[i]) { d.trans[i].el.remove(); d.trans[i] = null; }
     }
     d.applied = null;
+    return true;
   }
 
   /* ========================================================== unit finding */
@@ -761,7 +769,7 @@
   function frameFor(d) {
     return function (p, t) {
       var t0 = performance.now();
-      if (d.dirty) { layoutBoard(d); d.dirty = false; }
+      if (d.dirty && layoutBoard(d)) d.dirty = false;
       var raw = rawFromPanels(d);
       var dt = d.lastT < 0 ? 1 : t - d.lastT;
       d.lastT = t;
@@ -789,8 +797,8 @@
 
   /* ================================================================ install */
 
-  D.install = function () {
-    var blocks = [].slice.call(document.querySelectorAll('script[type="text/x-derive"]'));
+  D.install = function (root) {
+    var blocks = [].slice.call((root || document).querySelectorAll('script[type="text/x-derive"]'));
     var reduced = A.reduced && A.reduced();
     blocks.forEach(function (sc) {
       if (sc.dataset.mounted === '1') return;
@@ -852,7 +860,11 @@
       var out = [];
       list.forEach(function (d) {
         if (d.mode !== 'stage') return;
-        if (d.dirty) { layoutBoard(d); d.dirty = false; }
+        if (!d.el.board.getClientRects().length) {
+          out.push({ id: d.id, k: -1, items: 0, skipped: 'not on screen' });
+          return;
+        }
+        if (d.dirty && layoutBoard(d)) d.dirty = false;
         for (var k = 0; k < d.steps.length - 1; k++) {
           var tr = d.trans[k] || buildTransition(d, k);
           var ob = d.el.fx.getBoundingClientRect();

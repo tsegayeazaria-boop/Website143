@@ -141,7 +141,6 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 
 @media (min-width: 60rem) {
   body { padding-left: var(--sidebar-w); }
-  .toolbar { padding-left: calc(var(--sidebar-w) + 1rem); }
 }
 
 /* --------------------------------------------------------- top toolbar --- */
@@ -166,6 +165,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
   transition: border-color 400ms var(--ease);
 }
 .toolbar[data-scrolled="1"] { border-bottom-color: var(--hairline); }
+/* Clear of the sidebar on desktop. This has to come after the padding shorthand
+   above, or the shorthand wins and the toolbar's own label hides behind it. */
+@media (min-width: 60rem) {
+  .toolbar { padding-left: calc(var(--sidebar-w) + 1.25rem); }
+}
 .toolbar__spacer { flex: 1; }
 .toolbar__now { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .toolbar__home { color: var(--muted); text-decoration: none; white-space: nowrap; }
@@ -290,6 +294,7 @@ h1, h2, h3, h4 {
   line-height: 1.12;
   letter-spacing: -0.02em;
   font-weight: 300;
+  margin-bottom: 1.1rem;
 }
 .section-head .kicker { margin-bottom: 0.9rem; }
 

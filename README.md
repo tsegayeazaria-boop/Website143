@@ -204,3 +204,36 @@ where it goes.
 Untagged glyphs match by their own text, so `=` and `+` take care of themselves.
 A key that appears once on the left and twice on the right splits, and the term
 is cloned to both destinations; twice on the left and once on the right merges.
+
+## Publishing it as one file
+
+```sh
+node bundle-artifact.mjs     # -> dist/artifact.html  (+ artifact.preview.html)
+node verify-artifact.mjs     # drives it with the network cut off
+```
+
+`bundle-artifact.mjs` folds the whole site into a single self-contained HTML file
+for publishing as an Artifact. The artifact runs under a content security policy
+that blocks external stylesheets, fonts and images, so nothing is fetched: the
+KaTeX runtime and its stylesheet are inlined and its twenty font files are
+embedded as data URIs. The only request the page makes is for its two typefaces
+from Google Fonts, and it is designed to be right when that fails.
+
+The fourteen pages become fourteen `<section class="view">` elements in one
+document, one of them visible. Every id inside a view is namespaced with its
+view, so ids that were unique per page stay unique in one document, and the links
+between pages become hash routes — a reference-table link to `(2.2.5)` opens
+section 2.2 and lands on the equation. A view is typeset, its derivations built
+and its demonstrations mounted the first time it is opened, never while hidden:
+the derivation engine works entirely by measurement, and a hidden element
+measures as zero.
+
+`site.js` and `derive.js` are shared by both builds unchanged. Three seams make
+that possible — `A.currentPage()`, `A.href()` and `A.viewRoot()` — which the
+multi-page site leaves at their defaults and the bundle overrides.
+
+`verify-artifact.mjs` opens the bundle with every request blocked and walks all
+fourteen views, asserting the same invariants as `verify-site.mjs` plus the ones
+that only exist here: nothing but the typefaces is ever requested, the embedded
+faces actually load, exactly one view is visible at a time, and a link from one
+view to an equation in another arrives at that equation.

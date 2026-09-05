@@ -465,7 +465,8 @@ async function checkPage(browser, p, theme) {
     /* Resting clones are placed by measurement and then corrected, so this
        should be a small fraction of a pixel. Anything approaching a whole pixel
        means a clone has lost styling its original got from an ancestor. */
-    const bad = derive.align.filter((a) => a.worst0 > 0.3 || a.worst1 > 0.3 || a.invisible > 0);
+    const bad = derive.align.filter((a) =>
+      a.skipped || a.items === 0 || a.worst0 > 0.3 || a.worst1 > 0.3 || a.invisible > 0);
     if (bad.length) {
       fail(`${tag} moving terms do not line up with the glyphs they replace: ` +
            bad.slice(0, 4).map((a) => `${a.id} step ${a.k + 1}→${a.k + 2} off by ${Math.max(a.worst0, a.worst1)}px ` +

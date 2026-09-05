@@ -586,6 +586,12 @@
       mounted.forEach(function (m) { if (m.api.onTheme) m.api.onTheme(); });
     });
     label();
+    /* The artifact host stamps data-theme too, to express the reader's choice.
+       Follow whoever wrote it last so the button never contradicts the page. */
+    if (window.MutationObserver) {
+      new MutationObserver(label).observe(document.documentElement,
+        { attributes: true, attributeFilter: ['data-theme'] });
+    }
   }
 
   /* --------------------------------------------------------------- reveal */
@@ -600,20 +606,36 @@
         if (e.isIntersecting) { e.target.setAttribute('data-shown', '1'); io.unobserve(e.target); }
       });
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
-    nodes.forEach(function (n) { io.observe(n); });
+    /* Anything already on screen is shown at once rather than waiting for the
+       observer's first callback: the page must be readable in its resting
+       frame, before any scrolling and before anything animates. */
+    var vh = window.innerHeight;
+    nodes.forEach(function (n) {
+      var r = n.getBoundingClientRect();
+      if (r.top < vh && r.bottom > 0 && (r.width || r.height)) n.setAttribute('data-shown', '1');
+      else io.observe(n);
+    });
   }
 
   /* ------------------------------------------------------------------ nav */
   function base() {
     /* Pages live one directory down; the index sits at the root. */
-    return document.body.dataset.page === 'index' ? '' : '../';
+    return A.currentPage() === 'index' ? '' : '../';
   }
+
+  /* Three seams, so the same code drives the multi-page site and the
+     single-document artifact build. The artifact overrides all three before
+     boot: there every page is a view in one document, reached by a hash. */
+  A.currentPage = function () { return document.body.dataset.page || 'index'; };
+  A.href = function (p) { return base() + p.file; };
+  A.viewRoot = function () { return document; };
+  A.anchor = function (id) { return '#' + id; };
   function buildSidebar() {
     var nav = document.querySelector('.sidebar');
     if (!nav) return;
-    var here = document.body.dataset.page || 'index';
+    var here = A.currentPage();
     var b = base();
-    var html = '<a class="sidebar__head" href="' + b + 'index.html">Physics 143a' +
+    var html = '<a class="sidebar__head" href="' + A.href(A.toc.byId('index')) + '">Physics 143a' +
                '<span>Problem Set 0 — a review companion</span></a>';
     A.toc.parts.forEach(function (part) {
       var pages = A.toc.pages.filter(function (p) { return p.part === part.n; });
@@ -621,7 +643,7 @@
       html += '<div class="sidebar__part">' + part.title + '</div>';
       pages.forEach(function (p) {
         var cur = p.id === here;
-        html += '<a class="sidebar__link" href="' + b + p.file + '"' +
+        html += '<a class="sidebar__link" href="' + A.href(p) + '"' +
                 (cur ? ' aria-current="page"' : '') + '>' +
                 '<span class="sidebar__num">' + (p.num || '·') + '</span>' +
                 '<span>' + p.title + '</span>' +
@@ -634,9 +656,9 @@
     /* Sub-navigation: one entry per section heading on this page. */
     var sub = nav.querySelector('[data-sub]');
     if (sub) {
-      var heads = [].slice.call(document.querySelectorAll('main h2[id]'));
+      var heads = [].slice.call(A.viewRoot().querySelectorAll('h2[id]'));
       sub.innerHTML = heads.map(function (h) {
-        return '<li><a href="#' + h.id + '" data-spy="' + h.id + '">' +
+        return '<li><a href="' + A.anchor(h.id) + '" data-spy="' + h.id + '">' +
                (h.dataset.short || h.textContent) + '</a></li>';
       }).join('');
     }
@@ -667,7 +689,7 @@
       var needs = A.toc.pages.filter(function (q) { return q.feeds.indexOf(p.id) !== -1; })
         .map(function (q) { return q.num; });
       return '<tr><td class="num">' + (i + 1) + '</td>' +
-             '<td><a href="' + p.file + '">' + p.num + ' · ' + p.title + '</a></td>' +
+             '<td><a href="' + A.href(p) + '">' + p.num + ' · ' + p.title + '</a></td>' +
              '<td class="num">' + p.minutes + ' min</td>' +
              '<td>' + (needs.length ? needs.join(', ') : 'nothing yet') + '</td></tr>';
     }).join('');
@@ -683,7 +705,7 @@
     if (!host) return;
     host.innerHTML = A.toc.pages.filter(function (p) { return p.id !== 'index'; })
       .map(function (p) {
-        return '<a class="card" href="' + p.file + '">' +
+        return '<a class="card" href="' + A.href(p) + '">' +
                '<span class="card__num">' + p.num + '</span>' +
                '<span class="card__title">' + p.title + '</span>' +
                '<span class="card__meta">' + p.minutes + ' minutes</span></a>';
@@ -691,14 +713,13 @@
   }
 
   function buildPager() {
-    var pager = document.querySelector('.pager');
+    var pager = A.viewRoot().querySelector('.pager') || document.querySelector('.pager');
     if (!pager) return;
-    var n = A.toc.neighbours(document.body.dataset.page || 'index');
-    var b = base();
+    var n = A.toc.neighbours(A.currentPage());
     var html = '';
-    if (n.prev) html += '<a class="pager__prev" href="' + b + n.prev.file + '">' +
+    if (n.prev) html += '<a class="pager__prev" href="' + A.href(n.prev) + '">' +
       '<span class="pager__dir">Previous</span>' + (n.prev.num ? n.prev.num + ' · ' : '') + n.prev.title + '</a>';
-    if (n.next) html += '<a class="pager__next" href="' + b + n.next.file + '">' +
+    if (n.next) html += '<a class="pager__next" href="' + A.href(n.next) + '">' +
       '<span class="pager__dir">Next</span>' + (n.next.num ? n.next.num + ' · ' : '') + n.next.title + '</a>';
     pager.innerHTML = html;
   }
@@ -707,7 +728,7 @@
   var spy = null;
   function initSpy() {
     var links = [].slice.call(document.querySelectorAll('[data-spy]'));
-    var bands = [].slice.call(document.querySelectorAll('main [data-section]'));
+    var bands = [].slice.call(A.viewRoot().querySelectorAll('[data-section]'));
     var now = document.querySelector('.toolbar__now');
     var fill = document.querySelector('.sidebar__fill');
     spy = { links: links, bands: bands, now: now, fill: fill };
@@ -717,9 +738,14 @@
     if (spy.fill) spy.fill.style.height = (docH > 0 ? M.clamp(y / docH, 0, 1) * 100 : 0) + '%';
     var mid = window.innerHeight * 0.35, cur = null;
     for (var i = 0; i < spy.bands.length; i++) {
-      if (spy.bands[i].getBoundingClientRect().top <= mid) cur = spy.bands[i];
+      var br = spy.bands[i].getBoundingClientRect();
+      if (!br.width && !br.height) continue;   /* not rendered: no opinion */
+      if (br.top <= mid) cur = spy.bands[i];
     }
-    var id = cur ? cur.id : '';
+    /* The sub-navigation links are keyed by the heading's id, not the band's,
+       so read the heading out of the band before comparing. */
+    var h2 = cur ? cur.querySelector('h2[id]') : null;
+    var id = h2 ? h2.id : (cur ? cur.id : '');
     var name = cur ? (cur.getAttribute('data-section') || '') : '';
     if (spy.now && spy.now.textContent !== name) spy.now.textContent = name;
     for (var j = 0; j < spy.links.length; j++) {
@@ -744,8 +770,14 @@
     return M.clamp((enter - r.top) / span2, 0, 1);
   }
 
-  A.mountAll = function () {
-    var nodes = [].slice.call(document.querySelectorAll('[data-scene]'));
+  A.resizeAll = function () {
+    mounted.forEach(function (m) { if (m.api.onResize) m.api.onResize(); });
+    if (A.derive && A.derive.invalidate) A.derive.invalidate();
+    measure();
+  };
+
+  A.mountAll = function (root) {
+    var nodes = [].slice.call((root || document).querySelectorAll('[data-scene]'));
     nodes.forEach(function (node) {
       if (node.dataset.mounted === '1') return;
       var id = node.getAttribute('data-scene');
@@ -805,6 +837,9 @@
     for (var i = 0; i < mounted.length; i++) {
       var m = mounted[i];
       if (!m.visible) continue;
+      var hr = m.host.getBoundingClientRect();
+      /* Hidden hosts measure as zero, and the observer tells us a frame late. */
+      if (!hr.width && !hr.height) continue;
       var p = progressFor(m);
       if (p > m.maxP) m.maxP = p;
       try {
@@ -841,13 +876,13 @@
     if (extra) for (var k in extra) o[k] = extra[k];
     return o;
   };
-  function renderMath() {
+  A.renderMath = function (root) {
     if (typeof window.renderMathInElement !== 'function' || typeof window.katex === 'undefined') {
       document.documentElement.setAttribute('data-katex', 'missing');
       console.warn('[site] KaTeX did not load; equations are shown as LaTeX source.');
       return;
     }
-    window.renderMathInElement(document.body, A.katexOptions({
+    window.renderMathInElement(root || document.body, A.katexOptions({
       delimiters: [
         { left: '$$', right: '$$', display: true },
         { left: '\\[', right: '\\]', display: true },
@@ -858,7 +893,7 @@
       ignoredClasses: ['derive__layer', 'derive__tex', 'derive__fx']
     }));
     document.documentElement.setAttribute('data-katex', 'ready');
-  }
+  };
 
   /* ----------------------------------------------------------------- boot */
   function boot() {
@@ -866,17 +901,21 @@
     initTheme();
     /* Derivations expand first: they inject their own equations and demo
        hosts, and both the maths renderer and the mount pass must see them. */
+    var scope = A.viewRoot();
     if (A.derive && A.derive.install) {
-      try { A.derive.install(); } catch (err) { console.error('[site] derivations failed to build:', err); }
+      try { A.derive.install(scope); } catch (err) { console.error('[site] derivations failed to build:', err); }
     }
-    renderMath();
+    A.renderMath(scope === document ? document.body : scope);
     buildSidebar();
     buildPager();
     buildTocTable();
     buildCards();
+    A.initSpy = initSpy;
     initSpy();
     initReveal();
-    A.mountAll();
+    A.initReveal = initReveal;
+    A.buildNav = function () { buildSidebar(); buildPager(); initSpy(); };
+    A.mountAll(scope);
     measure();
     window.addEventListener('resize', function () {
       if (ticking) return;
