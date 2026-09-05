@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Waves and oscillations — a companion for Physics 143a, Problem Set 0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="styles.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/katex.min.js" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+<script defer src="site.js"></script>
+<script defer src="derive.js"></script>
+<script defer src="demos/dep-map.js"></script>
+</head>
+<body data-page="index">
+
+<div class="toolbar">
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
+  <a class="toolbar__home" href="index.html">Physics 143a · Pset 0</a>
+  <span class="toolbar__spacer"></span>
+  <span class="toolbar__now"></span>
+  <button class="theme-toggle" type="button">Light</button>
+</div>
+<nav class="sidebar" id="sidebar" aria-label="Contents"><a href="index.html">Contents</a></nav>
+<div class="nav-backdrop"></div>
+<div class="sidebar__fill"></div>
+
+<main class="page">
+
+  <header class="section-head measure" data-reveal>
+    <span class="kicker">Physics 143a · Problem Set 0</span>
+    <h1>Waves and oscillations, built from the ground up</h1>
+    <p class="lede">Every idea Problem Set 0 assumes, and all of the mathematics underneath it,
+    derived here in full. Nothing is asserted and left standing: if an equation appears on this
+    site, you can watch it being built one term at a time.</p>
+  </header>
+
+  <section class="band band--tight" id="who" data-section="Who this is for">
+    <div class="measure">
+      <h2 id="who-h">Who this is for</h2>
+      <p>It assumes AP Physics C — Newton's laws, energy, Hooke's law, the basics of electricity
+      and magnetism — and single-variable calculus: derivatives, integrals, integration by parts,
+      and Taylor series. It assumes you have seen $i=\sqrt{-1}$ and that $e^{x}$ is its own
+      derivative.</p>
+      <p>It assumes <em>no</em> linear algebra at all. Section 1.3 starts from what a vector is
+      and ends at eigenvalues, orthogonal function bases and the reason quantum mechanics is
+      written the way it is. It is the longest section on the site and the one everything else
+      leans on.</p>
+      <p>Where a new idea is needed — a partial derivative, a matrix, a complex exponential — it
+      is defined on the page that first needs it, in terms of things you already know.</p>
+    </div>
+  </section>
+
+  <section class="band band--tight" id="how" data-section="How to read a page">
+    <div class="measure">
+      <h2 id="how-h">How to read a page</h2>
+      <p>Every subsection follows the same four beats, in the same order:</p>
+      <ol>
+        <li><strong>What is going on</strong> — the physics in plain words, before any symbols.</li>
+        <li><strong>The mathematics</strong> — the equation, derived rather than quoted.</li>
+        <li><strong>A worked example</strong> — real numbers with units, carried to an answer.</li>
+        <li><strong>Something to move</strong> — a demonstration you drive with sliders, with one
+        line telling you what to look for.</li>
+      </ol>
+      <p>Each subsection closes with a single bold sentence: the one thing to keep if you keep
+      nothing else. Each page closes with three to five questions whose answers are hidden until
+      you ask for them.</p>
+
+      <h3>The derivations move</h3>
+      <p>Derivations are not printed as a wall of algebra. Each one is pinned to the screen while
+      you scroll, and every term slides from where it was to where it goes — the exponent of
+      $x^{2}$ comes down and lands in front, a term crosses the equals sign and its sign flips,
+      an exponential cancels from both sides and fades away. Scroll forward to run a step;
+      scroll back to run it in reverse. Every derivation also has an <em>All steps at once</em>
+      panel if you would rather read it as a list.</p>
+      <p>If you have asked your system to reduce motion, the derivations are shown as that list
+      instead, with nothing moving.</p>
+
+      <h3>Offline</h3>
+      <p>Everything works from a local copy except the mathematics typesetting, which is loaded
+      from a public CDN. Without a network the equations appear as LaTeX source and the rest of
+      the page — including every demonstration — still works.</p>
+    </div>
+  </section>
+
+  <section class="band" id="order" data-section="Reading order">
+    <div class="measure">
+      <h2 id="order-h">Suggested reading order</h2>
+      <p>Straight down the list is the safe route: nothing appears before the thing it needs. The
+      times are for a first careful read, demonstrations included.</p>
+    </div>
+    <div class="breakout">
+      <div class="table-wrap" data-toc-table></div>
+      <p class="measure" style="font-family:var(--mono);font-size:0.75rem;color:var(--muted)">
+      Two shortcuts, if you are in a hurry: 2.1 can be read straight after 1.2 without 1.3, and
+      2.7 and 2.8 need only 1.1. Nothing else can be safely reordered.</p>
+    </div>
+  </section>
+
+  <section class="band" id="map" data-section="What feeds what">
+    <div class="measure">
+      <h2 id="map-h">What feeds what</h2>
+      <p>The mathematics on the left is not decoration; each piece is used by name on the right.
+      If a physics page is giving you trouble, this says which mathematics to go back to.</p>
+    </div>
+    <div class="breakout">
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="dep-map"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that every physics page rests on 1.1 or 1.2, and that the two pages
+        where an eigenvalue problem appears — 2.2 and, through Fourier series, 2.6 — both trace
+        back to 1.3.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="band" id="sections" data-section="All sections">
+    <div class="measure"><h2 id="sections-h">All sections</h2></div>
+    <div class="wide"><div class="card-grid" data-toc-cards></div></div>
+  </section>
+
+  <section class="band band--tight" id="conventions" data-section="Conventions">
+    <div class="measure">
+      <h2 id="conventions-h">Four symbols that mean two things</h2>
+      <p>Physics reuses letters, and pretending otherwise causes more confusion than it avoids.
+      Four are worth knowing before you start.</p>
+      <ul>
+        <li>$k$ is a <strong>spring constant</strong> in sections 2.1 and 2.2, and a
+        <strong>wavenumber</strong> from 1.4 onwards. Every page says which at the top.</li>
+        <li>$T$ is a <strong>period</strong> everywhere. String tension is written $\Ten$ so the
+        two can never collide, and $\mathcal{T}$ is the transmission coefficient in 2.4.</li>
+        <li>$\lambda$ is a <strong>wavelength</strong> everywhere except 1.3, where it is an
+        <strong>eigenvalue</strong>. Section 2.2 sidesteps the clash by writing $\omega^{2}$.</li>
+        <li>$I$ is an <strong>intensity</strong> in 2.7 and 2.8 only.</li>
+      </ul>
+      <p>The full list, with units, is in the <a href="sections/3-reference.html">quick
+      reference</a>.</p>
+    </div>
+  </section>
+
+  <nav class="pager"></nav>
+</main>
+
+<footer class="colophon">
+  <div class="measure">
+    <p><strong>Physics 143a · Problem Set 0 companion.</strong> A review of the waves and
+    oscillations material from Physics 15c, with the mathematics it rests on.</p>
+    <p>Built as plain HTML, CSS and JavaScript: no build step, no framework, and no data leaves
+    the page. Mathematics typeset with KaTeX. Every number shown in a demonstration is computed
+    from the equation the page derives, never traced.</p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -106,3 +106,77 @@ Conventions worth keeping:
 
 Screenshots land in `.verify/` for both themes and are meant to be looked at, not
 just counted.
+
+---
+
+# Problem Set 0 review site
+
+A second, separate site lives in this repository: a self-study companion for the
+waves and oscillations material behind Physics 143a Problem Set 0, together with
+all the mathematics it rests on. It shares the atlas's design language and its
+scroll runtime, but nothing else: it has **no build step**, and `index.html`
+opens by double-clicking it.
+
+```
+index.html          contents, reading order, dependency map
+styles.css          the design system (dark by default, full light theme)
+site.js             numerics, physics, SVG helpers, controls, navigation, the rAF loop
+derive.js           animated derivations
+sections/*.html     one page per section
+demos/*.js          one file per interactive demonstration
+verify-site.mjs     the verification harness
+```
+
+## Running it
+
+Open `index.html`. Mathematics is typeset by KaTeX from a CDN; with no network
+the equations fall back to LaTeX source and everything else, demonstrations
+included, still works.
+
+## Verifying it
+
+```sh
+npm install
+node verify-site.mjs              # every page, both themes, three widths
+node verify-site.mjs --page 2-2   # one page
+node verify-site.mjs --quick      # dark theme only, fewer screenshots
+```
+
+The harness checks the physics in Node before it opens a browser: every formula
+a demonstration draws with is compared against the closed form its page derives.
+Then, per page, it asserts that KaTeX rendered, that no maths was left as source
+in the prose, that every demonstration draws something and reacts to its
+controls, that every derivation runs to its last step with its moving terms
+landing within ¾ of a pixel of the glyphs they replace, that nothing overflows
+sideways at 390, 768 and 1440 px, and that reduced motion and a missing network
+both degrade to something readable. Screenshots land in `.verify/site/`.
+
+## Writing a derivation
+
+Derivations are written as a list of equation states and animate between them as
+the reader scrolls: every term that survives a step slides from where it was to
+where it goes.
+
+```html
+<script type="text/x-derive" data-id="power-rule" data-title="The power rule">
+> Start with the function. The exponent is the number about to move.
+! hl n
+\k{f}{f}(x) = \k{x}{x}^{\k{n}{2}}
+---
+> The exponent comes down in front, and the power drops by one.
+\k{f}{f'}(x) = \k{n}{2}\,\k{x}{x}^{\k{n}{2}\k{e}{-1}}
+</script>
+```
+
+- `---` on its own separates steps.
+- `>` lines are the note shown beside that step; `$…$` maths is allowed.
+- `!` lines are directives: `! hl a,b` highlights those terms while the step
+  holds, `! result` boxes the final equation, `! arc k` / `! noarc k` force or
+  suppress the little hop a term makes when it slides a long way.
+- `\k{key}{tex}` names a term. Terms with the same key in consecutive steps are
+  the same term, and move between them; everything else is matched by what it
+  says. Use a key for anything whose journey is the point.
+
+Untagged glyphs match by their own text, so `=` and `+` take care of themselves.
+A key that appears once on the left and twice on the right splits, and the term
+is cloned to both destinations; twice on the left and once on the right merges.
