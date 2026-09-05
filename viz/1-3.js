@@ -392,7 +392,6 @@
       ];
     }
     var para = { key: 'par', tone: 'ink', op: 0.2, pts: [[0, 0], [a, c], [W2, H2], [b, d]] };
-    var rect = { key: 'rect', x0: 0, y0: 0, x1: W2, y1: 0, tone: 'ghost' };
     function box(op) {
       return [
         { key: 'r1', x0: 0, y0: 0, x1: W2, y1: 0, tone: 'ghost', op: op },
@@ -423,7 +422,6 @@
       st(0.26, 0.2, 1, ''),        /* 2 — multiplied out; nothing moves */
       st(0, 0.3, 0.25, 'ad − bc')  /* 3 — the pieces cancel; the parallelogram is what is left */
     ];
-    void rect;
     return { update: function (k, f) { p.set(V.at(states, k, f)); } };
   });
 
@@ -814,16 +812,23 @@
   /* --------------------------------------- working in the eigen-basis ----- */
 
   A.viz('la-AP-PD', function (root) {
-    var p = V.plane(root, {
+    var panes = V.split(root, 2, [1, 0.32]);
+    var p = V.plane(panes[0], {
       label: 'The same matrix seen on its own eigenvector axes, where it is two stretches.',
-      unit: 34, cx: 158, cy: 122
+      w: 320, h: 168, unit: 27, cx: 158, cy: 84
     });
-    var u = EV.vec[0], v = EV.vec[1], l1 = EV.lambda[0], l2 = EV.lambda[1];
+    var bn = V.bench(panes[1], {
+      label: 'The pair of masses whose modes those axes are.',
+      w: 320, h: 58, n: 2, box: 14, scale: 24
+    });
+    var u = EV.vec[0], v = EV.vec[1];
     var P = [u[0], v[0], u[1], v[1]];
     var AP = mul(AS, P);
     function st(map, stretched, bars) {
       return {
-        grid: true, map: map, ghost: EYE, ghostOp: 0.3,
+        /* Two grids at this size crosshatch; the faint one is only there to
+           say where the plane started. */
+        grid: true, map: map, ghost: EYE, ghostOp: 0.16,
         rays: [
           { key: 'r1', x: u[0], y: u[1], tone: 'ghost' },
           { key: 'r2', x: v[0], y: v[1], tone: 'ghost' }
@@ -842,9 +847,18 @@
         ]
       };
     }
-    void l1; void l2;
     var states = [st(P, 0, 0), st(AP, 1, 0), st(AP, 1, 1), st(AP, 1, 1)];
-    return { update: function (k, f) { p.set(V.at(states, k, f)); } };
+    return {
+      animates: true,
+      update: function (k, f, t) {
+        p.set(V.at(states, k, f));
+        /* The first eigenvector is the two masses moving together, the second
+           is them moving apart; the bench runs whichever the step is about. */
+        var second = (f > 0.5 ? k + 1 : k) >= 2;
+        var c = Math.cos(t * (second ? 1.5 : 0.9));
+        bn.set({ x: [c, (second ? -1 : 1) * c], slack: second ? [] : [1] });
+      }
+    };
   });
 
   A.viz('la-inverse-2x2', function (root) {
@@ -877,7 +891,7 @@
   });
 
   A.viz('la-diagonal-evolution', function (root) {
-    var panes = V.split(root, 2, [1.15, 1]);
+    var panes = V.split(root, 3, [1.05, 0.9, 0.4]);
     var u = EV.vec[0], v = EV.vec[1];
     var pl = V.plane(panes[0], {
       label: 'A trajectory that is tangled on the ordinary axes and straight on the eigen-axes.',
@@ -885,7 +899,11 @@
     });
     var cu = V.curves(panes[1], {
       label: 'The same motion in eigen-coordinates: two independent exponentials.',
-      w: 320, h: 112, x0: 0, x1: 1, ranges: [[-0.12, 1.75]], xLabel: 't'
+      w: 320, h: 96, x0: 0, x1: 1, ranges: [[-0.12, 1.75]], xLabel: 't'
+    });
+    var bn = V.bench(panes[2], {
+      label: 'The pair of masses the trajectory belongs to.',
+      w: 320, h: 52, n: 2, box: 13, scale: 22
     });
     /* q₁ grows, q₂ decays: the two eigen-coordinates never mix, which is the
        whole point of changing basis. */
@@ -937,7 +955,16 @@
     }
     var L = [left(false, 40, 0), left(true, 40, 1), left(true, 40, 1), left(true, 40, 0), left(true, 40, 0)];
     var R = [right(0), right(0), right(0), right(0.55), right(1)];
-    return { update: function (k, f) { pl.set(V.at(L, k, f)); cu.set(V.at(R, k, f)); } };
+    return {
+      animates: true,
+      update: function (k, f, t) {
+        pl.set(V.at(L, k, f));
+        cu.set(V.at(R, k, f));
+        var u = (t * 0.3) % 1;
+        var a = 0.12 * Math.exp(2.4 * u), b = 1.6 * Math.exp(-2.6 * u);
+        bn.set({ x: [(a + b) * 0.8, (a - b) * 0.8] });
+      }
+    };
   });
 
   /* ------------------------------------------------- functions as vectors -- */

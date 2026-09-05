@@ -22,7 +22,6 @@
       label: 'The phase, which advances one whole turn per wavelength.',
       w: 320, h: 84, unit: 28, cx: 160, cy: 42, xLabel: '', yLabel: ''
     });
-    var Y = V.samp(function (x) { return Math.cos(x); }, 0, XL);
     var x0 = 1.1;
     function st(kk, dialTo, label) {
       var lam = TAU / kk;
@@ -52,7 +51,6 @@
     }
     var states = [st(1, 0, 'same height and same slope'), st(1, 0, 'the whole argument is unchanged'),
                   st(1, TAU - 0.001, 'so kλ = 2π'), st(1.9, TAU - 0.001, 'shorter λ, larger k')];
-    void Y;
     return { update: function (k, f) { var s = V.at(states, k, f); cu.set(s.cu); pl.set(s.pl); } };
   });
 

@@ -260,13 +260,11 @@
       notes: []
     };
     if (tangents) {
-      var h = 0.28;
       var sl = (left(-0.001) - left(-0.6)) / 0.6, sr = (p.tra(0.6) - p.tra(0.001)) / 0.6;
       out.marks.push({ key: 'tl', kind: 'seg', dash: false, x0: -1.5, y0: total(0) - sl * 1.5,
                        x1: 0, y1: total(0), tone: 'quantum', op: tangents });
       out.marks.push({ key: 'tr', kind: 'seg', dash: false, x0: 0, y0: total(0),
                        x1: 1.5, y1: total(0) + sr * 1.5, tone: 'prob', op: tangents });
-      void h;
     }
     if (extra) extra(out, p, total);
     return out;
@@ -442,19 +440,6 @@
     var cu = stringViz(root, { h: 170,
       label: 'A lopsided pulse arriving, and coming back front to back.' });
     var MU = 1e4;                        /* effectively a fixed end: R → −1 */
-    function marks(p, side, op) {
-      /* Three tags along the pulse, so their order can be read off. */
-      var out = [], TAG = ['1', '2', '3'];
-      for (var i = 0; i < 3; i++) {
-        var u = -0.9 + i * 0.85;
-        var x = side > 0 ? u - 3.2 + 0 : 0;
-        void x;
-        out.push({ key: side + 'm' + i, kind: 'dot', x: 0, y: 0, tone: 'quantum', op: 0 });
-        void TAG;
-      }
-      void p; void op;
-      return out;
-    }
     var states = [
       { tags: 0, label: 'a lopsided pulse' },
       { tags: 1, label: 'front, middle, back' },
@@ -485,7 +470,6 @@
           marks: tags,
           notes: [{ key: 'l', cap: true, text: s.label, tone: 'ghost' }]
         });
-        void marks;
       }
     };
   });

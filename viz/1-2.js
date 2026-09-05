@@ -171,15 +171,20 @@
   /* Where the roots sit in the r-plane and what the motion does are the same
      fact twice, so they are drawn side by side and move together. */
   function rootViz(root, label) {
-    var panes = V.split(root, 2, [1, 1]);
+    var panes = V.split(root, 3, [1, 0.42, 0.95]);
     var pl = V.plane(panes[0], {
       label: 'The roots of the characteristic equation, in the plane of r.',
-      w: 320, h: 112, unit: 34, cx: 160, cy: 56, xLabel: 're r', yLabel: ''
+      w: 320, h: 104, unit: 30, cx: 160, cy: 52, xLabel: 're r', yLabel: ''
     });
-    var cu = V.curves(panes[1], {
-      label: label, w: 320, h: 116, x0: 0, x1: T1, ranges: [[-1.25, 1.25]], xLabel: 't'
+    /* The object those roots are about. A root on the imaginary axis is a mass
+       that keeps swinging; one with a negative real part is a mass dying away. */
+    var bn = V.bench(panes[1], {
+      label: 'The mass those roots describe.', w: 320, h: 46, box: 13
     });
-    return { pl: pl, cu: cu };
+    var cu = V.curves(panes[2], {
+      label: label, w: 320, h: 100, x0: 0, x1: T1, ranges: [[-1.25, 1.25]], xLabel: 't'
+    });
+    return { pl: pl, bn: bn, cu: cu };
   }
 
   A.viz('ode-ansatz', function (root) {
@@ -187,6 +192,7 @@
     var w = 1;
     function st(rootOp, motionOp, label) {
       return {
+        motion: motionOp,
         pl: {
           grid: false,
           dots: [
@@ -207,7 +213,15 @@
     }
     var states = [st(0, 0, ''), st(0, 0, ''), st(0, 0, 'the exponential divides out'),
                   st(1, 1, 'imaginary roots: oscillation')];
-    return { update: function (k, f) { var s = V.at(states, k, f); q.pl.set(s.pl); q.cu.set(s.cu); } };
+    return {
+      animates: true,
+      update: function (k, f, t) {
+        var s = V.at(states, k, f);
+        q.pl.set(s.pl); q.cu.set(s.cu);
+        /* Nothing to draw until the roots are found; then the mass swings. */
+        q.bn.set({ x: [1.5 * s.motion * Math.cos(w * t)] });
+      }
+    };
   });
 
   A.viz('ode-char-general', function (root) {
@@ -244,18 +258,33 @@
     }
     var states = [st(0, 0, 'b = 0'), st(0, 0, ''), st(0.35, 0, 'b turned up'),
                   st(0.35, 1, 'a decaying oscillation')];
-    return { update: function (k, f) { var s = V.at(states, k, f); q.pl.set(s.pl); q.cu.set(s.cu); } };
+    var damp = [0, 0, 0.35, 0.35];
+    return {
+      animates: true,
+      update: function (k, f, t) {
+        var s = V.at(states, k, f);
+        q.pl.set(s.pl); q.cu.set(s.cu);
+        /* The bench dies away exactly as fast as the envelope in the trace,
+           because both use the same b. */
+        var g = damp[M.clamp(f > 0.5 ? k + 1 : k, 0, 3)] / 2;
+        var u = t % 9;
+        q.bn.set({ x: [1.5 * Math.exp(-g * u) * Math.cos(Math.sqrt(Math.max(0.04, 1 - g * g)) * u)] });
+      }
+    };
   });
 
   A.viz('ode-real-solutions', function (root) {
-    var panes = V.split(root, 2, [1, 1]);
+    var panes = V.split(root, 3, [1, 0.9, 0.42]);
     var pl = V.plane(panes[0], {
       label: 'Two counter-rotating arrows whose sum stays on the real axis.',
-      w: 320, h: 116, unit: 40, cx: 160, cy: 58, xLabel: 're', yLabel: ''
+      w: 320, h: 104, unit: 34, cx: 160, cy: 52, xLabel: 're', yLabel: ''
     });
     var cu = V.curves(panes[1], {
       label: 'The two real functions they build.',
-      w: 320, h: 112, x0: 0, x1: T1, ranges: [[-1.25, 1.25]], xLabel: 't'
+      w: 320, h: 96, x0: 0, x1: T1, ranges: [[-1.25, 1.25]], xLabel: 't'
+    });
+    var bn = V.bench(panes[2], {
+      label: 'The mass either of them describes.', w: 320, h: 46, box: 13
     });
     var states = [
       { sum: 0, dif: 0, cos: 0, sin: 0, label: '' },
@@ -285,6 +314,7 @@
               pts: samp(function (x) { return Math.sin(x + ph); }) }
           ]
         });
+        bn.set({ x: [1.5 * c] });
       }
     };
   });
@@ -343,9 +373,13 @@
   });
 
   A.viz('ode-C-to-A', function (root) {
-    var p = V.plane(root, {
+    var panes = V.split(root, 2, [1, 0.34]);
+    var p = V.plane(panes[0], {
       label: 'The two constants as the legs of a right triangle whose hypotenuse is the amplitude.',
-      unit: 62, cx: 44, cy: 168, xLabel: 'C₁', yLabel: '−C₂'
+      w: 320, h: 172, unit: 50, cx: 40, cy: 140, xLabel: 'C₁', yLabel: '−C₂'
+    });
+    var bn = V.bench(panes[1], {
+      label: 'The oscillator whose amplitude that hypotenuse is.', w: 320, h: 58, box: 15
     });
     var a = C1, b = -C2, hyp = M.hypot(a, b);
     var K = 0.78;
@@ -378,18 +412,31 @@
     }
     var states = [st(1, false, 0, 'square each'), st(1, true, 0, 'and add'),
                   st(0.6, true, 1, 'divide instead'), st(0.6, true, 1, 'length and angle')];
-    return { update: function (k, f) { p.set(V.at(states, k, f)); } };
+    return {
+      animates: true,
+      update: function (k, f, t) {
+        p.set(V.at(states, k, f));
+        bn.set({
+          x: [hyp * 1.35 * Math.cos(W * t + PHI)],
+          marks: [],
+          notes: [{ key: 'a', cap: true, text: 'amplitude A', tone: 'ghost' }]
+        });
+      }
+    };
   });
 
   A.viz('ode-complex-form', function (root) {
-    var panes = V.split(root, 2, [1, 1]);
+    var panes = V.split(root, 3, [1, 0.9, 0.42]);
     var pl = V.plane(panes[0], {
       label: 'A complex constant, set turning; its shadow on the real axis is the solution.',
-      w: 320, h: 116, unit: 44, cx: 118, cy: 58, xLabel: 're', yLabel: ''
+      w: 320, h: 104, unit: 38, cx: 118, cy: 52, xLabel: 're', yLabel: ''
     });
     var cu = V.curves(panes[1], {
       label: 'That shadow, against time.',
-      w: 320, h: 112, x0: 0, x1: T1, ranges: [[-1.25, 1.25]], xLabel: 't'
+      w: 320, h: 96, x0: 0, x1: T1, ranges: [[-1.25, 1.25]], xLabel: 't'
+    });
+    var bn = V.bench(panes[2], {
+      label: 'And the mass sitting at it.', w: 320, h: 46, box: 13
     });
     var states = [
       { spin: 0, im: 0, re: 0.3, label: 'c = C₁ − iC₂' },
@@ -423,6 +470,7 @@
               pts: samp(function (u) { return AMP * Math.sin(u + ph + PHI); }) }
           ]
         });
+        bn.set({ x: [x * 1.5] });
       }
     };
   });

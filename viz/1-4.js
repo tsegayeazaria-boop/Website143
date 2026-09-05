@@ -19,7 +19,7 @@
   }
 
   /* --------------------------------------------- the constant term ------- */
-  A.viz('fs-a0', function (root, api) {
+  A.viz('fs-a0', function (root) {
     var c = V.curves(root, {
       label: 'One period of a wave: every wiggle cancels, and the average is what is left.',
       rows: 2, x0: 0, x1: TAU, ranges: [[-0.55, 1.85], [-0.85, 1.0]], xLabel: 't'
@@ -59,7 +59,6 @@
     }
     var states = [st(1, 0, 'one period'), st(1, 0, 'each harmonic cancels'),
                   st(0.06, 1, 'the average is all that survives')];
-    void api;
     return { update: function (k, f) { c.set(V.at(states, k, f)); } };
   });
 

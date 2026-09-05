@@ -8,7 +8,7 @@
    ========================================================================= */
 (function (A) {
   'use strict';
-  var V = A.viz, P = A.phys, M = A.math;
+  var V = A.viz, P = A.phys;
   var X0 = -9, X1 = 9;
   function sm(fn) { return V.samp(fn, X0, X1); }
 
@@ -304,5 +304,4 @@
       }
     };
   });
-  void M;
 })(window.A = window.A || {});

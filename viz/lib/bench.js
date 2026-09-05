@@ -146,7 +146,6 @@
       texts.sweep();
     }
 
-    void M;
     /* calY is where a caliper's bar sits, so a label naming it can be put
        just above without guessing at the bench's height. */
     return { svg: svg, set: set, rest: rest, scale: scale, yM: yM,

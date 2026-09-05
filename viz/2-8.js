@@ -8,7 +8,6 @@
 (function (A) {
   'use strict';
   var V = A.viz, P = A.phys, M = A.math;
-  var TAU = Math.PI * 2;
   var AW = 0.78;                                   /* the opening, in half-screens */
 
   function slit(w) { return [{ key: 'a', y: 0, w: w == null ? AW : w }]; }
@@ -170,8 +169,6 @@
     function chain(beta) {
       var legs = [], x = 0, y = 0, i;
       var step = beta * 2 / N;
-      var R = beta === 0 ? 1e6 : N / (2 * beta);
-      void R;
       for (i = 0; i < N; i++) {
         var ang = -beta + step * (i + 0.5);
         /* Fixed total arc length: as the spread of angles grows the chain
@@ -365,5 +362,4 @@
       }
     };
   });
-  void TAU;
 })(window.A = window.A || {});

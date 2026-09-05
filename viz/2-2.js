@@ -26,14 +26,13 @@
   /* ------------------------------------------------------------- forces --- */
   /* The caliper on the middle spring reads x₂ − x₁ directly: slide both masses
      the same way and it stays at zero however far they go. */
-  function forceViz(root, which) {
+  function forceViz(root) {
     var panes = V.split(root, 2, [1, 0.34]);
     var bn = benchOf(panes[0], { h: 148, box: 22, scale: 38 });
     var cu = V.curves(panes[1], {
       label: 'The stretch of the middle spring.', w: 320, h: 74,
       x0: -1.6, x1: 1.6, ranges: [[-0.2, 1.05]], xLabel: ''
     });
-    void which;
     return { bn: bn, cu: cu };
   }
 
@@ -53,7 +52,7 @@
   }
 
   A.viz('cpl-forces-1', function (root) {
-    var q = forceViz(root, 0);
+    var q = forceViz(root);
     var states = forceStates(0);
     /* The first two steps let the reader see the difference doing its work:
        slide both masses together and the caliper stays shut. */
@@ -88,7 +87,7 @@
   });
 
   A.viz('cpl-forces-2', function (root) {
-    var q = forceViz(root, 1);
+    var q = forceViz(root);
     var states = [
       { x: [0.55, -0.5], pair: 1, wall: 0, net: 0, label: 'equal and opposite' },
       { x: [0.55, -0.5], pair: 1, wall: 1, net: 0, label: 'plus the right-hand wall' },
@@ -178,7 +177,6 @@
           notes: [{ key: 'l', cap: true, text: s.label, tone: 'ghost' }]
         });
         tab.set({ cells: cells(pick) });
-        void s;
       }
     };
   });
@@ -369,7 +367,6 @@
             { key: 'b', x: 1.7, y: -1.35, text: '(1, −1)', tone: 'quantum', op: idx >= 4 ? 1 : 0 }
           ]
         });
-        void s;
       }
     };
   });
@@ -586,9 +583,7 @@
       w: 320, h: 146, unit: 34, cx: 160, cy: 73
     });
     var bn = benchOf(panes[1], { h: 74, box: 16, scale: 24, label: 'The motion itself.' });
-    var Pm = [1, 1, 1, -1];
     var Km = [(k + kap), -kap, -kap, (k + kap)];
-    var Dm = [k, 0, 0, k + 2 * kap];
     function st(map, ghost, ghostOp, axesOp, projOp, label, q) {
       return {
         pl: {
@@ -606,8 +601,7 @@
             { key: 'j2', x0: q[0], y0: q[0], x1: q[0] + q[1], y1: q[0] - q[1], tone: 'quantum', op: projOp }
           ] : [],
           notes: [{ key: 'l', cap: true, text: label, tone: 'ghost' }]
-        },
-        x: [q[0] + q[1], q[0] - q[1]]
+        }
       };
     }
     var EYE = [1, 0, 0, 1];
@@ -619,7 +613,6 @@
       /* On the mode axes the stiffness matrix is two stretches and no shear. */
       st(Km, EYE, 0.35, 1, 0, 'P⁻¹KP is diagonal', [0.5, 0.3])
     ];
-    void Dm;
     return {
       animates: true,
       update: function (kk, f, t) {
@@ -627,7 +620,6 @@
         pl.set(s.pl);
         var a = 0.55 * Math.cos(W1 * t * 1.3), b = 0.4 * Math.cos(W2 * t * 1.3 + 0.8);
         bn.set({ x: [a + b, a - b] });
-        void Pm;
       }
     };
   });

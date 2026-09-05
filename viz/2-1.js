@@ -8,7 +8,7 @@
    ========================================================================= */
 (function (A) {
   'use strict';
-  var V = A.viz, P = A.phys, M = A.math;
+  var V = A.viz;
   var TAU = Math.PI * 2, T1 = 3 * TAU;
   function samp(fn) { return V.samp(fn, 0, T1); }
 
@@ -283,5 +283,4 @@
       }
     };
   });
-  void P; void M;
 })(window.A = window.A || {});

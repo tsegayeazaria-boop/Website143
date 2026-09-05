@@ -8,21 +8,20 @@
    ========================================================================= */
 (function (A) {
   'use strict';
-  var V = A.viz, P = A.phys, M = A.math;
+  var V = A.viz, P = A.phys;
   var TAU = Math.PI * 2;
   var D = 0.34;                      /* half the slit separation, in half-screens */
 
   function slits() { return [{ key: 'a', y: D, w: 0.08 }, { key: 'b', y: -D, w: 0.08 }]; }
 
   /* The screen, painted with what a detector would register there. */
-  function paint(dOverLam, n, op) {
+  function paint(dOverLam, n) {
     var out = [];
     for (var i = 0; i < n; i++) {
       var y0 = 1 - 2 * i / n, y1 = 1 - 2 * (i + 1) / n;
       var sinT = (y0 + y1) / 2 * 0.28;                 /* small-angle screen scale */
       out.push({ y0: y0, y1: y1, i: P.doubleSlit(sinT, 0.7, dOverLam), tone: 'wave' });
     }
-    void op;
     return out;
   }
   function pattern(dOverLam) {
@@ -271,5 +270,4 @@
       }
     };
   });
-  void M;
 })(window.A = window.A || {});

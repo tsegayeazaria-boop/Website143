@@ -7,8 +7,8 @@
    ========================================================================= */
 (function (A) {
   'use strict';
-  var V = A.viz, M = A.math;
-  var TAU = Math.PI * 2, L = 1;
+  var V = A.viz;
+  var L = 1;
   function sm(fn) { return V.samp(fn, 0, L); }
 
   /* ------------------------------------------- a wave that goes nowhere --- */
@@ -196,5 +196,4 @@
       }
     };
   });
-  void M; void TAU;
 })(window.A = window.A || {});

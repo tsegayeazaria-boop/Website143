@@ -51,7 +51,6 @@
       };
     }
     var states = [st(0, false, 'x²'), st(1, false, 'x²'), st(1, true, '|z|²'), st(1, true, '|z|²')];
-    void r;
     return { update: function (k, f) { p.set(V.at(states, k, f)); } };
   });
 
@@ -293,14 +292,18 @@
 
   /* ------------------------------------- why taking the real part is safe -- */
   A.viz('cx-real-part', function (root) {
-    var panes = V.split(root, 2, [1.2, 1]);
+    var panes = V.split(root, 3, [1.1, 0.9, 0.42]);
     var pl = V.plane(panes[0], {
       label: 'A complex solution orbiting, and the two real shadows it casts.',
-      w: 320, h: 130, unit: 56, cx: 160, cy: 66, xLabel: 're', yLabel: 'im'
+      w: 320, h: 116, unit: 46, cx: 160, cy: 58, xLabel: 're', yLabel: 'im'
     });
     var cu = V.curves(panes[1], {
       label: 'Each shadow, against time; each solves the same equation on its own.',
-      w: 320, h: 104, x0: 0, x1: 3 * TAU, ranges: [[-1.35, 1.35]], xLabel: 't'
+      w: 320, h: 92, x0: 0, x1: 3 * TAU, ranges: [[-1.35, 1.35]], xLabel: 't'
+    });
+    /* The real shadow is not an abstraction: it is where the mass is. */
+    var bn = V.bench(panes[2], {
+      label: 'The mass the real part describes.', w: 320, h: 46, box: 13
     });
     var states = [
       { u: 1, v: 0, drop: 0 },     /* 0 — one complex trajectory */
@@ -339,6 +342,7 @@
           ],
           notes: [{ key: 'l', cap: true, text: 'both solve it', tone: 'ghost', op: s.v }]
         });
+        bn.set({ x: [c * 1.5] });
       }
     };
   });
