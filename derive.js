@@ -1051,6 +1051,17 @@
        of its own. Asking it directly is both deterministic and stricter — it
        catches a state table that throws on one step or draws nothing on
        another, which a scroll sweep would sail straight past. */
+    /* Park one derivation on one step, for looking at it. */
+    driveOne: function (id, k) {
+      for (var i = 0; i < list.length; i++) {
+        var d = list[i];
+        if (d.id !== id || !d.viz) continue;
+        d.viz.update(M.clamp(k | 0, 0, d.steps.length - 1), 0, 1);
+        d.vizK = -1; d.vizF = -1;
+        return true;
+      }
+      return false;
+    },
     vizSweep: function () {
       var out = [];
       list.forEach(function (d) {

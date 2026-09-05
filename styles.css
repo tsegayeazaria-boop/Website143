@@ -718,7 +718,13 @@ input[type="range"]::-moz-range-thumb {
   height: min(20svh, 8.5rem);
   align-self: center;
 }
-.derive__viz > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+/* Clipped to its own box: a grid or an axis that runs to the edge of the
+   viewBox must stop there, not paint across the pinned column. */
+.derive__viz { overflow: hidden; }
+.derive__viz > svg { display: block; width: 100%; height: 100%; }
+.derive__viz[data-split] { display: flex; flex-direction: column; gap: 0.25rem; }
+.viz__pane { min-height: 0; position: relative; }
+.viz__pane > svg { display: block; width: 100%; height: 100%; }
 /* The same picture as a still, in the ladder. The ladder is a two-column grid
    whose first column is the step number, so it has to be told where to sit. */
 .derive__viz--still {
@@ -875,6 +881,7 @@ tr[data-current="1"] td { color: var(--ink-bright); }
 .s-fail    { stroke: var(--fail); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .s-prob    { stroke: var(--probability); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .s-ghost   { stroke: var(--hairline-2); stroke-width: 1; fill: none; }
+.s-ink     { stroke: var(--ink-bright); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 .s-dash    { stroke-dasharray: 3 4; }
 .s-lbl     { font-family: var(--mono); font-size: 11px; fill: var(--muted); letter-spacing: 0.06em; }
 .s-lbl-b   { font-family: var(--mono); font-size: 11px; fill: var(--ink-bright); letter-spacing: 0.06em; }
@@ -889,3 +896,5 @@ tr[data-current="1"] td { color: var(--ink-bright); }
 .s-fill-p  { fill: var(--probability); }
 .s-fill-i  { fill: var(--ink-bright); }
 .s-grab    { cursor: grab; }
+.s-shade   { stroke: none; }
+.s-ghost-grid { stroke: var(--hairline); stroke-dasharray: 2 5; }
