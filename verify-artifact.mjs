@@ -204,7 +204,8 @@ if (!quick) {
           return el && el.closest(`.view[data-view="${id}"]`);
         });
         const align = D.check().filter((a) => mine.some((m) => m.id === a.id));
-        return { list: mine, align };
+        const sweepViz = D.vizSweep().filter((x) => mine.some((m) => m.id === x.id));
+        return { list: mine, align, viz: sweepViz };
       }, v);
       const stalled = der.list.filter((d) => d.mode === 'stage' && !d.reachedEnd);
       if (stalled.length) {
@@ -219,6 +220,23 @@ if (!quick) {
       } else if (der.align.length) {
         const worst = Math.max(...der.align.map((a) => Math.max(a.worst0, a.worst1)));
         pass(`[${v}] ${der.align.length} transitions align within ${worst.toFixed(2)}px`);
+      }
+
+      /* The companion pictures, asked directly rather than inferred from a
+         scroll: a view is built only when it is first opened, so a picture
+         that fails to build here would otherwise go unnoticed until a reader
+         opened that view. */
+      const withViz = der.list.filter((d) => d.viz);
+      if (withViz.length) {
+        const unbuilt = withViz.filter((d) => !d.vizBuilt);
+        if (unbuilt.length) fail(`[${v}] pictures that never built: ${unbuilt.map((d) => d.id).join(', ')}`);
+        const threw = der.viz.filter((x) => x.error);
+        if (threw.length) fail(`[${v}] pictures that failed a step: ` + threw.map((x) => `${x.id} ${x.error}`).join('; '));
+        const blank = der.viz.filter((x) => x.built && x.empty);
+        if (blank.length) fail(`[${v}] pictures that drew nothing: ` + blank.map((x) => x.id).join(', '));
+        const frozen = der.viz.filter((x) => x.built && x.N > 1 && x.distinct < 2);
+        if (frozen.length) fail(`[${v}] pictures that never changed: ` + frozen.map((x) => x.id).join(', '));
+        pass(`[${v}] ${withViz.length} pictures drew ${der.viz.reduce((n, x) => n + x.states.length, 0)} states`);
       }
     }
 

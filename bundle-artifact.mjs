@@ -242,6 +242,17 @@ const router = `
 `;
 
 const demos = readdirSync(join(ROOT, 'demos')).filter((f) => f.endsWith('.js')).sort();
+/* The companion pictures. Order matters: the shared kit defines what the
+   primitives are built out of, the primitives define what the per-section
+   tables call, and every one of them needs derive.js's A.viz to exist first.
+   Sorting the library alphabetically would put curves before kit and break
+   the lot, so kit is named first and the rest follow. */
+const vizLib = ['kit.js'].concat(
+  readdirSync(join(ROOT, 'viz', 'lib')).filter((f) => f.endsWith('.js') && f !== 'kit.js').sort()
+).map((f) => ['viz/lib', f]);
+const vizTables = readdirSync(join(ROOT, 'viz')).filter((f) => f.endsWith('.js')).sort()
+  .map((f) => ['viz', f]);
+const viz = vizLib.concat(vizTables);
 
 const html =
 `<title>Physics 143a Companion</title>
@@ -294,6 +305,7 @@ ${safeScript(read('site.js'), 'site.js')}
 <script>
 ${safeScript(read('derive.js'), 'derive.js')}
 </script>
+${viz.map(([d, f]) => `<script>\n/* --- ${d}/${f} --- */\n` + safeScript(read(d, f), `${d}/${f}`) + '\n</script>').join('\n')}
 ${demos.map((f) => `<script>\n/* --- demos/${f} --- */\n` + safeScript(read('demos', f), f) + '\n</script>').join('\n')}
 <script>
 ${router}
@@ -338,7 +350,7 @@ const markup = html.replace(/<script>[\s\S]*?<\/script>/g, '');
 const kb = (n) => (n / 1024).toFixed(0) + ' KB';
 const size = Buffer.byteLength(html);
 console.log(`built dist/artifact.html  ${kb(size)}   (+ artifact.preview.html for local checks)`);
-console.log(`  views ${views.length}   demos ${demos.length}   fonts embedded ${embedded}`);
+console.log(`  views ${views.length}   demos ${demos.length}   pictures ${viz.length}   fonts embedded ${embedded}`);
 console.log(`  derivations ${(markup.match(/type="text\/x-derive"/g) || []).length}`);
 
 /* Guards. Every one of these fails silently in a sandboxed artifact, so it has
