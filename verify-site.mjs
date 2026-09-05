@@ -568,17 +568,22 @@ async function checkNarrow(browser, p, width) {
   const worst = await sweep(page, height, 780);
   if (worst > 1) fail(`[${p.id}/${width}px] ${worst}px of horizontal overflow`);
   if (width === 390) {
-    const drawer = await page.evaluate(() => {
-      const s = document.querySelector('.sidebar'), t = document.querySelector('.nav-toggle');
-      const hidden = s.getBoundingClientRect().right <= 1;
-      t.click();
-      const open = s.getBoundingClientRect().right > 40 && t.getAttribute('aria-expanded') === 'true';
-      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-      return { hidden, open, closed: document.body.dataset.nav !== 'open' };
-    });
-    if (!drawer.hidden) fail(`[${p.id}/390px] the contents drawer is not tucked away`);
-    if (!drawer.open) fail(`[${p.id}/390px] the contents button does not open the drawer`);
-    if (!drawer.closed) fail(`[${p.id}/390px] Escape does not close the drawer`);
+    /* The drawer slides, so each step has to be given time to finish before
+       its position means anything. */
+    const hidden = await page.evaluate(() => document.querySelector('.sidebar').getBoundingClientRect().right <= 1);
+    await page.click('.nav-toggle');
+    await page.waitForTimeout(420);
+    const open = await page.evaluate(() => ({
+      onScreen: document.querySelector('.sidebar').getBoundingClientRect().right > 40,
+      expanded: document.querySelector('.nav-toggle').getAttribute('aria-expanded') === 'true'
+    }));
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(420);
+    const closed = await page.evaluate(() =>
+      document.body.dataset.nav !== 'open' && document.querySelector('.sidebar').getBoundingClientRect().right <= 1);
+    if (!hidden) fail(`[${p.id}/390px] the contents drawer is not tucked away`);
+    if (!open.onScreen || !open.expanded) fail(`[${p.id}/390px] the contents button does not open the drawer`);
+    if (!closed) fail(`[${p.id}/390px] Escape does not close the drawer`);
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
     await page.screenshot({ path: join(SHOTS, p.id, 'narrow-390.png') });
   }

@@ -648,7 +648,10 @@ input[type="range"]::-moz-range-thumb {
 .stage__panel > *:last-child { margin-bottom: 0; }
 
 @media (min-width: 60rem) {
+  /* The pinned visual yields the right-hand column to the prose panels, so a
+     reader never has to read through a moving diagram. */
   .stage__canvas { padding-right: min(28rem, 34%); }
+  .stage--derive .stage__canvas { padding-right: min(30rem, 40%); }
 }
 
 /* --------------------------------------------------- animated derivations --- */

@@ -826,6 +826,7 @@
     '\\unit': '\\,\\mathrm{#1}',
     '\\Ten': 'F_{T}',
     '\\vb': '\\mathbf{#1}',
+    '\\vu': '\\hat{\\mathbf{#1}}',
     '\\mat': '\\mathbf{#1}',
     '\\abs': '\\left|#1\\right|',
     '\\inner': '\\left\\langle #1,\\, #2 \\right\\rangle'

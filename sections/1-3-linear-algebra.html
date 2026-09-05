@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>1.3 Linear algebra, from the beginning · Physics 143a Pset 0</title>
+<title>1.3 Linear algebra · Physics 143a Pset 0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -13,8 +13,12 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/vector-pictures.js"></script>
+<script defer src="../demos/matrix-grid.js"></script>
+<script defer src="../demos/eigen-directions.js"></script>
+<script defer src="../demos/function-inner-product.js"></script>
 </head>
-<body data-page="1-3" data-stub="1">
+<body data-page="1-3">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,18 +32,964 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 1.3 · Mathematics · ~75 min</span>
     <h1>Linear algebra, from the beginning</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">This section assumes you have never seen a matrix. It starts with arrows on
+    a page and finishes with the statement that a Fourier series and a vector written in
+    coordinates are the same operation — which is the fact that makes the rest of this site
+    work.</p>
+    <div class="callout callout--remark">
+      <span class="callout__tag">Before you start</span>
+      <p>One warning about letters. On this page $\lambda$ is an <strong>eigenvalue</strong>, not
+      a wavelength, and $k$ never appears at all. Everywhere else on the site $\lambda$ is a
+      wavelength. Section 2.2, which uses everything here, avoids the collision by writing
+      $\omega^{2}$ where this page would write $\lambda$.</p>
+    </div>
   </header>
-  <section class="band" id="soon" data-section="Linear algebra, from the…">
+
+  <!-- ==================================================== vectors ======= -->
+  <section class="band" id="vectors" data-section="Vectors">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="vectors-h" data-short="Vectors: two pictures">Vectors: two pictures at once</h2>
+
+      <p>You already use vectors. A force of 5 newtons at 37° above the horizontal is a vector;
+      so is a velocity, an electric field, a displacement. You have drawn them as arrows and you
+      have broken them into components. Linear algebra is what happens when you take both of
+      those pictures seriously at the same time.</p>
+
+      <p>The <span class="term">arrow</span> picture: a vector is a length and a direction. It
+      exists before anyone draws axes. When you add two forces tip-to-tail, you are working in
+      this picture.</p>
+
+      <p>The <span class="term">list</span> picture: choose two perpendicular directions, call
+      them $\vu e_1$ and $\vu e_2$ (you have been writing them $\hat\imath$ and $\hat\jmath$),
+      and every arrow in the plane is some amount of the first plus some amount of the second.
+      Write those two amounts down and you have the vector's <span class="term">components</span>.</p>
+
+      <div class="eq" id="eq-1-3-1">
+        <div class="eq__body">$$ \vb v = v_1 \vu e_1 + v_2 \vu e_2 \qquad\text{written as}\qquad
+        \vb v = \begin{pmatrix} v_1 \\ v_2 \end{pmatrix} $$</div>
+        <div class="eq__num">(1.3.1)</div>
+      </div>
+
+      <p>The two pictures are not two kinds of object. They are one object and one description of
+      it. That distinction is worth holding onto, because the components change when you change
+      the axes and the arrow does not.</p>
+
+      <h3>Adding vectors, in components</h3>
+      <p>In the arrow picture, adding is tip-to-tail. In the list picture, adding is adding the
+      numbers separately. Those had better be the same operation, and they are — for the single
+      reason that $\vu e_1$ and $\vu e_2$ can be collected like any other common factor.</p>
+
+      <script type="text/x-derive" data-id="la-components-add" data-title="Why components add separately">
+> Write both vectors in the basis. Nothing has happened yet: this is only equation (1.3.1), twice.
+\k{u}{\vb u} + \k{v}{\vb v} = \k{u1}{u_1}\k{e1}{\vu e_1} + \k{u2}{u_2}\k{e2}{\vu e_2} + \k{v1}{v_1}\k{e1b}{\vu e_1} + \k{v2}{v_2}\k{e2b}{\vu e_2}
+---
+> Adding is commutative, so bring the two $\vu e_1$ terms next to each other and the two $\vu e_2$ terms next to each other.
+! hl e1,e1b,e2,e2b
+\k{u}{\vb u} + \k{v}{\vb v} = \k{u1}{u_1}\k{e1}{\vu e_1} + \k{v1}{v_1}\k{e1b}{\vu e_1} + \k{u2}{u_2}\k{e2}{\vu e_2} + \k{v2}{v_2}\k{e2b}{\vu e_2}
+---
+> Each pair has a common factor. Take it out.
+\k{u}{\vb u} + \k{v}{\vb v} = (\k{u1}{u_1} + \k{v1}{v_1})\k{e1}{\vu e_1} + (\k{u2}{u_2} + \k{v2}{v_2})\k{e2}{\vu e_2}
+---
+> The bracket in front of $\vu e_1$ is the first component of the sum, and the bracket in front of $\vu e_2$ is the second. So adding arrows really is adding the numbers, one row at a time.
+! result
+\k{u}{\vb u} + \k{v}{\vb v} = \begin{pmatrix} \k{u1}{u_1} + \k{v1}{v_1} \\ \k{u2}{u_2} + \k{v2}{v_2} \end{pmatrix}
+      </script>
+
+      <p>Length comes from the same place. The components are the legs of a right triangle whose
+      hypotenuse is the arrow, so Pythagoras gives $\abs{\vb v} = \sqrt{v_1^{2} + v_2^{2}}$.</p>
+
+      <h3>The dot product</h3>
+      <p>You have met the dot product as $\vb u \cdot \vb v = \abs{\vb u}\abs{\vb v}\cos\theta$,
+      probably while computing work. In components it is $u_1v_1 + u_2v_2$. Those two are not
+      separate definitions; the second follows from the first and the law of cosines.</p>
+
+      <script type="text/x-derive" data-id="la-dot-components" data-title="The dot product in components">
+> The law of cosines for the triangle whose third side is $\vb u - \vb v$. This is geometry, no coordinates yet.
+\k{lhs}{\abs{\vb u - \vb v}^{2}} = \k{uu}{\abs{\vb u}^{2}} + \k{vv}{\abs{\vb v}^{2}} - \k{cross}{2\abs{\vb u}\abs{\vb v}\cos\theta}
+---
+> The last term is the definition of the dot product, times two.
+\k{lhs}{\abs{\vb u - \vb v}^{2}} = \k{uu}{\abs{\vb u}^{2}} + \k{vv}{\abs{\vb v}^{2}} - \k{cross}{2\,\vb u \cdot \vb v}
+---
+> Now put in coordinates and expand the left-hand side with Pythagoras.
+\k{lhs}{(u_1 - v_1)^{2} + (u_2 - v_2)^{2}} = \k{uu}{u_1^{2} + u_2^{2}} + \k{vv}{v_1^{2} + v_2^{2}} - \k{cross}{2\,\vb u \cdot \vb v}
+---
+> Multiply out the two squares on the left.
+\k{lhs}{u_1^{2} - 2u_1v_1 + v_1^{2} + u_2^{2} - 2u_2v_2 + v_2^{2}} = \k{uu}{u_1^{2} + u_2^{2}} + \k{vv}{v_1^{2} + v_2^{2}} - \k{cross}{2\,\vb u \cdot \vb v}
+---
+> Every squared term appears on both sides and cancels. What is left is $-2u_1v_1 - 2u_2v_2 = -2\,\vb u \cdot \vb v$; divide by $-2$.
+! result
+\k{cross}{\vb u \cdot \vb v} = \k{lhs}{u_1v_1 + u_2v_2}
+      </script>
+
+      <p>Two consequences worth naming now, because both come back later. First,
+      $\vb v \cdot \vb v = \abs{\vb v}^{2}$. Second, $\vb u \cdot \vb v = 0$ exactly when
+      $\cos\theta = 0$: the dot product vanishes precisely for perpendicular vectors. That second
+      fact is the whole of Fourier analysis in disguise, and we will collect on it at the end of
+      this page.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Take $\vb u = (3, 1)$ and $\vb v = (-1, 2)$.</p>
+        <p>$\vb u + \vb v = (3 - 1,\; 1 + 2) = (2, 3)$, and $2\vb u - \vb v = (6 + 1,\; 2 - 2)
+        = (7, 0)$ — which points straight along $\vu e_1$, so the $\vu e_2$ parts have cancelled
+        exactly.</p>
+        <p>$\abs{\vb u} = \sqrt{9 + 1} = 3.162$ and $\vb u \cdot \vb v = (3)(-1) + (1)(2) = -1$.
+        The dot product is negative, so the angle between them is obtuse: from
+        $\cos\theta = -1/(3.162 \times 2.236) = -0.1414$ we get $\theta = 98.1^\circ$.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="vector-pictures"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that turning the axes changes both numbers describing the arrow while
+        the arrow itself does not move, and that its length is the one number that survives the
+        turn unchanged.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>A vector is the arrow; its components are what you get after
+      choosing a basis, and they change when the basis does.</strong></p>
     </div>
   </section>
+
+  <!-- =============================================== matrix as function == -->
+  <section class="band" id="matrix-function" data-section="A matrix is a function">
+    <div class="measure">
+      <h2 id="matrix-function-h" data-short="A matrix is a function">A matrix is a function</h2>
+
+      <p>Here is the idea the rest of this page is built on. A matrix is not a table of numbers
+      that you memorise a rule for multiplying. <strong>A matrix is a function</strong> — it eats
+      a vector and hands back a vector. The table of numbers is just a compact way of writing
+      down which function it is.</p>
+
+      <p>Not every function of vectors gets a matrix. Only the <span class="term">linear</span>
+      ones do, meaning functions $f$ with two properties:</p>
+
+      <div class="eq" id="eq-1-3-2">
+        <div class="eq__body">$$ f(\vb u + \vb v) = f(\vb u) + f(\vb v)
+        \qquad\text{and}\qquad f(c\,\vb v) = c\,f(\vb v) $$</div>
+        <div class="eq__num">(1.3.2)</div>
+      </div>
+
+      <p>You have already relied on this. When you compute the electric field of two charges by
+      adding the field of each, you are using the first property. When you say that doubling a
+      charge doubles its field, you are using the second. Rotating every arrow in the plane by
+      30° is linear. Stretching everything horizontally by a factor of two is linear. Adding a
+      fixed vector to everything is <em>not</em>, because $f(\vb 0)$ has to come out zero.</p>
+
+      <h3>A linear function is fixed by what it does to two vectors</h3>
+      <p>This is the surprising part, and it is the reason matrices exist. If you tell me where a
+      linear function sends $\vu e_1$ and where it sends $\vu e_2$, I can tell you where it sends
+      every other vector in the plane, without asking you anything else.</p>
+
+      <script type="text/x-derive" data-id="la-linear-fixed-by-basis" data-title="Two vectors decide everything">
+> Start with any vector at all, written in the basis.
+\k{f}{f}(\k{v}{\vb v}) = \k{f}{f}(\k{v1}{v_1}\k{e1}{\vu e_1} + \k{v2}{v_2}\k{e2}{\vu e_2})
+---
+> The first property of linearity: the function of a sum is the sum of the functions.
+! hl f
+\k{f}{f}(\k{v}{\vb v}) = \k{f}{f}(\k{v1}{v_1}\k{e1}{\vu e_1}) + \k{f}{f}(\k{v2}{v_2}\k{e2}{\vu e_2})
+---
+> The second property: a number multiplying the input comes straight out to the front.
+\k{f}{f}(\k{v}{\vb v}) = \k{v1}{v_1}\,\k{f}{f}(\k{e1}{\vu e_1}) + \k{v2}{v_2}\,\k{f}{f}(\k{e2}{\vu e_2})
+---
+> Nothing is left but $f(\vu e_1)$ and $f(\vu e_2)$ — two fixed vectors that do not depend on $\vb v$. Knowing those two is knowing the whole function.
+! result
+\k{f}{f}(\k{v}{\vb v}) = \k{v1}{v_1}\,\k{c1}{f(\vu e_1)} + \k{v2}{v_2}\,\k{c2}{f(\vu e_2)}
+      </script>
+
+      <p>So write those two vectors down side by side, as the two columns of a table:</p>
+
+      <div class="eq" id="eq-1-3-3">
+        <div class="eq__body">$$ \mat A = \begin{pmatrix} a & b \\ c & d \end{pmatrix},
+        \qquad f(\vu e_1) = \begin{pmatrix} a \\ c \end{pmatrix},
+        \qquad f(\vu e_2) = \begin{pmatrix} b \\ d \end{pmatrix} $$</div>
+        <div class="eq__num">(1.3.3)</div>
+      </div>
+
+      <p><strong>The columns of a matrix are the places the basis vectors land.</strong> That
+      single sentence is what a matrix means. Everything else — the multiplication rule, the
+      determinant, eigenvectors — is worked out from it.</p>
+
+      <h3>The multiplication rule, derived</h3>
+      <p>Now the rule you may have been shown as an arbitrary pattern of rows against columns
+      falls out with nothing added.</p>
+
+      <script type="text/x-derive" data-id="la-column-rule" data-title="Where the row-times-column rule comes from">
+> The result of the last derivation, with the two landing places named.
+\k{A}{\mat A}\k{v}{\vb v} = \k{v1}{v_1}\k{c1}{\begin{pmatrix} a \\ c \end{pmatrix}} + \k{v2}{v_2}\k{c2}{\begin{pmatrix} b \\ d \end{pmatrix}}
+---
+> A number times a vector multiplies both of its components.
+\k{A}{\mat A}\k{v}{\vb v} = \k{c1}{\begin{pmatrix} \k{av}{a v_1} \\ \k{cv}{c v_1} \end{pmatrix}} + \k{c2}{\begin{pmatrix} \k{bv}{b v_2} \\ \k{dv}{d v_2} \end{pmatrix}}
+---
+> And adding two vectors adds them row by row, which we proved above.
+! result
+\k{A}{\mat A}\k{v}{\vb v} = \begin{pmatrix} \k{av}{a v_1} + \k{bv}{b v_2} \\ \k{cv}{c v_1} + \k{dv}{d v_2} \end{pmatrix}
+      </script>
+
+      <p>The top entry is the top row of $\mat A$ dotted with $\vb v$; the bottom entry is the
+      bottom row dotted with $\vb v$. That is the rule — but now it is a consequence rather than
+      a convention, and if you ever forget it you can rebuild it in three lines.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Let $\mat A = \begin{pmatrix} 2 & 1 \\ 0 & 1 \end{pmatrix}$ and $\vb v = (1, 2)$.</p>
+        <p>By columns: $\mat A$ sends $\vu e_1$ to $(2, 0)$ and $\vu e_2$ to $(1, 1)$, so
+        $\mat A \vb v = 1 \times (2,0) + 2 \times (1,1) = (2,0) + (2,2) = (4, 2)$.</p>
+        <p>By rows: top row $(2,1)\cdot(1,2) = 2 + 2 = 4$; bottom row $(0,1)\cdot(1,2) = 0 + 2 =
+        2$. Same answer, as it must be — the second calculation <em>is</em> the first one, with
+        the additions done in a different order.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="matrix-grid"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the two heavy arrows after the transformation are exactly the two
+        columns of the matrix, and that straight lines stay straight and evenly spaced lines stay
+        evenly spaced no matter what the four numbers are.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>A 2×2 matrix is completely described by where it sends
+      $\vu e_1$ and $\vu e_2$; those two landing places are its columns.</strong></p>
+    </div>
+  </section>
+
+  <!-- ============================================= composing matrices ==== -->
+  <section class="band" id="geometric-product" data-section="Doing one after another">
+    <div class="measure">
+      <h2 id="geometric-product-h" data-short="Doing one after another">Doing one after another</h2>
+
+      <p>If a matrix is a function, then two matrices in a row is one function after another:
+      first do $\mat A$ to the vector, then do $\mat B$ to whatever came out. Whatever that
+      combined operation is, it is still linear — a sum still goes to a sum, and a scaled input
+      still gives a scaled output — so by the last section it must have a matrix of its own. That
+      matrix is what $\mat B \mat A$ means.</p>
+
+      <p>And we already know how to find any matrix: apply the function to $\vu e_1$ and to
+      $\vu e_2$ and write down where they land.</p>
+
+      <script type="text/x-derive" data-id="la-compose" data-title="Why matrices multiply the way they do">
+> The first column of the combined matrix is wherever the combined operation sends $\vu e_1$.
+\k{col}{(\mat B \mat A)\vu e_1} = \k{B}{\mat B}\left(\k{A}{\mat A}\k{e1}{\vu e_1}\right)
+---
+> But $\mat A \vu e_1$ is just the first column of $\mat A$: the vector $(a, c)$.
+\k{col}{(\mat B \mat A)\vu e_1} = \k{B}{\mat B}\k{acol}{\begin{pmatrix} a \\ c \end{pmatrix}}
+---
+> Now use the multiplication rule we derived for a single matrix on a single vector.
+\k{col}{(\mat B \mat A)\vu e_1} = \k{acol}{\begin{pmatrix} \k{r1}{B_{11}a + B_{12}c} \\ \k{r2}{B_{21}a + B_{22}c} \end{pmatrix}}
+---
+> Each entry is a row of $\mat B$ dotted with a column of $\mat A$. Doing the same for $\vu e_2$ fills the second column, and that is the whole rule.
+! result
+\k{col}{(\mat B \mat A)_{ij}} = \k{sum}{\sum_{n} B_{in} A_{nj}}
+      </script>
+
+      <p>Two things follow immediately. First, the rule is not arbitrary; it is bookkeeping for
+      "do this, then that". Second, <strong>order matters</strong>, because doing $\mat A$ then
+      $\mat B$ is not generally the same as doing $\mat B$ then $\mat A$. Rotate a vector and
+      then stretch it horizontally, and you get somewhere different from stretching first and
+      rotating after. Nothing has gone wrong; the operations are simply different.</p>
+
+      <h3>The rotation matrix, from the columns</h3>
+      <p>You can build any matrix you need this way, without memorising it. To rotate the plane
+      anticlockwise by $\theta$, ask where the two basis arrows go. $\vu e_1$ starts on the
+      positive $x$-axis, so after turning by $\theta$ its tip is at $(\cos\theta, \sin\theta)$.
+      $\vu e_2$ starts pointing up; turning it by $\theta$ puts it at
+      $(-\sin\theta, \cos\theta)$. Write those two down as columns:</p>
+
+      <script type="text/x-derive" data-id="la-rotation" data-title="Building the rotation matrix from its columns">
+> The first column is wherever $\vu e_1$ lands. It starts one unit along the $x$-axis, at angle zero.
+\k{c1}{f(\vu e_1)} = \k{start}{\text{the unit arrow at angle } 0}
+---
+> Turn it by $\theta$. A unit arrow at angle $\theta$ has components $\cos\theta$ across and $\sin\theta$ up — that is what sine and cosine mean.
+\k{c1}{f(\vu e_1)} = \k{start}{\begin{pmatrix} \cos\theta \\ \sin\theta \end{pmatrix}}
+---
+> The second column is where $\vu e_2$ lands. It starts at angle $90^\circ$, so after the turn it sits at angle $\theta + 90^\circ$.
+\k{c2}{f(\vu e_2)} = \k{start2}{\begin{pmatrix} \cos(\theta + 90^\circ) \\ \sin(\theta + 90^\circ) \end{pmatrix}}
+---
+> Adding a quarter turn turns a cosine into minus a sine and a sine into a cosine.
+\k{c2}{f(\vu e_2)} = \k{start2}{\begin{pmatrix} -\sin\theta \\ \cos\theta \end{pmatrix}}
+---
+> Write the two landing places side by side as columns, and the rotation matrix is built.
+! result
+\k{R}{\mat R(\theta)} = \begin{pmatrix} \k{start}{\cos\theta} & \k{start2}{-\sin\theta} \\ \k{start}{\sin\theta} & \k{start2}{\cos\theta} \end{pmatrix}
+      </script>
+
+      <div class="eq" id="eq-1-3-4">
+        <div class="eq__body">$$ \mat R(\theta) = \begin{pmatrix}
+        \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix} $$</div>
+        <div class="eq__num">(1.3.4)</div>
+      </div>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Two quarter-turns should be a half-turn. With $\theta = 90^\circ$, equation (1.3.4)
+        gives $\mat R = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix}$, and multiplying it by
+        itself: first column $= \mat R (0,1) = (-1, 0)$; second column $= \mat R(-1,0) = (0,-1)$.
+        So $\mat R^{2} = \begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix} = -\mat I$, which sends
+        every vector to minus itself. A half-turn.</p>
+        <p>Order matters: let $\mat S = \begin{pmatrix} 2 & 0 \\ 0 & 1\end{pmatrix}$ stretch
+        horizontally. On $\vb v = (1,0)$, rotating first then stretching gives
+        $\mat S \mat R \vb v = \mat S (0,1) = (0,1)$; stretching first then rotating gives
+        $\mat R \mat S \vb v = \mat R(2,0) = (0,2)$. Different answers.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Multiplying matrices is doing one transformation after another,
+      and the order matters because the second one acts on what the first produced.</strong></p>
+    </div>
+  </section>
+
+  <!-- ====================================================== span/det ===== -->
+  <section class="band" id="span" data-section="When do two vectors cover the plane?">
+    <div class="measure">
+      <h2 id="span-h" data-short="Covering the plane">When do two vectors cover the plane?</h2>
+
+      <p>A <span class="term">linear combination</span> of $\vb u$ and $\vb v$ is anything you
+      can build as $c_1\vb u + c_2 \vb v$. The set of everything you can reach that way is their
+      <span class="term">span</span>. Two arrows pointing in different directions span the whole
+      plane: every point is reachable. Two arrows along the same line span only that line —
+      no combination of them ever gets you off it.</p>
+
+      <p>When the two arrows do span the plane, we call them a <span class="term">basis</span>,
+      and they are <span class="term">linearly independent</span>: neither is a multiple of the
+      other. There is a single number that tells you which case you are in, and it has a
+      geometric meaning worth deriving rather than memorising.</p>
+
+      <h3>The area of the parallelogram they make</h3>
+      <p>Put the two arrows tail to tail and complete the parallelogram. Its area is zero exactly
+      when the arrows lie along one line. So the area is the test. Here it is, computed by
+      subtracting the pieces outside the parallelogram from the bounding rectangle, for arrows
+      $(a, c)$ and $(b, d)$ in the first quadrant.</p>
+
+      <script type="text/x-derive" data-id="la-det-area" data-title="The area of the parallelogram">
+> The rectangle that encloses everything is $(a+b)$ wide and $(c+d)$ tall.
+\k{area}{\text{area}} = \k{rect}{(a+b)(c+d)} - \k{tri}{\text{the four corner pieces}}
+---
+> Two triangles have legs $a$ and $c$; two more have legs $b$ and $d$; and two rectangles measure $b$ by $c$.
+\k{area}{\text{area}} = \k{rect}{(a+b)(c+d)} - \k{t1}{2\cdot\tfrac{1}{2}ac} - \k{t2}{2\cdot\tfrac{1}{2}bd} - \k{t3}{2bc}
+---
+> Multiply out the rectangle and tidy the halves.
+\k{area}{\text{area}} = \k{rect}{ac + ad + bc + bd} - \k{t1}{ac} - \k{t2}{bd} - \k{t3}{2bc}
+---
+> The $ac$ terms cancel, the $bd$ terms cancel, and one $bc$ survives out of the three.
+! result
+\k{area}{\text{area}} = \k{det}{ad - bc}
+      </script>
+
+      <p>That number is called the <span class="term">determinant</span> of the matrix whose
+      columns are the two arrows, written $\det \mat A = ad - bc$. Read geometrically: <strong>the
+      determinant is the factor by which the matrix scales areas</strong>, since the unit square
+      spanned by $\vu e_1$ and $\vu e_2$ has area 1 and lands on this parallelogram. If the
+      determinant comes out negative, the transformation has also flipped the plane over.</p>
+
+      <p>Now the algebraic test, which we will need in a moment for eigenvalues.</p>
+
+      <script type="text/x-derive" data-id="la-independence" data-title="Dependent exactly when the determinant vanishes">
+> Ask whether some combination of the two columns, not both coefficients zero, can cancel to nothing.
+\k{c1}{c_1}\k{col1}{\begin{pmatrix} a \\ c \end{pmatrix}} + \k{c2}{c_2}\k{col2}{\begin{pmatrix} b \\ d \end{pmatrix}} = \k{zero}{\begin{pmatrix} 0 \\ 0 \end{pmatrix}}
+---
+> That is two ordinary equations, one per row.
+\k{r1}{a c_1 + b c_2 = 0} \qquad \k{r2}{c c_1 + d c_2 = 0}
+---
+> Multiply the first by $d$, the second by $b$, and subtract; the $c_2$ terms are then identical and cancel.
+\k{r1}{a d\, c_1 + b d\, c_2 = 0} \qquad \k{r2}{b c\, c_1 + b d\, c_2 = 0}
+---
+> What is left has $c_1$ multiplied by exactly the determinant.
+\k{res}{(ad - bc)\, c_1 = 0}
+---
+> So if $ad - bc \ne 0$ then $c_1$ must be zero, and then $c_2$ is too: the only way to cancel them is to use nothing at all. A non-zero combination exists precisely when the determinant is zero.
+! result
+\k{det}{ad - bc = 0} \iff \k{dep}{\text{some } \vb v \ne \vb 0 \text{ has } \mat A \vb v = \vb 0}
+      </script>
+
+      <p>Notice what the last line says, because it is the sentence eigenvalues are built on. The
+      determinant vanishing and the matrix flattening some non-zero vector to the origin are the
+      same statement. A matrix that squashes the plane onto a line has to send a whole direction
+      to zero — that is what squashing means.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$(2,1)$ and $(1,3)$: $\det = (2)(3) - (1)(1) = 5$. Non-zero, so they are independent,
+        span the plane, and the parallelogram on them has area 5.</p>
+        <p>$(2,1)$ and $(4,2)$: $\det = (2)(2) - (4)(1) = 0$. The second is exactly twice the
+        first, so they lie on one line, the parallelogram is flat, and
+        $2\,(2,1) - 1\,(4,2) = (0,0)$ is the non-zero combination the derivation promised.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Two vectors form a basis exactly when the parallelogram they
+      span has non-zero area, and a determinant of zero means some non-zero vector is crushed to
+      the origin.</strong></p>
+    </div>
+  </section>
+
+  <!-- ================================================ eigen, geometric === -->
+  <section class="band" id="eigen-geometric" data-section="Directions that only stretch">
+    <div class="measure">
+      <h2 id="eigen-geometric-h" data-short="Directions that only stretch">Directions that only stretch</h2>
+
+      <p>Apply a matrix to a vector and two things generally happen at once: the vector changes
+      length, and it changes direction. The second is what makes matrices hard to picture. So
+      ask a narrower question: <em>are there any directions the matrix leaves alone?</em></p>
+
+      <p>A direction is left alone if the output points along the same line as the input — the
+      arrow may get longer, shorter, or flip end to end, but it does not swing off its line. A
+      vector like that is an <span class="term">eigenvector</span>, and the factor by which it
+      stretches is its <span class="term">eigenvalue</span> $\lambda$:</p>
+
+      <div class="eq" id="eq-1-3-5">
+        <div class="eq__body">$$ \mat A \vb v = \lambda \vb v, \qquad \vb v \ne \vb 0 $$</div>
+        <div class="eq__num">(1.3.5)</div>
+      </div>
+
+      <p>The condition $\vb v \ne \vb 0$ matters: the zero vector satisfies the equation for
+      every $\lambda$ and tells you nothing, so it is excluded by hand.</p>
+
+      <p>Take $\mat A = \begin{pmatrix} 2 & 1 \\ 1 & 2\end{pmatrix}$ and try two particular
+      vectors.</p>
+
+      <script type="text/x-derive" data-id="la-eigen-check" data-title="Two directions this matrix leaves alone">
+> Apply the matrix to $(1,1)$, using the column rule: one lot of the first column plus one lot of the second.
+\k{A}{\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}}\k{v}{\begin{pmatrix} 1 \\ 1 \end{pmatrix}} = \k{out}{\begin{pmatrix} 2 + 1 \\ 1 + 2 \end{pmatrix}}
+---
+> Which is three times the vector we started with. It did not turn at all.
+\k{A}{\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}}\k{v}{\begin{pmatrix} 1 \\ 1 \end{pmatrix}} = \k{out}{\begin{pmatrix} 3 \\ 3 \end{pmatrix}} = \k{lam}{3}\k{v}{\begin{pmatrix} 1 \\ 1 \end{pmatrix}}
+---
+> Now $(1,-1)$: the first column minus the second.
+\k{A}{\begin{pmatrix} 2 & 1 \\ 1 & 2 \end{pmatrix}}\k{w}{\begin{pmatrix} 1 \\ -1 \end{pmatrix}} = \k{out2}{\begin{pmatrix} 2 - 1 \\ 1 - 2 \end{pmatrix}} = \k{out2b}{\begin{pmatrix} 1 \\ -1 \end{pmatrix}}
+---
+> Unchanged: an eigenvalue of exactly one. Two directions survive this matrix; every other direction gets turned.
+! result
+\k{lam}{\lambda_1 = 3} \text{ along } \k{v}{(1,1)}, \qquad \k{lam2}{\lambda_2 = 1} \text{ along } \k{w}{(1,-1)}
+      </script>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="eigen-directions"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that $\mat A\vb v$ swings away from $\vb v$ almost everywhere, and
+        only on the two dashed lines does it stay pointing the same way — getting longer or
+        shorter, but never turning.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>An eigenvector is a direction the matrix leaves alone apart
+      from stretching it, and the eigenvalue is that stretch factor.</strong></p>
+    </div>
+  </section>
+
+  <!-- ============================================== computing eigenvalues = -->
+  <section class="band" id="eigen-computing" data-section="Finding the eigenvalues">
+    <div class="measure">
+      <h2 id="eigen-computing-h" data-short="Finding the eigenvalues">Finding them, and why a determinant appears</h2>
+
+      <p>Guessing $(1,1)$ was luck. Here is the method, and the reason the determinant — a
+      statement about areas — turns up in a question about directions.</p>
+
+      <script type="text/x-derive" data-id="la-shift" data-title="Turning the eigenvalue equation into a squashing question">
+> The defining equation. Both sides are vectors.
+\k{A}{\mat A}\k{v}{\vb v} = \k{lam}{\lambda}\k{v}{\vb v}
+---
+> Move everything to one side. We cannot subtract the number $\lambda$ from the matrix $\mat A$, so write $\lambda \vb v$ as $\lambda \mat I \vb v$ first, using the identity matrix that leaves every vector alone.
+\k{A}{\mat A}\k{v}{\vb v} - \k{lam}{\lambda}\k{I}{\mat I}\k{v}{\vb v} = \k{zero}{\vb 0}
+---
+> Now $\vb v$ is a common factor on the left.
+\k{shift}{\left(\k{A}{\mat A} - \k{lam}{\lambda}\k{I}{\mat I}\right)}\k{v}{\vb v} = \k{zero}{\vb 0}
+---
+> Read that as a sentence: the matrix $\mat A - \lambda\mat I$ sends the non-zero vector $\vb v$ to the origin. From the last section, a matrix does that exactly when its determinant is zero.
+! result
+\k{deteq}{\det\left(\k{A}{\mat A} - \k{lam}{\lambda}\k{I}{\mat I}\right) = 0}
+      </script>
+
+      <p>That is where the determinant comes from. It is not a trick: asking for a direction that
+      survives is asking for a shifted matrix that crushes something, and crushing is what a zero
+      determinant means. Now expand it.</p>
+
+      <script type="text/x-derive" data-id="la-char-poly" data-title="The characteristic equation">
+> Subtract $\lambda$ from each diagonal entry — that is all $\lambda \mat I$ does.
+\k{det}{\det}\k{mat}{\begin{pmatrix} a - \lambda & b \\ c & d - \lambda \end{pmatrix}} = \k{zero}{0}
+---
+> Apply $ad - bc$ to this shifted matrix.
+\k{prod}{(a - \lambda)(d - \lambda)} - \k{bc}{bc} = \k{zero}{0}
+---
+> Multiply out the bracket.
+\k{prod}{ad - a\lambda - d\lambda + \lambda^{2}} - \k{bc}{bc} = \k{zero}{0}
+---
+> Collect by powers of $\lambda$. The coefficient of $\lambda$ is minus the sum of the diagonal, and the constant is the determinant of the original matrix.
+! result
+\k{quad}{\lambda^{2} - (a + d)\lambda + (ad - bc)} = \k{zero}{0}
+      </script>
+
+      <p>An ordinary quadratic, solved the ordinary way. Its two roots are the two eigenvalues.
+      The sum of the diagonal entries, $a+d$, is called the <span class="term">trace</span>, and
+      the quadratic says the eigenvalues add up to the trace and multiply to the determinant —
+      a fast check on any answer.</p>
+
+      <h3>Getting the directions back</h3>
+      <p>With a value of $\lambda$ in hand, put it back into $(\mat A - \lambda\mat I)\vb v = 0$
+      and read off which direction gets crushed.</p>
+
+      <script type="text/x-derive" data-id="la-back-solve" data-title="From an eigenvalue to its direction">
+> Take $\mat A = \begin{pmatrix} 2 & 1 \\ 1 & 2\end{pmatrix}$. Trace 4, determinant 3.
+\k{quad}{\lambda^{2} - 4\lambda + 3} = \k{zero}{0}
+---
+> It factors.
+\k{fact}{(\lambda - 3)(\lambda - 1)} = \k{zero}{0} \quad\Rightarrow\quad \k{lams}{\lambda = 3 \text{ or } \lambda = 1}
+---
+> Put $\lambda = 3$ back and subtract it from the diagonal.
+\k{shift}{\begin{pmatrix} 2 - 3 & 1 \\ 1 & 2 - 3\end{pmatrix}}\k{v}{\begin{pmatrix} v_1 \\ v_2\end{pmatrix}} = \k{zero}{\begin{pmatrix} 0 \\ 0 \end{pmatrix}}
+---
+> The top row says $-v_1 + v_2 = 0$. The bottom row says the same thing, which is the determinant being zero doing its job: one equation, not two.
+\k{row}{-v_1 + v_2 = 0} \quad\Rightarrow\quad \k{eqv}{v_2 = v_1}
+---
+> Any vector with equal components will do; the length is free, because stretching an eigenvector leaves it an eigenvector. Take the simplest.
+! result
+\k{lam}{\lambda = 3} \;\text{ along }\; \k{vec}{\begin{pmatrix} 1 \\ 1 \end{pmatrix}}, \qquad \k{lam2}{\lambda = 1} \;\text{ along }\; \k{vec2}{\begin{pmatrix} 1 \\ -1 \end{pmatrix}}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$\mat A = \begin{pmatrix} 4 & 2 \\ 1 & 3\end{pmatrix}$. Trace $= 7$, determinant
+        $= 12 - 2 = 10$, so $\lambda^{2} - 7\lambda + 10 = 0$ and $\lambda = 5$ or $\lambda = 2$.
+        Check: $5 + 2 = 7$ and $5 \times 2 = 10$. ✓</p>
+        <p>For $\lambda = 5$: $\begin{pmatrix} -1 & 2 \\ 1 & -2\end{pmatrix}\vb v = 0$ gives
+        $v_1 = 2v_2$, so $\vb v = (2,1)$. For $\lambda = 2$:
+        $\begin{pmatrix} 2 & 2 \\ 1 & 1\end{pmatrix}\vb v = 0$ gives $v_1 = -v_2$, so
+        $\vb v = (1,-1)$.</p>
+        <p>Check one: $\mat A (2,1) = (8+2,\; 2+3) = (10, 5) = 5(2,1)$. ✓ And note that
+        $(2,1)\cdot(1,-1) = 1 \neq 0$ — these eigenvectors are <em>not</em> perpendicular. The
+        next subsection explains which matrices guarantee that they are.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Eigenvalues are the values of $\lambda$ that make
+      $\mat A - \lambda\mat I$ squash the plane flat, which is why they are the roots of
+      $\det(\mat A - \lambda \mat I) = 0$.</strong></p>
+    </div>
+  </section>
+
+  <!-- ================================================ symmetric matrices == -->
+  <section class="band" id="symmetric" data-section="Symmetric matrices">
+    <div class="measure">
+      <h2 id="symmetric-h" data-short="Symmetric matrices">Symmetric matrices, and why physics is full of them</h2>
+
+      <p>A matrix is <span class="term">symmetric</span> if $b = c$: the entry in row 1 column 2
+      equals the entry in row 2 column 1. Symmetric matrices behave far better than general ones,
+      in two specific ways that section 2.2 depends on completely.</p>
+
+      <h3>Their eigenvalues are always real</h3>
+      <p>A general quadratic can have complex roots — a rotation matrix does, which is right,
+      since a rotation leaves no direction alone. For a symmetric matrix that can never happen,
+      and the reason is visible in the discriminant.</p>
+
+      <script type="text/x-derive" data-id="la-sym-real" data-title="A symmetric matrix cannot have complex eigenvalues">
+> The characteristic equation, with $c$ replaced by $b$ because the matrix is symmetric.
+\k{quad}{\lambda^{2} - (a+d)\lambda + (ad - b^{2})} = \k{zero}{0}
+---
+> The roots are real exactly when the discriminant is not negative.
+\k{disc}{\Delta} = \k{sq}{(a+d)^{2}} - \k{four}{4(ad - b^{2})}
+---
+> Expand the square and multiply out the bracket.
+\k{disc}{\Delta} = \k{sq}{a^{2} + 2ad + d^{2}} - \k{four}{4ad + 4b^{2}}
+---
+> Collect: $2ad - 4ad = -2ad$, and the rest is a perfect square.
+\k{disc}{\Delta} = \k{sq}{a^{2} - 2ad + d^{2}} + \k{four}{4b^{2}}
+---
+> A square plus a square. It cannot be negative, whatever $a$, $d$ and $b$ are, so the eigenvalues are always real.
+! result
+\k{disc}{\Delta} = \k{sq}{(a - d)^{2}} + \k{four}{4b^{2}} \;\ge\; \k{zero}{0}
+      </script>
+
+      <h3>Their eigenvectors are always perpendicular</h3>
+      <p>This one takes a small observation first: for a symmetric matrix you can move the matrix
+      from one side of a dot product to the other without changing the answer.</p>
+
+      <script type="text/x-derive" data-id="la-sym-swap" data-title="A symmetric matrix can move across a dot product">
+> Write out the left-hand side in components, using the multiplication rule.
+\k{lhs}{\vb u \cdot (\mat A \vb v)} = \k{ex}{u_1(a v_1 + b v_2) + u_2(b v_1 + d v_2)}
+---
+> Multiply out and sort the four terms.
+\k{lhs}{\vb u \cdot (\mat A \vb v)} = \k{ex}{a u_1 v_1 + b u_1 v_2 + b u_2 v_1 + d u_2 v_2}
+---
+> Every term is symmetric under swapping the labels $u$ and $v$: the two middle terms trade places and the outer two are unchanged. So regrouping the other way gives the same total.
+\k{lhs}{\vb u \cdot (\mat A \vb v)} = \k{ex}{(a u_1 + b u_2)v_1 + (b u_1 + d u_2)v_2}
+---
+> And that regrouping is the matrix acting on $\vb u$ instead.
+! result
+\k{lhs}{\vb u \cdot (\mat A \vb v)} = \k{rhs}{(\mat A \vb u) \cdot \vb v}
+      </script>
+
+      <p>Now let $\vb u$ and $\vb v$ be eigenvectors with <em>different</em> eigenvalues, and
+      compute the same quantity two ways.</p>
+
+      <script type="text/x-derive" data-id="la-sym-orthogonal" data-title="Different eigenvalues force perpendicular directions">
+> Take the identity we just proved, with two eigenvectors in it.
+\k{lhs}{\vb u \cdot (\mat A \vb v)} = \k{rhs}{(\mat A \vb u) \cdot \vb v}
+---
+> Each side has an eigenvector inside a matrix, so replace each by its stretch factor.
+\k{lhs}{\vb u \cdot (\k{l2}{\lambda_2} \vb v)} = \k{rhs}{(\k{l1}{\lambda_1} \vb u) \cdot \vb v}
+---
+> A number multiplying one side of a dot product comes straight out to the front.
+\k{l2}{\lambda_2}\,\k{dot}{(\vb u \cdot \vb v)} = \k{l1}{\lambda_1}\,\k{dot}{(\vb u \cdot \vb v)}
+---
+> Bring both terms to one side.
+\k{diff}{(\k{l2}{\lambda_2} - \k{l1}{\lambda_1})}\,\k{dot}{(\vb u \cdot \vb v)} = \k{zero}{0}
+---
+> The eigenvalues were different, so the first bracket is not zero. The other factor must be — and a zero dot product means a right angle.
+! result
+\k{dot}{\vb u \cdot \vb v} = \k{zero}{0}
+      </script>
+
+      <h3>Why physics keeps producing symmetric matrices</h3>
+      <p>This is not a coincidence, and it is worth seeing once in a physical setting rather than
+      taken on trust. Consider two masses joined by springs, the system of section 2.2. Let
+      $K_{12}$ be the force on mass 1 per unit displacement of mass 2, and $K_{21}$ the force on
+      mass 2 per unit displacement of mass 1. Symmetry of the matrix is the claim
+      $K_{12} = K_{21}$.</p>
+
+      <p>The spring joining them is stretched by the <em>difference</em> $x_2 - x_1$, and Hooke's
+      law says it pulls with a force $\kappa(x_2 - x_1)$ on mass 1. By Newton's third law it pulls
+      on mass 2 with exactly the same size of force, in the opposite direction:
+      $-\kappa(x_2-x_1)$. Differentiate: moving mass 2 by one unit changes the force on mass 1 by
+      $\kappa$, and moving mass 1 by one unit changes the force on mass 2 by $\kappa$. The same
+      number both ways, because a single spring is doing both jobs and the third law forces its
+      two ends to agree.</p>
+
+      <p>So the stiffness matrix of any system of masses and springs is symmetric, its eigenvalues
+      are therefore real — which is essential, since they turn out to be squared frequencies and
+      an imaginary frequency would mean the system flies apart — and its eigenvectors are
+      perpendicular, which is why the normal modes of a coupled system are independent of one
+      another.</p>
+
+      <p class="takeaway"><strong>A symmetric matrix always has real eigenvalues and perpendicular
+      eigenvectors, and Newton's third law makes the matrices of spring systems
+      symmetric.</strong></p>
+    </div>
+  </section>
+
+  <!-- ================================================= diagonalization ==== -->
+  <section class="band" id="diagonalization" data-section="Change of basis">
+    <div class="measure">
+      <h2 id="diagonalization-h" data-short="Change of basis">Working in the eigenvector basis</h2>
+
+      <p>Nothing forces you to use $\vu e_1$ and $\vu e_2$. Any two independent vectors will do
+      as a basis, and some choices make a problem far easier than others. For a given matrix, the
+      easiest possible choice is its own eigenvectors — because in that basis it does nothing but
+      stretch each axis.</p>
+
+      <p>Collect the two eigenvectors as the columns of a matrix $\mat P$. Then:</p>
+
+      <script type="text/x-derive" data-id="la-AP-PD" data-title="The matrix, seen in its own eigenvector basis">
+> $\mat P$ has the eigenvectors as its columns. Multiply $\mat A$ by it and use the fact that a matrix acts on each column separately.
+\k{A}{\mat A}\k{P}{\begin{pmatrix} \vb p_1 & \vb p_2 \end{pmatrix}} = \k{cols}{\begin{pmatrix} \mat A \vb p_1 & \mat A \vb p_2 \end{pmatrix}}
+---
+> But those columns are eigenvectors, so each simply gets scaled.
+\k{A}{\mat A}\k{P}{\begin{pmatrix} \vb p_1 & \vb p_2 \end{pmatrix}} = \k{cols}{\begin{pmatrix} \lambda_1 \vb p_1 & \lambda_2 \vb p_2 \end{pmatrix}}
+---
+> Scaling the first column by $\lambda_1$ and the second by $\lambda_2$ is exactly what multiplying on the right by a diagonal matrix does.
+\k{A}{\mat A}\k{P}{\mat P} = \k{P2}{\mat P}\k{D}{\begin{pmatrix} \lambda_1 & 0 \\ 0 & \lambda_2 \end{pmatrix}}
+---
+> The eigenvectors are independent, so $\det \mat P \ne 0$ and $\mat P$ can be undone. Multiply both sides on the left by that inverse.
+! result
+\k{Pinv}{\mat P^{-1}}\k{A}{\mat A}\k{P}{\mat P} = \k{D}{\mat D}
+      </script>
+
+      <p>Read the three factors right to left, which is the order they act in. $\mat P$ takes a
+      list of coordinates in the eigenvector basis and builds the actual arrow. $\mat A$ acts on
+      that arrow. $\mat P^{-1}$ reads the result back as eigenvector coordinates. The claim is
+      that the round trip is just two independent multiplications — the first coordinate times
+      $\lambda_1$, the second times $\lambda_2$. <strong>In its own eigenvector basis, a matrix
+      is nothing but a list of stretch factors.</strong></p>
+
+      <p>For $2\times2$ the inverse is short enough to derive on the spot.</p>
+
+      <script type="text/x-derive" data-id="la-inverse-2x2" data-title="Undoing a 2×2 matrix">
+> Try this candidate: swap the diagonal, negate the off-diagonal, and divide by the determinant.
+\k{cand}{\mat B} = \k{frac}{\frac{1}{ad - bc}}\k{adj}{\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}}
+---
+> Multiply it by the original and work out the four entries.
+\k{prod}{\mat B \mat A} = \k{frac}{\frac{1}{ad - bc}}\k{ent}{\begin{pmatrix} da - bc & db - bd \\ -ca + ac & -cb + ad \end{pmatrix}}
+---
+> The off-diagonal entries cancel to nothing, and both diagonal entries are the determinant itself.
+\k{prod}{\mat B \mat A} = \k{frac}{\frac{1}{ad - bc}}\k{ent}{\begin{pmatrix} ad - bc & 0 \\ 0 & ad - bc \end{pmatrix}}
+---
+> The fraction cancels the entries and leaves the matrix that changes nothing. So the candidate was the inverse — and it only exists when the determinant is non-zero, which is exactly when nothing was crushed and the transformation can be undone.
+! result
+\k{prod}{\mat A^{-1}} = \k{frac}{\frac{1}{\det \mat A}}\k{adj}{\begin{pmatrix} d & -b \\ -c & a \end{pmatrix}}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>With $\mat A = \begin{pmatrix} 2 & 1 \\ 1 & 2\end{pmatrix}$ the eigenvectors were
+        $(1,1)$ and $(1,-1)$, so $\mat P = \begin{pmatrix} 1 & 1 \\ 1 & -1\end{pmatrix}$ and
+        $\det \mat P = -2$. The formula gives
+        $\mat P^{-1} = -\tfrac{1}{2}\begin{pmatrix} -1 & -1 \\ -1 & 1\end{pmatrix}
+        = \begin{pmatrix} \tfrac12 & \tfrac12 \\ \tfrac12 & -\tfrac12\end{pmatrix}$.</p>
+        <p>Now multiply out, right to left. $\mat A \mat P$ has columns $\mat A(1,1) = (3,3)$ and
+        $\mat A(1,-1) = (1,-1)$, so $\mat A \mat P = \begin{pmatrix} 3 & 1 \\ 3 & -1\end{pmatrix}$.
+        Then $\mat P^{-1}(\mat A \mat P)$ has first column
+        $\begin{pmatrix} \tfrac12 & \tfrac12 \\ \tfrac12 & -\tfrac12\end{pmatrix}(3,3) = (3, 0)$
+        and second column $\begin{pmatrix} \tfrac12 & \tfrac12 \\ \tfrac12 & -\tfrac12\end{pmatrix}
+        (1,-1) = (0, 1)$.</p>
+        <p>So $\mat P^{-1}\mat A \mat P = \begin{pmatrix} 3 & 0 \\ 0 & 1\end{pmatrix}$ — the two
+        eigenvalues on the diagonal and nothing else, exactly as the derivation said.</p>
+      </aside>
+
+      <p class="takeaway"><strong>In the basis of its own eigenvectors a matrix is a list of
+      stretch factors: $\mat P^{-1}\mat A\mat P = \mat D$.</strong></p>
+    </div>
+  </section>
+
+  <!-- =============================================== inner products ====== -->
+  <section class="band" id="inner-products" data-section="Functions as vectors">
+    <div class="measure">
+      <h2 id="inner-products-h" data-short="Functions as vectors">Functions as vectors</h2>
+
+      <p>Everything so far has been about arrows in a plane. This subsection is the payoff: the
+      same machinery applies to <em>functions</em>, and once you see how, Fourier series stop
+      being a formula to memorise.</p>
+
+      <p>Start with the connection. Sample a function $f(x)$ at $N$ evenly spaced points and write
+      the values down as a list. That list is a vector with $N$ components. Sample more finely and
+      you get a longer list; a function is what you get in the limit — a vector with a component
+      for every $x$. Adding functions adds them value by value, and multiplying a function by a
+      number multiplies every value, so functions satisfy (1.3.2) exactly as arrows do.</p>
+
+      <p>Then what is the dot product of two functions? Take the dot product of the two sampled
+      lists and see what happens as the sampling gets finer.</p>
+
+      <script type="text/x-derive" data-id="la-riemann-inner" data-title="The dot product of two functions">
+> The dot product of the two sampled lists: multiply matching entries, add them up.
+\k{dot}{\vb f \cdot \vb g} = \k{sum}{\sum_{i=1}^{N}} \k{fi}{f(x_i)}\,\k{gi}{g(x_i)}
+---
+> As $N$ grows this sum grows without limit, because there are more terms. Multiply by the spacing $\Delta x$ to keep it finite — the same weighting you use for any average.
+\k{dot}{\inner{f}{g}} = \k{sum}{\sum_{i=1}^{N}} \k{fi}{f(x_i)}\,\k{gi}{g(x_i)}\,\k{dx}{\Delta x}
+---
+> That is a Riemann sum, and you know what it becomes as the spacing goes to zero.
+! result
+\k{dot}{\inner{f}{g}} = \k{int}{\int_{a}^{b}} \k{fi}{f(x)}\,\k{gi}{g(x)}\,\k{dx}{\dd x}
+      </script>
+
+      <p>So <strong>an integral of a product is a dot product</strong>. Everything the dot product
+      meant for arrows now means the same thing for functions: $\inner{f}{f}$ is a length squared,
+      and — the important one — <span class="term">two functions are perpendicular when the
+      integral of their product is zero</span>.</p>
+
+      <h3>The sines and cosines are perpendicular to each other</h3>
+      <p>Now compute those integrals. The tool is the product-to-sum identity, which comes
+      straight from the angle-addition formulas: adding
+      $\cos(A-B) = \cos A\cos B + \sin A \sin B$ to
+      $\cos(A+B) = \cos A \cos B - \sin A \sin B$ and rearranging gives
+      $\sin A \sin B = \tfrac12[\cos(A-B) - \cos(A+B)]$.</p>
+
+      <script type="text/x-derive" data-id="la-sin-sin" data-title="Two different sines are perpendicular">
+> The integral we want, over one full period.
+\k{I}{I} = \k{int}{\int_{0}^{2\pi}} \k{sn}{\sin nx}\,\k{sm}{\sin mx}\;\k{dx}{\dd x}
+---
+> Product to sum, with $A = nx$ and $B = mx$.
+\k{I}{I} = \k{half}{\tfrac{1}{2}}\k{int}{\int_{0}^{2\pi}} \k{c1}{\cos\!\left[(n-m)x\right]} - \k{c2}{\cos\!\left[(n+m)x\right]} \;\k{dx}{\dd x}
+---
+> Integrate each cosine. Over a whole number of periods a cosine has as much area above the axis as below, so each term vanishes — provided the number in front of $x$ is not zero.
+\k{I}{I} = \k{half}{\tfrac{1}{2}}\left[\k{c1}{\frac{\sin\!\left[(n-m)x\right]}{n-m}} - \k{c2}{\frac{\sin\!\left[(n+m)x\right]}{n+m}}\right]_{0}^{2\pi} = \k{zero}{0}
+---
+> The exception is $n = m$, where the first cosine is $\cos 0 = 1$ and integrates to $2\pi$ instead of cancelling.
+\k{I}{I} = \k{half}{\tfrac{1}{2}}\left(\k{c1}{2\pi} - \k{c2}{0}\right) \quad\text{when } n = m
+---
+> So the sines behave exactly like perpendicular basis vectors: every pair gives zero, and each with itself gives a fixed positive number.
+! result
+\k{I}{\int_{0}^{2\pi}\sin nx \sin mx \;\dd x} = \k{res}{\begin{cases} \pi & n = m \\ 0 & n \ne m\end{cases}}
+      </script>
+
+      <p>The identical calculation with $\cos A\cos B = \tfrac12[\cos(A-B) + \cos(A+B)]$ gives the
+      same answer for cosines. And sines against cosines vanish always, including when
+      $n = m$:</p>
+
+      <script type="text/x-derive" data-id="la-sin-cos" data-title="Every sine is perpendicular to every cosine">
+> The mixed integral, using $\sin A \cos B = \tfrac12[\sin(A+B) + \sin(A-B)]$.
+\k{I}{\int_{0}^{2\pi}\sin nx \cos mx \;\dd x} = \k{half}{\tfrac{1}{2}}\k{int}{\int_{0}^{2\pi}} \k{s1}{\sin\!\left[(n+m)x\right]} + \k{s2}{\sin\!\left[(n-m)x\right]}\;\k{dx}{\dd x}
+---
+> Both terms are sines of a whole number of turns, and a sine has equal area above and below the axis over a full period. When $n = m$ the second term is $\sin 0 = 0$, which also integrates to nothing.
+! result
+\k{I}{\int_{0}^{2\pi}\sin nx \cos mx \;\dd x} = \k{zero}{0} \quad\text{for every } n, m
+      </script>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="function-inner-product"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the shaded area above the axis exactly cancels the area below
+        whenever the two frequencies differ, and that only when the two functions are identical
+        does the product stay positive and the running total climb to $\pi$.</figcaption>
+      </figure>
+
+      <h3>Fourier coefficients are components</h3>
+      <p>Now the question that started all this. Suppose a function can be written as a sum of
+      sines. How do you find how much of each one is in there?</p>
+
+      <p>For an arrow you would ask the same question — how much $\vu e_1$ is in $\vb v$? — and
+      you would answer it by taking a dot product with $\vu e_1$, because every other basis
+      vector contributes nothing. Do the same thing to the function.</p>
+
+      <script type="text/x-derive" data-id="la-coeff-projection" data-title="Picking one harmonic out of a sum">
+> Suppose the function is some combination of sines, with unknown amounts $b_m$.
+\k{f}{f(x)} = \k{sum}{\sum_{m=1}^{\infty}} \k{bm}{b_m}\,\k{sm}{\sin mx}
+---
+> Take the inner product of both sides with one particular sine — the same move as dotting an arrow with one basis vector.
+\k{ip}{\inner{f}{\sin nx}} = \k{sum}{\sum_{m=1}^{\infty}} \k{bm}{b_m}\,\k{ipm}{\inner{\sin mx}{\sin nx}}
+---
+> Every term in that sum is zero except the one with $m = n$, which we computed to be $\pi$. The whole infinite sum collapses to a single term.
+! hl ipm
+\k{ip}{\inner{f}{\sin nx}} = \k{bn}{b_n}\,\k{pi}{\pi}
+---
+> Divide, and write the inner product back out as the integral it is.
+! result
+\k{bn}{b_n} = \k{frac}{\frac{1}{\pi}}\k{int}{\int_{0}^{2\pi}} \k{f}{f(x)}\,\k{sn}{\sin nx}\;\k{dx}{\dd x}
+      </script>
+
+      <p>That is the Fourier coefficient formula, and it is not a formula at all — it is
+      "component along a basis vector", written for functions. Section 1.4 takes it from here.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Let $f(x) = 3\sin x - \sin 3x$. What is $b_2$?</p>
+        <p>Without the orthogonality result you would have to integrate
+        $\int_0^{2\pi}(3\sin x - \sin 3x)\sin 2x\,\dd x$ term by term. With it, you can read the
+        answer off: $\sin 2x$ is perpendicular to both $\sin x$ and $\sin 3x$, so
+        $b_2 = 0$. Likewise $b_1 = 3$ and $b_3 = -1$, and every other coefficient is zero.</p>
+        <p>The function was already written in the basis. Finding its components was nothing but
+        reading them.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Integrating a product is a dot product for functions, the
+      sines and cosines are mutually perpendicular, and so a Fourier coefficient is a component
+      exactly as $v_1$ is.</strong></p>
+    </div>
+  </section>
+
+  <!-- ===================================================== QM bridge ====== -->
+  <section class="band" id="qm-bridge" data-section="Where this is going">
+    <div class="measure">
+      <h2 id="qm-bridge-h" data-short="Where this is going">Where this is going: a look ahead</h2>
+
+      <p>This is motivation, not a lesson in quantum mechanics; it is here because the effort you
+      have just spent buys more than coupled springs.</p>
+
+      <p>Quantum mechanics is written in exactly this language. A state is a vector — usually
+      with complex components and infinitely many of them, but a vector, obeying (1.3.2). A
+      measurable quantity is a matrix acting on those vectors, and it is always the complex
+      version of a symmetric matrix, for the reason you would now expect: the results of a
+      measurement have to be real numbers, and real eigenvalues are what symmetric matrices
+      guarantee.</p>
+
+      <p><strong>The possible outcomes of a measurement are the eigenvalues.</strong> The states
+      that give one outcome with certainty are the eigenvectors. Because those eigenvectors are
+      perpendicular, a general state can be broken into components along them — and the size of
+      each component squared is the probability of that outcome. That decomposition is the same
+      operation as writing an arrow in a basis, and as finding a Fourier coefficient.</p>
+
+      <p>Even the equations look the same. Here is the normal-mode condition you will derive in
+      section 2.2, beside the time-independent Schrödinger equation:</p>
+
+      <div class="eq" id="eq-1-3-6">
+        <div class="eq__body">$$ \mat K \vb a = \omega^{2}\mat M \vb a
+        \qquad\qquad \hat H \psi = E \psi $$</div>
+        <div class="eq__num">(1.3.6)</div>
+      </div>
+
+      <p>Both are $\mat A \vb v = \lambda \vb v$. On the left the eigenvalue is a squared
+      frequency and the eigenvector is a pattern of motion; on the right the eigenvalue is an
+      energy and the eigenvector is a state. The mathematics does not know the difference, which
+      is why doing it once was worth it.</p>
+
+      <p>One last piece. If a matrix is already diagonal, the equations it produces come apart
+      into separate, one-variable problems — and you can solve those.</p>
+
+      <script type="text/x-derive" data-id="la-diagonal-evolution" data-title="Why the eigenvector basis solves the problem">
+> A system of coupled equations: each derivative depends on all the components.
+\k{ddt}{\frac{\dd}{\dd t}}\k{x}{\vb x} = \k{A}{\mat A}\,\k{x}{\vb x}
+---
+> Write the vector in the eigenvector basis instead: $\vb x = \mat P \vb q$, where $\vb q$ holds the coordinates in that basis.
+\k{ddt}{\frac{\dd}{\dd t}}\k{P}{\mat P}\k{q}{\vb q} = \k{A}{\mat A}\,\k{P}{\mat P}\k{q}{\vb q}
+---
+> $\mat P$ is a fixed matrix, so it passes through the derivative untouched. Multiply both sides on the left by $\mat P^{-1}$.
+\k{ddt}{\frac{\dd}{\dd t}}\k{q}{\vb q} = \k{Pinv}{\mat P^{-1}}\k{A}{\mat A}\,\k{P}{\mat P}\k{q}{\vb q}
+---
+> And that combination is diagonal, by the derivation two sections ago.
+\k{ddt}{\frac{\dd}{\dd t}}\k{q}{\vb q} = \k{D}{\mat D}\,\k{q}{\vb q}
+---
+> Written out, the components no longer talk to each other: each is its own single-variable equation, with a solution you already know.
+! result
+\k{dq}{\dot q_n} = \k{lam}{\lambda_n}\, \k{qn}{q_n} \quad\Longrightarrow\quad \k{qn}{q_n(t)} = \k{q0}{q_n(0)}\,\k{exp}{e^{\lambda_n t}}
+      </script>
+
+      <p>Section 2.2 does precisely this to two masses on three springs, where the $q_n$ are
+      called normal coordinates and the $\lambda_n$ are minus the squared frequencies. Quantum
+      mechanics does precisely this to the Schrödinger equation, where the $\lambda_n$ are
+      $-iE_n/\hbar$ and the result is that a state of definite energy just rotates its phase.
+      Same derivation, twice.</p>
+
+      <p class="takeaway"><strong>Changing to the eigenvector basis turns a tangle of coupled
+      equations into separate one-variable problems, which is the only reason any of this is
+      worth doing.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Find the eigenvalues and eigenvectors of
+            $\begin{pmatrix} 1 & 2 \\ 2 & 1\end{pmatrix}$, and check that the eigenvectors come
+            out perpendicular.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>Trace 2, determinant $1 - 4 = -3$, so $\lambda^{2} - 2\lambda - 3 = 0$ and
+            $\lambda = 3$ or $\lambda = -1$.</p>
+            <p>For $\lambda = 3$: $\begin{pmatrix} -2 & 2 \\ 2 & -2\end{pmatrix}\vb v = 0$ gives
+            $v_2 = v_1$, so $(1,1)$. For $\lambda = -1$: $v_2 = -v_1$, so $(1,-1)$.</p>
+            <p>$(1,1)\cdot(1,-1) = 0$. The matrix is symmetric, so this was guaranteed.</p>
+            </div></details></li>
+
+          <li>Where does $\begin{pmatrix} 0 & -1 \\ 1 & 0\end{pmatrix}$ send $\vu e_1$ and
+            $\vu e_2$? Why does it have no real eigenvectors?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>Reading the columns: $\vu e_1 \to (0,1)$ and $\vu e_2 \to (-1,0)$. Both basis
+            arrows have turned a quarter turn anticlockwise, so the matrix rotates the whole
+            plane by $90^\circ$.</p>
+            <p>A rotation by a quarter turn leaves no direction pointing where it started, so
+            there can be no real eigenvector. The algebra agrees: trace 0, determinant 1, so
+            $\lambda^{2} + 1 = 0$, whose roots are $\pm i$.</p>
+            </div></details></li>
+
+          <li>$\mat A = \begin{pmatrix} 3 & 6 \\ 1 & 2\end{pmatrix}$ has determinant zero. Find a
+            non-zero $\vb v$ with $\mat A\vb v = \vb 0$, and describe what the matrix does to the
+            plane.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>The rows both say $3v_1 + 6v_2 = 0$ up to a factor, so $v_1 = -2v_2$: take
+            $\vb v = (2,-1)$. Check: $\mat A(2,-1) = (6-6,\; 2-2) = (0,0)$. ✓</p>
+            <p>The two columns $(3,1)$ and $(6,2)$ lie along one line, so everything in the plane
+            lands on that line: the matrix flattens the plane onto the line through $(3,1)$, and
+            the whole direction $(2,-1)$ is crushed to the origin.</p>
+            </div></details></li>
+
+          <li>Without integrating anything, give $\int_{0}^{2\pi}\sin 2x\,\sin 3x\;\dd x$ and
+            $\int_{0}^{2\pi}\sin^{2} 3x\;\dd x$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>$0$ and $\pi$. Different harmonics are perpendicular; a harmonic with itself gives
+            $\pi$, which is its length squared in this inner product.</p>
+            </div></details></li>
+
+          <li>A symmetric matrix has $a = 1$, $d = 5$ and $b = c = 2$. Show its eigenvalues are
+            real without solving for them, then find them.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>The discriminant is $(a-d)^{2} + 4b^{2} = 16 + 16 = 32$, which is positive because
+            it is a sum of two squares — that is the general argument, not a special case.</p>
+            <p>Trace 6, determinant $5 - 4 = 1$, so $\lambda^{2} - 6\lambda + 1 = 0$ and
+            $\lambda = 3 \pm 2\sqrt{2}$, that is $5.828$ and $0.172$. Their sum is 6 and their
+            product is 1. ✓</p>
+            </div></details></li>
+        </ol>
+      </aside>
+    </div>
+  </section>
+
   <nav class="pager"></nav>
 </main>
 

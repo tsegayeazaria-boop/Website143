@@ -35,6 +35,12 @@
      children and painted borders instead; this list is only a fast path. */
   var LINE_CLASSES = ['frac-line', 'overline-line', 'underline-line', 'katex-rule',
                       'katex-hline', 'katex-hdashline', 'sout', 'katex-sout', 'vertical-separator'];
+  /* Containers whose insides are positioned by CSS that only applies within
+     them — an accent body is given zero width so its glyph can overhang. A
+     clone lifted out of such a container would be laid out differently, and it
+     reads as a single symbol regardless, so the walk stops here. */
+  var ATOMIC = ['accent', 'katex-accent', 'overline', 'underline', 'katex-overline',
+                'katex-underline', 'boxed', 'fbox', 'fcolorbox', 'cancel-pad', 'sout'];
   var FONT_CLASSES = ['mathnormal', 'mathrm', 'mathit', 'mathbf', 'boldsymbol', 'mathcal',
                       'mathbb', 'mathfrak', 'mathscr', 'mathsf', 'mathtt', 'amsrm',
                       'textrm', 'textit', 'textbf', 'textsf', 'texttt', 'mainrm'];
@@ -138,7 +144,32 @@
     d.el = { host: host };
   }
 
+  /* A derivation is a full-width sticky stage, so it cannot live inside the
+     34rem reading column the prose is set in. Split that column around the
+     script element and hand back a placeholder at the section's own level for
+     the stage to take over — authors then never have to think about it. */
+  function hoist(scriptEl) {
+    var col = scriptEl.closest('.measure, .breakout, .wide');
+    var placeholder = document.createElement('div');
+    if (!col || !col.parentNode) {
+      scriptEl.parentNode.insertBefore(placeholder, scriptEl);
+      scriptEl.parentNode.removeChild(scriptEl);
+      return placeholder;
+    }
+    var after = col.cloneNode(false);
+    var node = scriptEl.nextSibling, next;
+    while (node) { next = node.nextSibling; after.appendChild(node); node = next; }
+    col.removeChild(scriptEl);
+    col.parentNode.insertBefore(placeholder, col.nextSibling);
+    if (after.textContent.trim() || after.children.length) {
+      col.parentNode.insertBefore(after, placeholder.nextSibling);
+    }
+    if (!col.textContent.trim() && !col.children.length) col.parentNode.removeChild(col);
+    return placeholder;
+  }
+
   function buildStage(d, scriptEl) {
+    scriptEl = hoist(scriptEl);
     var stage = elt('section', 'stage stage--derive');
     stage.id = 'derive-' + d.id;
     stage.setAttribute('data-derive', d.id);
@@ -229,6 +260,7 @@
     frag.appendChild(stage);
     frag.appendChild(det);
     scriptEl.parentNode.replaceChild(frag, scriptEl);
+    d.el = d.el || {};
 
     d.mode = 'stage';
     d.el = { stage: stage, board: board, fx: fx, count: count, dots: dotEls, panels: panelEls };
@@ -317,6 +349,11 @@
           continue;
         }
         if (el.tagName.toLowerCase() === 'svg') continue;
+        if (ATOMIC.some(function (k) { return cl.contains(k); })) {
+          var at = el.textContent.replace(/[\u200b\s]+/g, '');
+          out.push({ el: el, kind: 'atom', key: 'atom:' + at, text: at, sig: fontSig(el) });
+          continue;
+        }
         if (el.firstElementChild && el.firstElementChild.tagName.toLowerCase() === 'svg') {
           out.push({ el: el, kind: 'svg', key: 'svg:' + visualRole(el), text: '', sig: '' });
           continue;
@@ -336,7 +373,7 @@
   /* A tagged term's own box includes the spacing KaTeX puts around it and
      misses tall inline-block children, so measure the ink instead. */
   function inkRect(u) {
-    if (u.kind !== 'tag') return u.el.getBoundingClientRect();
+    if (u.kind !== 'tag' && u.kind !== 'atom') return u.el.getBoundingClientRect();
     var leaves = collectUnits(u.el, false);
     if (!leaves.length) return u.el.getBoundingClientRect();
     var l = Infinity, t = Infinity, r = -Infinity, b = -Infinity;
@@ -524,6 +561,13 @@
     w.style.letterSpacing = ps.letterSpacing;
     w.style.color = cs.color;
     var c = src.cloneNode(true);
+    /* Anything the page positioned explicitly keeps that positioning: lifted
+       out of its container the rule that produced it no longer applies. */
+    if (cs.position !== 'static') {
+      c.style.position = cs.position;
+      c.style.left = cs.left; c.style.top = cs.top;
+      if (parseFloat(cs.width) < 0.5) c.style.width = cs.width;
+    }
     if (u.kind === 'line' || u.kind === 'svg') {
       /* Rules and radicals are drawn by rules that reach them through their
          ancestors — a fraction bar is a border, a radical tail is clipped by
@@ -543,7 +587,7 @@
     }
     w.appendChild(c);
     fx.appendChild(w);
-    return { w: w, c: c, kindTag: u.kind === 'tag' };
+    return { w: w, c: c, kindTag: u.kind === 'tag' || u.kind === 'atom' };
   }
 
   function buildTransition(d, k) {
