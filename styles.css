@@ -896,6 +896,7 @@ tr[data-current="1"] td { color: var(--ink-bright); }
 .s-fill-f  { fill: var(--fail); }
 .s-fill-p  { fill: var(--probability); }
 .s-fill-i  { fill: var(--ink-bright); }
+.s-fill-m  { fill: var(--muted); }
 .s-grab    { cursor: grab; }
 .s-shade   { stroke: none; }
 .s-ghost-grid { stroke: var(--hairline); stroke-dasharray: 2 5; }

@@ -67,6 +67,10 @@
     var marks = V.pool(gMark, function () { return S.path('', 's-ghost'); });
     var dots = V.pool(gMark, function () { return S.circle(0, 0, 3.2, 's-fill-i'); });   /* keyed apart from marks */
     var texts = V.pool(gText, function () { return S.text(0, 0, '', 's-lbl', 'middle'); });
+    /* The furniture a string is attached to. A wall, a ring free to slide on a
+       pole, a join between two strings: what the ends of the medium actually
+       are, which is the whole content of a boundary condition. */
+    var hw = V.pool(gMark, function () { return S.g({}); });
 
     function pts(ys, r) {
       var n = ys.length - 1, out = new Array(ys.length);
@@ -176,6 +180,30 @@
         S.op(el, (m.op == null ? 1 : m.op) * (m._in == null ? 1 : m._in));
       });
       marks.sweep(); dots.sweep();
+
+      (st.hardware || []).forEach(function (h) {
+        var row = h.row || 0, g = hw.use('h' + h.key);
+        while (g.firstChild) g.removeChild(g.firstChild);
+        var x = PX(h.x), top = rowTop(row), bot = top + rowH, mid = PY(h.y || 0, row);
+        if (h.kind === 'wall') {
+          /* Sized to the medium, not to the pane: a wall drawn the full height
+             of a tall row dominates the wave it is holding. */
+          var wh = Math.min(rowH * 0.55, 34);
+          g.appendChild(S.rect(x - 3, mid - wh / 2, 6, wh, 's-fill-i'));
+        } else if (h.kind === 'ring') {
+          /* A pole the ring can slide up and down, and the ring on it. */
+          g.appendChild(S.line(x, top + rowH * 0.06, x, bot - rowH * 0.06, 's-axis'));
+          var c = S.circle(x, mid, 4.5, V.strokeClass(h.tone || 'quantum'));
+          c.setAttribute('fill', 'none');
+          c.setAttribute('stroke-width', '2');
+          g.appendChild(c);
+        } else {
+          g.appendChild(S.line(x, top, x, bot, 's-grid s-dash'));
+          g.appendChild(S.circle(x, mid, 3.4, V.fillClass(h.tone || 'ink')));
+        }
+        S.op(g, (h.op == null ? 1 : h.op) * (h._in == null ? 1 : h._in));
+      });
+      hw.sweep();
 
       (st.notes || []).forEach(function (t) {
         var el = texts.use('t' + t.key);

@@ -50,9 +50,18 @@
     var dashes = V.pool(gBack, function () { return S.line(0, 0, 0, 0, 's-grid s-dash'); });
     var arrows = V.pool(gArrow, function () { return S.arrow(svg, 0, 0, 0, 0, 'q'); });
     var marks = V.pool(gArrow, function () { return S.path('', 's-ghost'); });
+    var dots2 = V.pool(gArrow, function () { return S.circle(0, 0, 3.6, 's-fill-i'); });
     var texts = V.pool(gText, function () { return S.text(0, 0, '', 's-lbl', 'middle'); });
 
     function posOf(st, i) { return rest[i] + (st.x[i] || 0) * scale; }
+    /* A marker that is not one of the masses: the centre of a pair, the point
+       half a separation out. Its index may be fractional, and it sits at the
+       same scale everything else does. */
+    function restAt(i) {
+      var a = Math.floor(i), b = Math.ceil(i);
+      if (a === b) return rest[M.clamp(a, 0, n - 1)];
+      return rest[M.clamp(a, 0, n - 1)] + (rest[M.clamp(b, 0, n - 1)] - rest[M.clamp(a, 0, n - 1)]) * (i - a);
+    }
 
     function set(st) {
       st = st || {};
@@ -83,7 +92,10 @@
         mk.setAttribute('class', V.fillClass((st.tone && st.tone[m]) || 'wave'));
         mk.setAttribute('x', (px - box / 2).toFixed(2));
         mk.setAttribute('y', (yM - box / 2).toFixed(2));
-        mk.setAttribute('width', String(box)); mk.setAttribute('height', String(box));
+        var bw = box * ((st.size && st.size[m]) || 1);
+        mk.setAttribute('x', (px - bw / 2).toFixed(2));
+        mk.setAttribute('y', (yM - bw / 2).toFixed(2));
+        mk.setAttribute('width', String(bw)); mk.setAttribute('height', String(bw));
         var dl = dashes.use('d' + m);
         S.setArrow(dl, rest[m], yM - box, rest[m], yM + box);
         S.op(dl, st.rest === false ? 0 : 0.8);
@@ -103,6 +115,16 @@
       });
       arrows.sweep();
 
+      (st.points || []).forEach(function (p) {
+        var el = dots2.use('p' + p.key);
+        el.setAttribute('class', V.fillClass(p.tone));
+        el.setAttribute('cx', (restAt(p.i) + (p.x || 0) * scale).toFixed(2));
+        el.setAttribute('cy', String(yM + (p.dy || 0)));
+        el.setAttribute('r', String(p.r || 3.6));
+        S.op(el, (p.op == null ? 1 : p.op) * (p._in == null ? 1 : p._in));
+      });
+      dots2.sweep();
+
       (st.calipers || []).forEach(function (c) {
         var el = marks.use('c' + c.key);
         el.setAttribute('class', V.strokeClass(c.tone));
@@ -115,7 +137,8 @@
         var el = texts.use('t' + t.key);
         el.setAttribute('class', V.labelClass(t.tone));
         el.setAttribute('text-anchor', t.cap ? 'end' : (t.anchor || 'middle'));
-        el.setAttribute('x', (t.cap ? W - 6 : t.on != null ? posOf(st, t.on) : t.px).toFixed(2));
+        el.setAttribute('x', (t.cap ? W - 6 : t.on != null ? posOf(st, t.on)
+                       : t.i != null ? restAt(t.i) + (t.x || 0) * scale : t.px).toFixed(2));
         el.setAttribute('y', (t.cap ? 12 : t.py != null ? t.py : yM + (t.dy || 0)).toFixed(2));
         if (el.textContent !== t.text) el.textContent = t.text;
         S.op(el, (t.op == null ? 1 : t.op) * (t._in == null ? 1 : t._in));
@@ -124,6 +147,9 @@
     }
 
     void M;
-    return { svg: svg, set: set, rest: rest, scale: scale, yM: yM };
+    /* calY is where a caliper's bar sits, so a label naming it can be put
+       just above without guessing at the bench's height. */
+    return { svg: svg, set: set, rest: rest, scale: scale, yM: yM,
+             calY: yM - box / 2 - 12, box: box };
   };
 })(window.A = window.A || {});

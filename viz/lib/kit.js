@@ -220,7 +220,7 @@
   };
   V.fillClass = function (t) {
     return { wave: 's-fill-w', quantum: 's-fill-q', fail: 's-fill-f', prob: 's-fill-p',
-             ink: 's-fill-i' }[t] || 's-fill-i';
+             ink: 's-fill-i', ghost: 's-fill-m' }[t] || 's-fill-i';
   };
 
   /* Highlighting. A step that is pure algebra holds its picture still and

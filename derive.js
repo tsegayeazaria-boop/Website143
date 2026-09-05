@@ -1000,10 +1000,13 @@
              'width', 'height', 'points', 'transform', 'opacity', 'fill-opacity',
              'stroke-opacity', 'stroke-dasharray', 'class', 'visibility'];
   function vizPrint(host) {
-    var svg = host.querySelector('svg');
-    if (!svg) return 'no-svg';
+    /* Every svg in the host, not just the first: a picture split into two
+       panes would otherwise be judged entirely on its top half, and a change
+       confined to the bottom one would read as no change at all. */
+    var svgs = host.querySelectorAll('svg');
+    if (!svgs.length) return 'no-svg';
     var h = 0, n = 0;
-    var nodes = svg.querySelectorAll('*');
+    var nodes = host.querySelectorAll('svg *');
     for (var i = 0; i < nodes.length; i++) {
       var e = nodes[i], str = e.tagName;
       for (var j = 0; j < GEO.length; j++) {
@@ -1014,9 +1017,12 @@
       for (var c = 0; c < str.length; c++) h = (h * 31 + str.charCodeAt(c)) | 0;
       n++;
     }
-    var b;
-    try { b = svg.getBBox(); } catch (err) { b = { width: 0, height: 0 }; }
-    return n + ':' + h + ':' + Math.round(b.width) + 'x' + Math.round(b.height);
+    var w = 0, ht = 0;
+    for (var s2 = 0; s2 < svgs.length; s2++) {
+      try { var b = svgs[s2].getBBox(); w = Math.max(w, b.width); ht = Math.max(ht, b.height); }
+      catch (err) { /* an unrendered svg has no box; the node count still counts */ }
+    }
+    return n + ':' + h + ':' + Math.round(w) + 'x' + Math.round(ht);
   }
 
   /* The alignment check is the invariant the whole effect rests on: at each
