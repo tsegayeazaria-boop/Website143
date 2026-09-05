@@ -155,6 +155,13 @@
 
   /* An arc between two angles, for "this angle here". Radius is in pixels. */
   An.arcD = function (cx, cy, r, a0, a1) {
+    /* A full turn has no arc: start and end coincide and the path draws
+       nothing, so close it as two halves instead. */
+    if (Math.abs(a1 - a0) >= Math.PI * 2 - 1e-6) {
+      return 'M' + (cx + r).toFixed(2) + ' ' + cy.toFixed(2) +
+             'A' + r.toFixed(2) + ' ' + r.toFixed(2) + ' 0 1 0 ' + (cx - r).toFixed(2) + ' ' + cy.toFixed(2) +
+             'A' + r.toFixed(2) + ' ' + r.toFixed(2) + ' 0 1 0 ' + (cx + r).toFixed(2) + ' ' + cy.toFixed(2);
+    }
     var big = Math.abs(a1 - a0) > Math.PI ? 1 : 0;
     var sweep = a1 > a0 ? 0 : 1;
     return 'M' + (cx + Math.cos(a0) * r).toFixed(2) + ' ' + (cy - Math.sin(a0) * r).toFixed(2) +

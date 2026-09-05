@@ -302,6 +302,15 @@
     return d;
   };
   S.poly = function (pts, cls) { return S.path(S.polyD(pts), cls); };
+  /* A coil spring between two points, as a zig-zag. Every picture of a mass on
+     a spring on this site draws one, so it lives here rather than being
+     rewritten wherever a spring is needed. */
+  S.springD = function (xa, xb, y, coils, amp) {
+    var pts = [[xa, y]], n = coils * 2, i;
+    for (i = 1; i < n; i++) pts.push([xa + (xb - xa) * i / n, y + (i % 2 ? -amp : amp)]);
+    pts.push([xb, y]);
+    return S.polyD(pts);
+  };
   S.areaD = function (pts, baseY) {
     if (!pts.length) return '';
     return S.polyD(pts) + 'L' + pts[pts.length - 1][0].toFixed(2) + ' ' + baseY +

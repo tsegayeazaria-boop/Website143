@@ -708,14 +708,14 @@ input[type="range"]::-moz-range-thumb {
 /* An explicit box, so the picture's size can never depend on the equation's:
    a content-sized picture would loop board width -> scale -> height -> reflow
    with layoutBoard caching a width that is already stale. */
-/* A fixed band rather than a ratio: the pin clips, so the picture's height
-   must be something the equation can be laid out around, not a consequence of
-   the width. The SVG letterboxes inside it. */
+/* Stacked, the picture keeps the shape it was drawn for and simply gets
+   smaller: a picture designed square does not become a picture when it is
+   stretched into a full-width band, it becomes a small drawing with a lot of
+   margin. The height is capped so the equation always has room under it. */
 .derive__body[data-split="stack"] > .derive__viz {
   flex: 0 0 auto;
-  width: 100%;
-  aspect-ratio: auto;
-  height: min(20svh, 8.5rem);
+  width: auto;
+  height: min(30svh, 15rem);
   align-self: center;
 }
 /* Clipped to its own box: a grid or an axis that runs to the edge of the
@@ -777,6 +777,7 @@ input[type="range"]::-moz-range-thumb {
   /* A stacked picture needs its own band; the pin clips, so buy the height
      rather than letting the equation get pushed out of sight. */
   .stage--derive[data-viz="1"] .stage__canvas { height: 56svh; }
+  .derive__body[data-split="stack"] > .derive__viz { height: min(22svh, 9rem); }
   .stage--derive .stage__scroll { margin-top: 0; }
   .stage--derive .stage__panels { padding-block: 8vh 30vh; }
   .stage--derive .stage__panel { margin-inline: auto; }

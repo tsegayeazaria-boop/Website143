@@ -135,7 +135,7 @@
 
       (st.legs || []).forEach(function (g) {
         var el = legs.use('g' + g.key);
-        el.setAttribute('class', V.strokeClass(g.tone) + ' s-dash');
+        el.setAttribute('class', V.strokeClass(g.tone) + (g.solid ? '' : ' s-dash'));
         S.setArrow(el, PX(g.x0 || 0), PY(g.y0 || 0), PX(g.x1 || 0), PY(g.y1 || 0));
         S.op(el, (g.op == null ? 0.85 : g.op) * (g._in == null ? 1 : g._in));
       });
@@ -176,11 +176,14 @@
       (st.notes || []).forEach(function (t) {
         var el = texts.use('t' + t.key);
         el.setAttribute('class', V.labelClass(t.tone));
-        el.setAttribute('text-anchor', t.anchor || 'middle');
+        /* A caption goes top-right, where no axis label ever is. Saying
+           `cap: true` is how a picture asks for that, rather than every
+           picture guessing at coordinates that depend on its own centring. */
+        el.setAttribute('text-anchor', t.cap ? 'end' : (t.anchor || 'middle'));
         /* A caption belongs at a fixed corner of the picture, not at a place in
            the plane that the drawing may later cover. */
-        el.setAttribute('x', (t.px != null ? t.px : PX(t.x || 0)).toFixed(2));
-        el.setAttribute('y', (t.py != null ? t.py : PY(t.y || 0) + (t.dy || 0)).toFixed(2));
+        el.setAttribute('x', (t.cap ? W - 8 : t.px != null ? t.px : PX(t.x || 0)).toFixed(2));
+        el.setAttribute('y', (t.cap ? 14 : t.py != null ? t.py : PY(t.y || 0) + (t.dy || 0)).toFixed(2));
         if (el.textContent !== t.text) el.textContent = t.text;
         S.op(el, (t.op == null ? 1 : t.op) * (t._in == null ? 1 : t._in));
       });

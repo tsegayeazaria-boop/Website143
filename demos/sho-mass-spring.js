@@ -115,12 +115,6 @@
       { label: 'total energy', name: 'E' }
     ]);
 
-    function springPath(xa, xb, y, coils, amp) {
-      var pts = [[xa, y]], n = coils * 2, i;
-      for (i = 1; i < n; i++) pts.push([xa + (xb - xa) * i / n, y + (i % 2 ? -amp : amp)]);
-      pts.push([xb, y]);
-      return S.polyD(pts);
-    }
 
     function draw() {
       var w = Math.sqrt(k / m);
@@ -128,7 +122,7 @@
       var x = s.x(t), v = s.v(t), a = -w * w * x;
 
       var px = restX + x * scale;
-      S.setD(spring, springPath(wallX, px - box / 2, yM, 9, 12));
+      S.setD(spring, S.springD(wallX, px - box / 2, yM, 9, 12));
       mass.setAttribute('x', px - box / 2); mass.setAttribute('y', yM - box / 2);
       S.setArrow(vArrow, px, yM - box / 2 - 14, px + v * 55, yM - box / 2 - 14);
       S.setArrow(aArrow, px, yM + box / 2 + 14, px + a * 0.9, yM + box / 2 + 14);

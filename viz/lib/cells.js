@@ -53,9 +53,9 @@
       (st.notes || []).forEach(function (n) {
         var t = texts.use('n' + n.key);
         t.setAttribute('class', V.labelClass(n.tone));
-        t.setAttribute('text-anchor', n.anchor || 'middle');
-        t.setAttribute('x', (n.px != null ? n.px : padL + (n.col + 0.5) * cw).toFixed(2));
-        t.setAttribute('y', (n.py != null ? n.py : padT + (n.row + 0.5) * ch + 4).toFixed(2));
+        t.setAttribute('text-anchor', n.cap ? 'end' : (n.anchor || 'middle'));
+        t.setAttribute('x', (n.cap ? W - 8 : n.px != null ? n.px : padL + (n.col + 0.5) * cw).toFixed(2));
+        t.setAttribute('y', (n.cap ? 13 : n.py != null ? n.py : padT + (n.row + 0.5) * ch + 4).toFixed(2));
         if (t.textContent !== n.text) t.textContent = n.text;
         S.op(t, (n.op == null ? 1 : n.op) * (n._in == null ? 1 : n._in));
       });

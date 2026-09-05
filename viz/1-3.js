@@ -8,7 +8,7 @@
    ========================================================================= */
 (function (A) {
   'use strict';
-  var V = A.viz;
+  var V = A.viz, M = A.math;
 
   /* ---------------------------------------------- vectors add separately --- */
   /* The right-hand side of step one, read left to right, is a chain of four
@@ -475,9 +475,17 @@
   var EV = A.phys.eig2(AS[0], AS[1], AS[2], AS[3]);
 
   A.viz('la-eigen-check', function (root) {
-    var p = V.plane(root, {
+    var panes = V.split(root, 2, [0.32, 1]);
+    /* A look ahead to §2.2: these two directions are the two ways a pair of
+       coupled masses can move, and the eigenvector is the shape of the motion.
+       Drawn here so the reader meets the object before the algebra names it. */
+    var bn = V.bench(panes[0], {
+      label: 'The two masses whose modes these directions are.',
+      w: 320, h: 62, n: 2, box: 15, scale: 26
+    });
+    var p = V.plane(panes[1], {
       label: 'Two directions this matrix only stretches, built one column at a time.',
-      unit: 35, cx: 74, cy: 120
+      w: 320, h: 164, unit: 23, cx: 66, cy: 82
     });
     function build(v, chained, showImage, rays) {
       var c1 = col1(AS), c2 = col2(AS);
@@ -508,7 +516,22 @@
       build([1, -1], 1, 0, false),     /* 2 — now the other direction */
       build([1, -1], 0.35, 1, true)    /* 3 — unchanged; both directions marked */
     ];
-    return { update: function (k, f) { p.set(V.at(states, k, f)); } };
+    /* Which mode the bench runs is decided by the step: the first pair of
+       steps is the (1,1) direction, the second pair the (1,−1) one. */
+    var modes = [[1, 1], [1, 1], [1, -1], [1, -1]];
+    return {
+      animates: true,
+      update: function (k, f, t) {
+        p.set(V.at(states, k, f));
+        var m = modes[M.clamp(f > 0.5 ? k + 1 : k, 0, 3)];
+        var a = Math.cos(t * (m[1] > 0 ? 0.9 : 1.6));
+        bn.set({
+          x: [m[0] * a, m[1] * a],
+          slack: m[1] > 0 ? [1] : [],
+          notes: [{ key: 'l', cap: true, text: m[1] > 0 ? 'together' : 'opposed', tone: 'ghost' }]
+        });
+      }
+    };
   });
 
   A.viz('la-shift', function (root) {
@@ -681,7 +704,7 @@
         notes: [
           { key: 'l1', x: A1 / 2, y: A1 / 2, text: split ? '(a−d)²' : '', tone: 'wave' },
           { key: 'l2', x: A1 + 0.14 + A2 / 2, y: A2 / 2, text: split ? '(2b)²' : '', tone: 'quantum', op: split },
-          { key: 'sum', px: 160, py: 112, text: label, tone: 'ghost' }
+          { key: 'sum', cap: true, text: label, tone: 'ghost' }
         ]
       };
     }
@@ -693,7 +716,7 @@
           { key: 'r1', kind: 'dot', x: (tr - disc) / 2, y: 0, tone: 'quantum', op: roots },
           { key: 'r2', kind: 'dot', x: (tr + disc) / 2, y: 0, tone: 'quantum', op: roots }
         ],
-        notes: [{ key: 'r', px: 160, py: 14, text: roots ? 'both roots real' : '',
+        notes: [{ key: 'r', cap: true, text: roots ? 'both roots real' : '',
                   tone: 'quantum', op: roots }]
       };
     });
@@ -954,7 +977,7 @@
         notes: [
           { key: 'f', x: 1.3, y: 0.92, text: 'f', tone: 'wave' },
           { key: 'g', x: 0.55, y: 0.86, text: 'g', tone: 'quantum' },
-          { key: 'n', px: 160, py: 14, text: label, tone: 'ghost' }
+          { key: 'n', cap: true, text: label, tone: 'ghost' }
         ]
       };
     }
@@ -1014,7 +1037,7 @@
         fills: [{ key: 'lo', row: 1, pts: d.p, split: true, tone: 'wave', negTone: 'fail', op: 0.3 }],
         marks: [{ key: 'end', kind: 'dot', row: 1, x: TAU, y: d.r[d.r.length - 1],
                   tone: 'prob', op: runOp }],
-        notes: [{ key: 'n', px: 160, py: 14, text: label, tone: 'ghost' }]
+        notes: [{ key: 'n', cap: true, text: label, tone: 'ghost' }]
       };
     }
     var states = [
@@ -1049,7 +1072,7 @@
         ],
         fills: [{ key: 'lo', row: 1, pts: d.p, split: true, tone: 'wave', negTone: 'fail', op: 0.3 }],
         marks: [{ key: 'end', kind: 'dot', row: 1, x: TAU, y: d.r[d.r.length - 1], tone: 'prob', op: runOp }],
-        notes: [{ key: 'n', px: 160, py: 14, text: label, tone: 'ghost' }]
+        notes: [{ key: 'n', cap: true, text: label, tone: 'ghost' }]
       };
     }
     /* Even the n = m case, where the sine-sine integral did not vanish, still
@@ -1101,7 +1124,7 @@
     function st(fill, only, head) {
       return {
         table: { cells: cells(fill, only),
-                 notes: [{ key: 'h', px: 160, py: 15, text: head, tone: 'ghost' }] },
+                 notes: [{ key: 'h', cap: true, text: head, tone: 'ghost' }] },
         chart: { bars: bars(only),
                  notes: [{ key: 'p', x: PICK + 1.55, y: AMP[PICK] * 0.55, dy: 0,
                            text: only ? 'bₙ' : '', tone: 'quantum', op: only }] }

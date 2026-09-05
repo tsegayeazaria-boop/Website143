@@ -26,14 +26,6 @@
     });
     svg.appendChild(S.line(wallL, yM + 62, wallR, yM + 62, 's-axis'));
 
-    function springPath(xa, xb, y, coils, amp) {
-      var pts = [[xa, y]], n = coils * 2, i;
-      for (i = 1; i < n; i++) {
-        pts.push([xa + (xb - xa) * i / n, y + (i % 2 ? -amp : amp)]);
-      }
-      pts.push([xb, y]);
-      return S.polyD(pts);
-    }
     var sp1 = S.path('', 's-ghost'), sp2 = S.path('', 's-quantum'), sp3 = S.path('', 's-ghost');
     sp2.setAttribute('stroke-width', '2');
     [sp1, sp2, sp3].forEach(function (s) { svg.appendChild(s); });
@@ -91,9 +83,9 @@
 
     function draw() {
       var p1 = rest1 + x1 * scale, p2 = rest2 + x2 * scale;
-      S.setD(sp1, springPath(wallL, p1 - box / 2, yM, 7, 11));
-      S.setD(sp2, springPath(p1 + box / 2, p2 - box / 2, yM, 7, 11));
-      S.setD(sp3, springPath(p2 + box / 2, wallR - 14, yM, 7, 11));
+      S.setD(sp1, S.springD(wallL, p1 - box / 2, yM, 7, 11));
+      S.setD(sp2, S.springD(p1 + box / 2, p2 - box / 2, yM, 7, 11));
+      S.setD(sp3, S.springD(p2 + box / 2, wallR - 14, yM, 7, 11));
 
       m1.setAttribute('x', p1 - box / 2); m1.setAttribute('y', yM - box / 2);
       m2.setAttribute('x', p2 - box / 2); m2.setAttribute('y', yM - box / 2);

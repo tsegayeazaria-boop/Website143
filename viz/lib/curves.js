@@ -160,6 +160,12 @@
             d = 'M' + PX(x0).toFixed(2) + ' ' + PY(m.y, row).toFixed(2) + 'L' + PX(x1).toFixed(2) + ' ' + PY(m.y, row).toFixed(2);
           } else if (m.kind === 'caliper') {
             d = V.marks.caliperD(PX(m.x0), PX(m.x1), PY(m.y || 0, row), m.tick);
+          } else if (m.kind === 'seg') {
+            /* A straight segment between two points in data coordinates — a
+               tangent, a chord, a construction line. Sampling one as a curve
+               would force it to span the whole axis. */
+            d = 'M' + PX(m.x0).toFixed(2) + ' ' + PY(m.y0, row).toFixed(2) +
+                'L' + PX(m.x1).toFixed(2) + ' ' + PY(m.y1, row).toFixed(2);
           } else if (m.kind === 'vcaliper') {
             d = V.marks.vCaliperD(PY(m.y0, row), PY(m.y1, row), PX(m.x), m.tick);
           } else {
@@ -174,11 +180,14 @@
       (st.notes || []).forEach(function (t) {
         var el = texts.use('t' + t.key);
         el.setAttribute('class', V.labelClass(t.tone));
-        el.setAttribute('text-anchor', t.anchor || 'middle');
+        /* A caption goes top-right, where no axis label ever is. Saying
+           `cap: true` is how a picture asks for that, rather than every
+           picture guessing at coordinates that depend on its own centring. */
+        el.setAttribute('text-anchor', t.cap ? 'end' : (t.anchor || 'middle'));
         /* A caption belongs at a fixed corner of the picture, not at a place
            in the data that the data may later cover up. */
-        el.setAttribute('x', (t.px != null ? t.px : PX(t.x)).toFixed(2));
-        el.setAttribute('y', (t.py != null ? t.py : PY(t.y || 0, t.row || 0) + (t.dy || 0)).toFixed(2));
+        el.setAttribute('x', (t.cap ? W - 8 : t.px != null ? t.px : PX(t.x)).toFixed(2));
+        el.setAttribute('y', (t.cap ? 13 : t.py != null ? t.py : PY(t.y || 0, t.row || 0) + (t.dy || 0)).toFixed(2));
         if (el.textContent !== t.text) el.textContent = t.text;
         S.op(el, (t.op == null ? 1 : t.op) * (t._in == null ? 1 : t._in));
       });

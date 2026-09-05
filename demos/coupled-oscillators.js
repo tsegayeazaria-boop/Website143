@@ -25,12 +25,6 @@
       w.setAttribute('fill', 'var(--hairline)');
       svg.appendChild(w);
     });
-    function springPath(xa, xb, y, coils, amp) {
-      var pts = [[xa, y]], n = coils * 2, i;
-      for (i = 1; i < n; i++) pts.push([xa + (xb - xa) * i / n, y + (i % 2 ? -amp : amp)]);
-      pts.push([xb, y]);
-      return S.polyD(pts);
-    }
     var sp = [S.path('', 's-ghost'), S.path('', 's-quantum'), S.path('', 's-ghost')];
     sp.forEach(function (s) { svg.appendChild(s); });
     var mb = [S.rect(0, 0, box, box, ''), S.rect(0, 0, box, box, '')];
@@ -140,9 +134,9 @@
       var st = P.coupledState(t, ic, prm);
 
       var p1 = rest1 + st.x1 * scale, p2 = rest2 + st.x2 * scale;
-      S.setD(sp[0], springPath(wallL, p1 - box / 2, yM, 6, 9));
-      S.setD(sp[1], springPath(p1 + box / 2, p2 - box / 2, yM, 6, 9));
-      S.setD(sp[2], springPath(p2 + box / 2, wallR, yM, 6, 9));
+      S.setD(sp[0], S.springD(wallL, p1 - box / 2, yM, 6, 9));
+      S.setD(sp[1], S.springD(p1 + box / 2, p2 - box / 2, yM, 6, 9));
+      S.setD(sp[2], S.springD(p2 + box / 2, wallR, yM, 6, 9));
       mb[0].setAttribute('x', p1 - box / 2); mb[0].setAttribute('y', yM - box / 2);
       mb[1].setAttribute('x', p2 - box / 2); mb[1].setAttribute('y', yM - box / 2);
       mlbl[0].setAttribute('x', p1); mlbl[0].setAttribute('y', yM + 4);
