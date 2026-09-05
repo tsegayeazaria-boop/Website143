@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/standing-wave.js"></script>
 </head>
-<body data-page="2-5" data-stub="1">
+<body data-page="2-5">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,226 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.5 · Physics · ~25 min</span>
     <h1>Standing waves</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">A wave on a string of finite length reflects off both ends and runs into
+    itself. Only certain frequencies survive that, and this page works out which — the same
+    counting that gives an instrument its notes.</p>
   </header>
-  <section class="band" id="soon" data-section="Standing waves">
+
+  <section class="band" id="superposition" data-section="Two waves, one shape">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="superposition-h" data-short="Two waves, one shape">A wave that goes nowhere</h2>
+
+      <p>Section 2.4 showed a pulse reaching an end comes back. On a string fixed at both ends
+      that happens forever, so at any moment the string carries waves going both ways at once.
+      Section 1.2 says we may simply add them.</p>
+
+      <script type="text/x-derive" data-id="sw-sum" data-title="Adding two waves that travel opposite ways">
+> One wave going right, one going left, same amplitude and frequency.
+\k{y}{y(x,t)} = \k{r}{A\cos(kx - \omega t)} + \k{l}{A\cos(kx + \omega t)}
+---
+> Use $\cos P + \cos Q = 2\cos\frac{P+Q}{2}\cos\frac{P-Q}{2}$, which is the two angle-addition formulas added together.
+\k{y}{y(x,t)} = \k{amp}{2A}\,\k{half1}{\cos\!\left(\frac{(kx - \omega t) + (kx + \omega t)}{2}\right)}\,\k{half2}{\cos\!\left(\frac{(kx-\omega t)-(kx+\omega t)}{2}\right)}
+---
+> In the first bracket the time terms cancel; in the second the space terms do.
+\k{y}{y(x,t)} = \k{amp}{2A}\,\k{half1}{\cos kx}\,\k{half2}{\cos(-\omega t)}
+---
+> Cosine is even, so the minus sign in the second factor is irrelevant.
+! result
+\k{y}{y(x,t)} = \k{amp}{2A}\,\k{half1}{\cos kx}\;\k{half2}{\cos \omega t}
+      </script>
+
+      <p>Look at what that says. The $x$ and the $t$ have come apart into separate factors. The
+      shape along the string, $\cos kx$, never changes; only its overall size breathes in and out
+      with $\cos\omega t$. Nothing travels. Points where $\cos kx = 0$ never move at all — the
+      <span class="term">nodes</span> — and points where $\abs{\cos kx} = 1$ swing hardest — the
+      <span class="term">antinodes</span>.</p>
+
+      <p class="takeaway"><strong>Two equal waves running opposite ways add to a fixed shape that
+      only changes size, which is why nothing appears to travel.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="fixed-fixed" data-section="Both ends fixed">
+    <div class="measure">
+      <h2 id="fixed-fixed-h" data-short="Both ends fixed">A string held at both ends</h2>
+
+      <p>Section 2.4 showed a fixed end has $R = -1$: the reflection comes back inverted. Putting
+      that sign into the sum changes which combination survives.</p>
+
+      <script type="text/x-derive" data-id="sw-sine-form" data-title="A fixed end forces a sine">
+> The reflected wave is inverted, so it enters with a minus sign.
+\k{y}{y(x,t)} = \k{r}{A\cos(kx - \omega t)} - \k{l}{A\cos(kx + \omega t)}
+---
+> This time use $\cos P - \cos Q = -2\sin\frac{P+Q}{2}\sin\frac{P-Q}{2}$.
+\k{y}{y(x,t)} = \k{amp}{-2A}\,\k{s1}{\sin kx}\,\k{s2}{\sin(-\omega t)}
+---
+> Sine is odd, so the second minus sign cancels the first.
+\k{y}{y(x,t)} = \k{amp}{2A}\,\k{s1}{\sin kx}\,\k{s2}{\sin \omega t}
+---
+> Now check the end at $x = 0$: $\sin 0 = 0$, so that end never moves, whatever $k$ is. The boundary condition there is satisfied automatically.
+! result
+\k{check}{y(0,t) = 0} \;\text{ for every } k
+      </script>
+
+      <script type="text/x-derive" data-id="sw-fixed-fixed" data-title="The far end picks out the frequencies">
+> The other end is at $x = L$, and it is held too.
+\k{cond}{y(L,t)} = \k{amp}{2A}\,\k{s}{\sin kL}\,\k{t}{\sin\omega t} = \k{zero}{0}
+---
+> This has to hold at every instant, so it cannot be the time factor that vanishes. The space factor must.
+\k{s}{\sin kL} = \k{zero}{0}
+---
+> A sine vanishes at whole multiples of $\pi$, and $n = 0$ is excluded because it means no wave at all.
+\k{kL}{kL} = \k{npi}{n\pi}, \qquad \k{n}{n = 1, 2, 3, \ldots}
+---
+> Put $k = 2\pi/\lambda$ and solve for the wavelength.
+\k{lam}{\frac{2\pi L}{\lambda}} = \k{npi}{n\pi} \qquad\Longrightarrow\qquad \k{res}{\lambda_n = \frac{2L}{n}}
+---
+> And the frequencies follow from $f = v/\lambda$, with $v = \sqrt{\Ten/\mu}$ from section 2.4.
+! result
+\k{f}{f_n} = \k{res2}{\frac{n v}{2L}} = \k{res3}{\frac{n}{2L}\sqrt{\frac{\Ten}{\mu}}}
+      </script>
+
+      <p>So only a discrete set of frequencies fits, all whole-number multiples of the lowest one,
+      $f_1 = v/2L$. That is the <span class="term">fundamental</span>, and the rest are its
+      <span class="term">harmonics</span>. The reason a plucked string sounds like a note rather
+      than a noise is that this list is all it can do.</p>
+
+      <p>Read $\lambda_n = 2L/n$ backwards and it says something simpler: the string holds exactly
+      $n$ half-wavelengths. A half wavelength is the distance between neighbouring zeros of a
+      sine, so a string with both ends held must contain a whole number of them.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>A guitar string, $L = 0.65\unit{m}$, with $\Ten = 80\unit{N}$ and
+        $\mu = 4.4\unit{g/m}$.</p>
+        <p>$v = \sqrt{80/0.0044} = 134.8\unit{m/s}$.</p>
+        <p>$\lambda_1 = 2L = 1.30\unit{m}$ and $f_1 = 134.8/1.30 = 103.7\unit{Hz}$ — near a low
+        G♯. The next two are $207\unit{Hz}$ and $311\unit{Hz}$.</p>
+        <p>Fretting the string halves $L$, which doubles every frequency: one octave up, which is
+        why the twelfth fret sits at the midpoint.</p>
+      </aside>
+
+      <p class="takeaway"><strong>A string held at both ends must contain a whole number of half
+      wavelengths, so $\lambda_n = 2L/n$ and $f_n = nv/2L$.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="fixed-free" data-section="One end free">
+    <div class="measure">
+      <h2 id="fixed-free-h" data-short="One end free">One end free</h2>
+
+      <p>Now let the far end be a ring sliding on a frictionless pole. Section 2.4 called this a
+      free end and found $R = +1$. The condition there is different: the end is free to move, so
+      it is not the displacement that must vanish but the slope — a non-zero slope would mean the
+      string pulling sideways on a ring that has nothing to pull against.</p>
+
+      <script type="text/x-derive" data-id="sw-fixed-free" data-title="A free end picks out different frequencies">
+> The shape is still a sine, because the end at $x = 0$ is still held.
+\k{y}{y(x,t)} = \k{amp}{2A}\,\k{s}{\sin kx}\,\k{t}{\sin\omega t}
+---
+> The free end requires zero slope there, so differentiate with respect to $x$ and set $x = L$.
+\k{slope}{\left.\frac{\partial y}{\partial x}\right|_{L}} = \k{amp}{2A}\,\k{k}{k}\,\k{c}{\cos kL}\,\k{t}{\sin\omega t} = \k{zero}{0}
+---
+> Again the time factor cannot be what vanishes, so the cosine must.
+\k{c}{\cos kL} = \k{zero}{0}
+---
+> A cosine vanishes at odd multiples of a quarter turn.
+\k{kL}{kL} = \k{odd}{\left(2n - 1\right)\frac{\pi}{2}}, \qquad \k{n}{n = 1, 2, 3, \ldots}
+---
+> Substituting $k = 2\pi/\lambda$: the string now holds an odd number of quarter wavelengths.
+! result
+\k{lam}{\lambda_n = \frac{4L}{2n-1}}, \qquad \k{f}{f_n = \frac{(2n-1)v}{4L}}
+      </script>
+
+      <p>Two consequences. The fundamental is $v/4L$, an octave <em>below</em> the fixed-fixed
+      string of the same length. And the frequencies go $1, 3, 5, \ldots$ times that: the even
+      harmonics are missing entirely. A clarinet, which is a tube closed at the mouthpiece and
+      open at the bell, behaves this way, and it is why a clarinet sounds different from a flute
+      of the same length.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$L = 0.5\unit{m}$ with one end free.</p>
+        <p>$\lambda_1 = 4L = 2.0\unit{m}$, $\lambda_2 = 4L/3 = 0.667\unit{m}$,
+        $\lambda_3 = 4L/5 = 0.400\unit{m}$.</p>
+        <p>With the same string held at both ends the wavelengths would have been $1.0$, $0.5$ and
+        $0.333\unit{m}$ — a different list entirely.</p>
+      </aside>
+
+      <p class="takeaway"><strong>A free end needs zero slope rather than zero displacement, so
+      the string holds an odd number of quarter wavelengths and the even harmonics
+      vanish.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="nodes" data-section="Nodes and antinodes">
+    <div class="measure">
+      <h2 id="nodes-h" data-short="Nodes and antinodes">Nodes, antinodes, and a look back at 1.3</h2>
+
+      <p>For the $n$th mode of a fixed-fixed string the shape is $\sin(n\pi x/L)$. Its zeros are
+      at $x = 0, L/n, 2L/n, \ldots, L$ — that is $n+1$ nodes counting both ends, spaced
+      $\lambda_n/2$ apart. The antinodes sit halfway between them.</p>
+
+      <p>It is worth noticing what these mode shapes are. They are exactly the functions
+      $\sin(n\pi x/L)$ whose mutual perpendicularity section 1.3 proved, and whose use as a basis
+      section 1.4 built the Fourier series on. That is not a coincidence: plucking a string
+      somewhere and letting go is starting it in a shape that is not a single mode, and what
+      happens next is that the shape is decomposed into modes — a Fourier series — each of which
+      then oscillates at its own frequency. The same decomposition, and for the same reason, as
+      splitting a coupled-oscillator motion into normal modes in section 2.2.</p>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="standing-wave"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the two faint waves travelling in opposite directions add to a
+        shape that never moves along the string, and that switching the far end from held to free
+        turns the whole list of allowed frequencies into the odd ones only.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>The mode shapes of a string are the same orthogonal sines that
+      Fourier series are built from, so a plucked string is a Fourier decomposition in
+      action.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Where are the nodes of the third harmonic on a string of length $L$ held at both
+            ends?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\sin(3\pi x/L) = 0$ at $x = 0,\, L/3,\, 2L/3,\, L$: four nodes, two of them the ends.
+            </div></details></li>
+          <li>Why does the fixed-free string have no even harmonics?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The condition is $\cos kL = 0$, which happens only at odd multiples of $\pi/2$. An
+            even multiple of the fundamental would need $\cos kL = \pm1$, which is a maximum of
+            the slope, not a zero.
+            </div></details></li>
+          <li>The tension is doubled. What happens to $f_1$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $v = \sqrt{\Ten/\mu}$ grows by $\sqrt2$, and $f_1 = v/2L$, so the frequency rises by
+            $\sqrt 2 = 1.414$ — about a perfect fifth, which is why tuning is done with the
+            tension.
+            </div></details></li>
+          <li>A string of length $0.8\unit{m}$, held at both ends, has $f_1 = 200\unit{Hz}$. What
+            is the wave speed?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\lambda_1 = 2L = 1.6\unit{m}$, so $v = \lambda_1 f_1 = 320\unit{m/s}$.
+            </div></details></li>
+          <li>Where are the antinodes for $n = 2$ on a fixed-fixed string?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The shape is $\sin(2\pi x/L)$, largest where its argument is $\pi/2$ and $3\pi/2$:
+            at $x = L/4$ and $x = 3L/4$, with a node between them at the midpoint.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

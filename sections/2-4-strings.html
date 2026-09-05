@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2.4 Waves on strings: reflection and transmission · Physics 143a Pset 0</title>
+<title>2.4 Waves on strings · Physics 143a Pset 0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/string-junction.js"></script>
 </head>
-<body data-page="2-4" data-stub="1">
+<body data-page="2-4">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,351 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.4 · Physics · ~40 min</span>
     <h1>Waves on strings: reflection and transmission</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Where the wave equation comes from, and what happens when a pulse arrives at a
+    place where the string changes. The answer is two coefficients that fall out of two boundary
+    conditions, and every feature of the picture — the flip, the reversal, the stretch — is in
+    them.</p>
+    <div class="callout callout--remark">
+      <span class="callout__tag">Symbols on this page</span>
+      <p>$\Ten$ is the tension in the string, in newtons. $\mu$ is its mass per unit length, in
+      kilograms per metre. $T$ is not used at all here, and $R$ and $\mathcal{T}$ are the
+      reflection and transmission coefficients — ratios of amplitudes, not of energies.</p>
+    </div>
   </header>
-  <section class="band" id="soon" data-section="Waves on strings">
+
+  <section class="band" id="wave-equation" data-section="The wave equation">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="wave-equation-h" data-short="The wave equation">Where the wave equation comes from</h2>
+
+      <p>Take a short piece of string between $x$ and $x + \Delta x$. Its mass is $\mu\,\Delta x$.
+      The tension $\Ten$ pulls on each end along the string, and because the string is curved the
+      two pulls do not quite cancel — that leftover is what accelerates the piece sideways.</p>
+
+      <script type="text/x-derive" data-id="str-wave-eq" data-title="Newton's second law for a piece of string">
+> The sideways component of the tension at either end is the tension times the slope, provided the slope is small enough that the string is nearly horizontal.
+\k{Fy}{F_y} = \k{T1}{\Ten\left.\frac{\partial y}{\partial x}\right|_{x + \Delta x}} - \k{T2}{\Ten\left.\frac{\partial y}{\partial x}\right|_{x}}
+---
+> That difference of slopes, divided by $\Delta x$, is the definition of the derivative of the slope.
+\k{Fy}{F_y} = \k{T}{\Ten}\,\k{d2}{\frac{\partial^{2} y}{\partial x^{2}}}\,\k{dx}{\Delta x}
+---
+> Newton's second law for the piece: mass times sideways acceleration.
+\k{mass}{\mu\,\Delta x}\;\k{acc}{\frac{\partial^{2} y}{\partial t^{2}}} = \k{T}{\Ten}\,\k{d2}{\frac{\partial^{2} y}{\partial x^{2}}}\,\k{dx}{\Delta x}
+---
+> The length of the piece cancels — so the result does not depend on how we chopped the string up, which it had better not.
+\k{mass}{\mu}\;\k{acc}{\frac{\partial^{2} y}{\partial t^{2}}} = \k{T}{\Ten}\,\k{d2}{\frac{\partial^{2} y}{\partial x^{2}}}
+---
+> Divide by $\mu$ and compare with the wave equation of section 2.3: the coefficient in front of the space derivative is the square of the speed.
+! result
+\k{v}{v} = \k{sqrt}{\sqrt{\frac{\Ten}{\mu}}}
+      </script>
+
+      <p>Tighter string, faster wave; heavier string, slower wave. Notice what is absent: the
+      amplitude. The speed does not depend on how big the pulse is.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>A string under $\Ten = 80\unit{N}$ with $\mu = 5\unit{g/m} = 0.005\unit{kg/m}$.</p>
+        <p>$v = \sqrt{80/0.005} = \sqrt{16000} = 126.5\unit{m/s}$.</p>
+        <p>Quadrupling the tension doubles the speed; quadrupling the mass per metre halves
+        it.</p>
+      </aside>
+
+      <p class="takeaway"><strong>The curvature of the string is what accelerates it, giving the
+      wave equation with $v = \sqrt{\Ten/\mu}$.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="junction" data-section="A join in the string">
+    <div class="measure">
+      <h2 id="junction-h" data-short="A join in the string">A join in the string</h2>
+
+      <p>Now tie a second string to the first at $x = 0$: same tension, different mass per unit
+      length $\mu_2$. Three facts before any algebra, each with a reason.</p>
+
+      <script type="text/x-derive" data-id="str-same-tension" data-title="The tension is the same on both sides">
+> Think of the knot as a point of negligible mass joining the two strings. Newton's second law for it, along the string.
+\k{F}{F_{T2} - F_{T1}} = \k{ma}{m_{\text{knot}}\,a}
+---
+> Its mass is essentially zero, so the right-hand side is zero however hard it is accelerating.
+\k{F}{F_{T2} - F_{T1}} = \k{zero}{0}
+---
+> The tension is therefore the same on both sides. It is a property of how hard the string is pulled, not of what the string is made of.
+! result
+\k{T}{F_{T1} = F_{T2} \equiv \Ten}
+      </script>
+
+      <script type="text/x-derive" data-id="str-wavelength-ratio" data-title="The frequency is fixed, so the wavelength changes">
+> The knot is a single point of string. It cannot be in two places, so both sides oscillate together at whatever frequency the source is driving.
+\k{f}{f_1 = f_2 \equiv f}
+---
+> But the speed is different on the two sides, because $\mu$ is.
+\k{v}{v_1 = \sqrt{\Ten/\mu_1}}, \qquad \k{v2}{v_2 = \sqrt{\Ten/\mu_2}}
+---
+> With $v = \lambda f$ and $f$ common to both sides, the wavelengths must be in the same ratio as the speeds.
+! result
+\k{ratio}{\frac{\lambda_2}{\lambda_1}} = \k{vratio}{\frac{v_2}{v_1}} = \k{muratio}{\sqrt{\frac{\mu_1}{\mu_2}}}
+      </script>
+
+      <p>So a wave entering a heavier string keeps its frequency, slows down, and its wavelength
+      shrinks. Frequency is set by the source; speed is set by the medium; wavelength is whatever
+      those two force it to be.</p>
+
+      <p class="takeaway"><strong>At a join the tension and the frequency are the same on both
+      sides; the speed and the wavelength are not.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="boundary-conditions" data-section="Boundary conditions">
+    <div class="measure">
+      <h2 id="boundary-conditions-h" data-short="Boundary conditions">What the knot insists on</h2>
+
+      <p>Two conditions hold at the join, and everything else on this page is squeezed out of
+      them.</p>
+
+      <p><strong>The displacement is continuous.</strong> The string is unbroken, so the left-hand
+      side and the right-hand side of the join are the same piece of string and must have the same
+      $y$. If they did not, the string would have snapped.</p>
+
+      <script type="text/x-derive" data-id="str-slope-continuous" data-title="And so is the slope">
+> Return to the massless knot, now looking at the sideways forces on it: the tension times the slope, pulling each way.
+\k{F}{F_y} = \k{right}{\Ten\left.\frac{\partial y}{\partial x}\right|_{\text{right}}} - \k{left}{\Ten\left.\frac{\partial y}{\partial x}\right|_{\text{left}}}
+---
+> Newton's second law again, with essentially no mass to accelerate.
+\k{F}{F_y} = \k{ma}{m_{\text{knot}}\,\frac{\partial^{2}y}{\partial t^{2}}} = \k{zero}{0}
+---
+> Divide by the tension, which is not zero.
+! result
+\k{right}{\left.\frac{\partial y}{\partial x}\right|_{\text{right}}} = \k{left}{\left.\frac{\partial y}{\partial x}\right|_{\text{left}}}
+      </script>
+
+      <p>Put physically: a kink in a massless point would mean a finite sideways force acting on
+      no mass, and therefore infinite acceleration. Nature declines, so the string arrives at the
+      join and leaves it at the same angle.</p>
+
+      <p class="takeaway"><strong>The string cannot break and cannot kink, so both the displacement
+      and the slope are continuous at the join.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="reflection-coefficients" data-section="R and T">
+    <div class="measure">
+      <h2 id="reflection-coefficients-h" data-short="R and T">The two coefficients</h2>
+
+      <p>Send a pulse of any shape $g$ rightwards along string 1. At the join, part of it carries
+      on and part comes back. Write down all three waves, using the fact from section 2.3 that a
+      rightward wave depends on $t - x/v$ and a leftward one on $t + x/v$:</p>
+
+      <div class="eq" id="eq-2-4-1">
+        <div class="eq__body">$$ y_{\text{inc}} = g\!\left(t - \tfrac{x}{v_1}\right), \qquad
+        y_{\text{ref}} = R\,g\!\left(t + \tfrac{x}{v_1}\right), \qquad
+        y_{\text{tr}} = \mathcal{T}\,g\!\left(t - \tfrac{x}{v_2}\right) $$</div>
+        <div class="eq__num">(2.4.1)</div>
+      </div>
+
+      <p>The left-hand string carries the incoming pulse plus the reflected one; the right-hand
+      string carries the transmitted one alone. Now impose the two conditions at $x = 0$.</p>
+
+      <script type="text/x-derive" data-id="str-displacement-bc" data-title="The first condition">
+> Displacement is continuous: what is on the left of the join equals what is on the right, at $x = 0$.
+\k{lhs}{y_{\text{inc}}(0,t) + y_{\text{ref}}(0,t)} = \k{rhs}{y_{\text{tr}}(0,t)}
+---
+> At $x = 0$ every one of the three functions is just $g(t)$, because the $x/v$ terms vanish.
+\k{lhs}{g(t) + R\,g(t)} = \k{rhs}{\mathcal{T}\,g(t)}
+---
+> The pulse shape is a common factor and is not identically zero, so it cancels — and with it goes any dependence on what shape the pulse had.
+! result
+\k{one}{1} + \k{R}{R} = \k{T}{\mathcal{T}}
+      </script>
+
+      <script type="text/x-derive" data-id="str-slope-bc" data-title="The second condition">
+> Now the slopes. Differentiate each wave with respect to $x$; the chain rule brings out the factor multiplying $x$ inside $g$.
+\k{i}{\frac{\partial y_{\text{inc}}}{\partial x}} = \k{gi}{-\frac{1}{v_1}g'}, \quad \k{r}{\frac{\partial y_{\text{ref}}}{\partial x}} = \k{gr}{+\frac{R}{v_1}g'}, \quad \k{tt}{\frac{\partial y_{\text{tr}}}{\partial x}} = \k{gt}{-\frac{\mathcal{T}}{v_2}g'}
+---
+> Set the total slope on the left equal to the slope on the right, at $x = 0$.
+\k{gi}{-\frac{1}{v_1}g'} + \k{gr}{\frac{R}{v_1}g'} = \k{gt}{-\frac{\mathcal{T}}{v_2}g'}
+---
+> The derivative of the pulse shape cancels for the same reason as before. Multiply through by $-1$.
+! result
+\k{lhs}{\frac{1 - R}{v_1}} = \k{rhs}{\frac{\mathcal{T}}{v_2}}
+      </script>
+
+      <script type="text/x-derive" data-id="str-solve-RT" data-title="Solving the two together">
+> Two equations, two unknowns. Substitute the first into the second.
+\k{lhs}{\frac{1 - R}{v_1}} = \k{rhs}{\frac{1 + R}{v_2}}
+---
+> Cross-multiply.
+\k{l2}{v_2 - v_2 R} = \k{r2}{v_1 + v_1 R}
+---
+> Gather the terms with $R$ on one side and the rest on the other.
+\k{l3}{v_2 - v_1} = \k{r3}{R\left(v_1 + v_2\right)}
+---
+> Divide, then put that back into $\mathcal{T} = 1 + R$ and add over a common denominator.
+! result
+\k{R}{R = \frac{v_2 - v_1}{v_2 + v_1}}, \qquad \k{T}{\mathcal{T} = \frac{2v_2}{v_1 + v_2}}
+      </script>
+
+      <p>These are usually written with a quantity called the <span class="term">impedance</span>,
+      $Z = \sqrt{\Ten\mu}$, which measures how hard the string resists being moved sideways.</p>
+
+      <script type="text/x-derive" data-id="str-impedance" data-title="The same answer, in impedances">
+> Define the impedance and relate it to the speed, using $v = \sqrt{\Ten/\mu}$.
+\k{Z}{Z} \equiv \k{def}{\sqrt{\Ten\mu}} = \k{alt}{\frac{\Ten}{v}}
+---
+> So a speed is a tension over an impedance. Substitute that into the reflection coefficient.
+\k{R}{R} = \k{sub}{\dfrac{\dfrac{\Ten}{Z_2} - \dfrac{\Ten}{Z_1}}{\dfrac{\Ten}{Z_2} + \dfrac{\Ten}{Z_1}}}
+---
+> Multiply top and bottom by $Z_1Z_2/\Ten$; the tension cancels and the impedances swap places.
+! result
+\k{R}{R = \frac{Z_1 - Z_2}{Z_1 + Z_2}}, \qquad \k{T}{\mathcal{T} = \frac{2Z_1}{Z_1 + Z_2}}
+      </script>
+
+      <div class="eq" id="eq-2-4-2">
+        <div class="eq__body">$$ R = \frac{Z_1 - Z_2}{Z_1 + Z_2}, \qquad
+        \mathcal{T} = \frac{2Z_1}{Z_1 + Z_2}, \qquad Z = \sqrt{\Ten\mu} $$</div>
+        <div class="eq__num">(2.4.2)</div>
+      </div>
+
+      <p>One check is worth doing, because $\mathcal{T}$ can exceed one and that looks alarming.
+      Energy is not amplitude.</p>
+
+      <script type="text/x-derive" data-id="str-power" data-title="The energy still adds up">
+> The power carried past a point is the sideways force times the sideways velocity of the string there.
+\k{P}{P} = \k{F}{-\Ten\frac{\partial y}{\partial x}}\;\k{v}{\frac{\partial y}{\partial t}}
+---
+> For a wave travelling at speed $v$ the two derivatives are related by $\partial y/\partial x = -(1/v)\,\partial y/\partial t$, since the shape depends on $t - x/v$.
+\k{P}{P} = \k{Zterm}{\frac{\Ten}{v}}\left(\k{v}{\frac{\partial y}{\partial t}}\right)^{2} = \k{Z}{Z}\left(\k{v}{\frac{\partial y}{\partial t}}\right)^{2}
+---
+> So the power carried by a wave is its impedance times the square of the string's speed — and amplitudes enter squared. Add up the three waves.
+\k{sum}{\frac{P_{\text{ref}} + P_{\text{tr}}}{P_{\text{inc}}}} = \k{r2}{R^{2}} + \k{t2}{\frac{Z_2}{Z_1}\mathcal{T}^{2}}
+---
+> Putting in the two coefficients and simplifying gives exactly one: nothing is lost at the join.
+! result
+\k{r2}{R^{2}} + \k{t2}{\frac{Z_2}{Z_1}\mathcal{T}^{2}} = \k{one}{1}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>A pulse goes from a string into one four times as heavy: $\mu_2 = 4\mu_1$, so
+        $Z_2 = 2Z_1$.</p>
+        <p>$R = (Z_1 - 2Z_1)/(3Z_1) = -1/3$ and $\mathcal{T} = 2Z_1/(3Z_1) = 2/3$.</p>
+        <p>Check the first condition: $1 + (-1/3) = 2/3$ ✓. Check the energy:
+        $R^{2} + (Z_2/Z_1)\mathcal{T}^{2} = 1/9 + 2 \times 4/9 = 1/9 + 8/9 = 1$ ✓.</p>
+        <p>The reflected pulse is a third as tall and upside down; the transmitted pulse is
+        two-thirds as tall and the right way up. The speeds are $v_2 = v_1/2$.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Continuity of displacement and of slope give
+      $R = (Z_1-Z_2)/(Z_1+Z_2)$ and $\mathcal{T} = 2Z_1/(Z_1+Z_2)$, whatever shape the pulse
+      had.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="cases" data-section="Reading the answer">
+    <div class="measure">
+      <h2 id="cases-h" data-short="Reading the answer">Reading the answer</h2>
+
+      <p>Every feature of what you see at a join is contained in those two formulas.</p>
+
+      <p><strong>Light to heavy inverts; heavy to light does not.</strong> If $Z_2 \gt Z_1$ then
+      $R$ is negative, so the reflected pulse comes back upside down. If $Z_2 \lt Z_1$ then $R$ is
+      positive and it comes back the right way up. The transmitted pulse is never inverted, since
+      $\mathcal{T} = 2Z_1/(Z_1+Z_2)$ is always positive.</p>
+
+      <p><strong>The two limiting cases are ends, not joins.</strong> Let $\mu_2 \to \infty$ — the
+      string is tied to a wall. Then $Z_2 \to\infty$, so $R \to -1$ and $\mathcal{T}\to 0$: the
+      pulse comes back inverted and full size, and nothing goes through. That is a <span
+      class="term">fixed end</span>. Let $\mu_2 \to 0$ instead — the string ends in a ring free to
+      slide on a frictionless pole. Then $Z_2 \to 0$, so $R \to +1$ and $\mathcal{T} \to 2$: the
+      pulse comes back upright and the end flicks to twice the amplitude. That is a <span
+      class="term">free end</span>, and the doubled amplitude carries no extra energy because
+      $Z_2$ is zero.</p>
+
+      <script type="text/x-derive" data-id="str-reversed" data-title="Why the reflected pulse comes back backwards">
+> The incoming pulse and the reflected one, side by side.
+\k{i}{y_{\text{inc}} = g\!\left(t - \frac{x}{v_1}\right)}, \qquad \k{r}{y_{\text{ref}} = R\,g\!\left(t + \frac{x}{v_1}\right)}
+---
+> Fix a time and ask which part of the pulse is at which place. In the incoming wave, larger $x$ means a smaller argument — you are seeing an earlier part of the pulse further along.
+\k{i}{\text{larger } x \;\Rightarrow\; \text{earlier part of } g}
+---
+> In the reflected wave the sign is flipped, so larger $x$ now means a later part of $g$.
+\k{r}{\text{larger } x \;\Rightarrow\; \text{later part of } g}
+---
+> The two orderings are opposite. Whatever end of the pulse arrived first leaves last: the reflection is reversed front to back as well as, when $R \lt 0$, flipped over.
+! result
+\k{res}{y_{\text{ref}}(x) \text{ runs backwards compared with } y_{\text{inc}}(x)}
+      </script>
+
+      <script type="text/x-derive" data-id="str-stretch" data-title="Why the transmitted pulse is stretched">
+> The incoming pulse takes some time $\tau$ to pass any fixed point — that is a property of the source, not the string.
+\k{tau}{\tau} = \k{def}{\text{the pulse's duration}}
+---
+> Its length in space is however far it travels in that time.
+\k{len1}{\text{length in string 1}} = \k{v1}{v_1}\,\k{tau}{\tau}
+---
+> The knot passes the same wiggle on at the same rate, so the transmitted pulse has the same duration — but it travels at a different speed.
+\k{len2}{\text{length in string 2}} = \k{v2}{v_2}\,\k{tau}{\tau}
+---
+> Divide. Into a heavier, slower string the pulse is squeezed shorter; into a lighter, faster one it is stretched out. Its height is set by $\mathcal{T}$ and is a separate matter.
+! result
+\k{ratio}{\frac{\text{length in string 2}}{\text{length in string 1}}} = \k{vratio}{\frac{v_2}{v_1}}
+      </script>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="string-junction"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the reflected pulse turns upside down only when the second string
+        is the heavier one, that the transmitted pulse is never inverted, and that it is squeezed
+        or stretched exactly by the ratio of the two speeds.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>Light to heavy inverts the reflection, the transmission is never
+      inverted, the reflection comes back front-to-back, and the transmitted pulse is scaled in
+      length by $v_2/v_1$.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>A pulse passes into a string nine times as heavy. Give $R$ and $\mathcal{T}$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $Z \propto \sqrt\mu$, so $Z_2 = 3Z_1$. Then $R = (1-3)/(1+3) = -\tfrac12$ and
+            $\mathcal{T} = 2/(1+3) = \tfrac12$. Check: $1 + R = \tfrac12 = \mathcal{T}$ ✓, and
+            $R^{2} + 3\mathcal{T}^{2} = \tfrac14 + \tfrac34 = 1$ ✓.
+            </div></details></li>
+          <li>Why can the frequency not change at the join?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The knot is one point of string with one displacement. Both sides move with it, so
+            both oscillate at the same rate. The wavelength changes instead, because the speed
+            does.
+            </div></details></li>
+          <li>What happens to a pulse at a fixed end, and why is it the $\mu_2\to\infty$ limit?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $R\to-1$, $\mathcal{T}\to 0$: the pulse comes back the same size, inverted, and
+            nothing is transmitted. An infinitely heavy string cannot be moved at all, which is
+            exactly what a wall does.
+            </div></details></li>
+          <li>Why must the slope be continuous at the join?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            A discontinuity in slope is a kink, and the sideways force on the knot is $\Ten$ times
+            the difference in slopes. A finite force on a point of zero mass would give infinite
+            acceleration, so the difference must be zero.
+            </div></details></li>
+          <li>At a free end $\mathcal{T} = 2$: the end moves twice as far as the incoming pulse.
+            Where did the extra energy come from?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Nowhere — there is no extra energy. Power is $Z(\partial y/\partial t)^{2}$, and at a
+            free end $Z_2 = 0$, so the transmitted power is zero no matter how large the
+            amplitude. All of the energy comes back in the reflection, which is why $R = +1$.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/traveling-wave.js"></script>
 </head>
-<body data-page="2-3" data-stub="1">
+<body data-page="2-3">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,281 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.3 · Physics · ~25 min</span>
     <h1>Travelling waves and plane waves</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">A wave is an oscillation that also moves. Everything on this page follows from
+    writing that down carefully and asking what each symbol has to mean.</p>
+    <div class="callout callout--warning">
+      <span class="callout__tag">Letters change here</span>
+      <p>From this page onwards <strong>$k$ is a wavenumber</strong>, measured in radians per
+      metre — not the spring constant of sections 2.1 and 2.2. String tension is written $\Ten$
+      so that $T$ can go on meaning a period.</p>
+    </div>
   </header>
-  <section class="band" id="soon" data-section="Travelling waves and pla…">
+
+  <section class="band" id="form" data-section="Two periodicities">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="form-h" data-short="Two periodicities">A wave repeats in two ways at once</h2>
+
+      <p>Freeze time and photograph a wave on a string: you see a shape that repeats along the
+      string, with spatial period $\lambda$, the <span class="term">wavelength</span>. Now stand
+      at one point and watch: the string there goes up and down, repeating with period $T$. The
+      same function has to do both, which fixes what can appear inside the cosine.</p>
+
+      <div class="eq" id="eq-2-3-1">
+        <div class="eq__body">$$ y(x,t) = A\cos(kx - \omega t + \varphi) $$</div>
+        <div class="eq__num">(2.3.1)</div>
+      </div>
+
+      <script type="text/x-derive" data-id="tw-k" data-title="What k has to be">
+> Repeating in space means moving one wavelength along leaves the displacement unchanged, at any fixed time.
+\k{cond}{y(x + \lambda,\, t)} = \k{y}{y(x,\, t)}
+---
+> Write both sides out. The whole cosine must be unchanged.
+\k{lhs}{\cos\!\left(k(x + \lambda) - \omega t\right)} = \k{rhs}{\cos\!\left(kx - \omega t\right)}
+---
+> A cosine repeats when its argument advances by $2\pi$, and the extra piece is $k\lambda$.
+\k{extra}{k\lambda} = \k{tau}{2\pi}
+---
+> So $k$ counts radians of phase per metre. It is large for a short wavelength.
+! result
+\k{k}{k} = \k{tau}{\frac{2\pi}{\lambda}}
+      </script>
+
+      <script type="text/x-derive" data-id="tw-omega" data-title="And what ω has to be">
+> Repeating in time means waiting one period leaves the displacement unchanged, at any fixed place.
+\k{cond}{y(x,\, t + T)} = \k{y}{y(x,\, t)}
+---
+> The same argument, now with the piece $\omega T$ having to be a full turn.
+\k{extra}{\omega T} = \k{tau}{2\pi}
+---
+> So $\omega$ counts radians of phase per second, which is what it also meant in section 2.1 — nothing has changed, only the reason it is there.
+! result
+\k{w}{\omega} = \k{tau}{\frac{2\pi}{T}} = \k{f}{2\pi f}
+      </script>
+
+      <p class="takeaway"><strong>$k = 2\pi/\lambda$ counts phase per metre and
+      $\omega = 2\pi/T$ counts phase per second.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="direction" data-section="Which way it goes">
+    <div class="measure">
+      <h2 id="direction-h" data-short="Which way it goes">Which way it goes, and how fast</h2>
+
+      <p>To follow a particular crest, follow a point of constant phase — the argument of the
+      cosine held fixed while both $x$ and $t$ change.</p>
+
+      <script type="text/x-derive" data-id="tw-speed" data-title="The speed of a crest">
+> Ride along with one crest: keep the phase at whatever value put us on a crest.
+\k{phase}{kx - \omega t} = \k{const}{\text{constant}}
+---
+> Solve for the position of that crest as time passes.
+\k{x}{x} = \k{ratio}{\frac{\omega}{k}}\,\k{t}{t} + \k{const}{\text{constant}}
+---
+> That is a point moving at a steady speed, and the speed is the ratio of the two rates.
+\k{v}{v} = \k{dxdt}{\frac{\dd x}{\dd t}} = \k{ratio}{\frac{\omega}{k}}
+---
+> The sign inside the cosine decides the direction: with $kx + \omega t$ the same argument gives $x = -(\omega/k)t$, a crest moving the other way.
+! result
+\k{v}{v = \frac{\omega}{k}} \;\text{ for } \k{minus}{\cos(kx - \omega t)}, \qquad \k{vm}{-\frac{\omega}{k}} \;\text{ for } \k{plus}{\cos(kx + \omega t)}
+      </script>
+
+      <script type="text/x-derive" data-id="tw-v-lambda-f" data-title="The same speed, in wavelengths and frequency">
+> Put in what $k$ and $\omega$ actually are.
+\k{v}{v} = \k{w}{\frac{2\pi}{T}} \Big/ \k{k}{\frac{2\pi}{\lambda}}
+---
+> The factors of $2\pi$ cancel.
+\k{v}{v} = \k{lam}{\frac{\lambda}{T}}
+---
+> And one over the period is the frequency. The wave advances one wavelength per cycle, which is the sentence the formula is saying.
+! result
+\k{v}{v} = \k{lam}{\lambda}\,\k{f}{f}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>A wave on a string has $\lambda = 0.5\unit{m}$ and $f = 4\unit{Hz}$.</p>
+        <p>$k = 2\pi/0.5 = 12.57\unit{rad/m}$, $\omega = 2\pi(4) = 25.13\unit{rad/s}$, and
+        $v = \omega/k = 2.00\unit{m/s}$ — which is also $\lambda f = 0.5 \times 4$. ✓</p>
+        <p>Written out: $y(x,t) = A\cos(12.57x - 25.13t)$ with $x$ in metres and $t$ in
+        seconds.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="traveling-wave"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that flipping the sign inside the cosine reverses the direction of
+        travel while leaving the wavelength and the period untouched, and that the marked crest
+        always covers one wavelength in one period.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>A crest moves at $v = \omega/k = \lambda f$, and the sign inside
+      the cosine decides which way.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="transverse" data-section="What is oscillating">
+    <div class="measure">
+      <h2 id="transverse-h" data-short="What is oscillating">What is actually oscillating</h2>
+
+      <p>Equation (2.3.1) says how much of something there is at position $x$ and time $t$. What
+      that something is depends on the wave, and the direction it points relative to the direction
+      of travel divides waves into two families.</p>
+
+      <p>In a <span class="term">transverse</span> wave the oscillation is perpendicular to the
+      direction of travel: a string flicked sideways, or light, where the electric field points
+      across the beam. In a <span class="term">longitudinal</span> wave it is along the direction
+      of travel: sound, where the air is alternately squeezed and stretched in the direction the
+      sound goes.</p>
+
+      <p>The mathematics does not care. Both are described by (2.3.1); only the physical meaning
+      of $y$ changes, and with it what "amplitude" is measured in — metres of sideways
+      displacement for the string, pascals of pressure for the sound.</p>
+
+      <p class="takeaway"><strong>Transverse and longitudinal waves obey the same equation; only
+      the direction of the oscillating quantity differs.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="plane-wave" data-section="Plane waves">
+    <div class="measure">
+      <h2 id="plane-wave-h" data-short="Plane waves">Waves in three dimensions</h2>
+
+      <p>In three dimensions the position is a vector, and $kx$ becomes a dot product:
+      $y = A\cos(\vb k \cdot \vb r - \omega t)$. The vector $\vb k$ carries both pieces of
+      information at once — its direction is the direction of travel, and its length is the
+      wavenumber.</p>
+
+      <script type="text/x-derive" data-id="tw-plane" data-title="Why it is called a plane wave">
+> At one instant, ask where the phase has some fixed value — that is, where the crests are.
+\k{phase}{\vb k \cdot \vb r} = \k{const}{\text{constant}}
+---
+> Section 1.3 showed the dot product is the length of $\vb r$ times how much of it lies along $\vb k$. So this fixes only the distance measured along the direction of $\vb k$.
+\k{proj}{\abs{\vb r}\cos\theta} = \k{const2}{\frac{\text{constant}}{\abs{\vb k}}}
+---
+> Every point at that distance along $\vb k$ satisfies it, whatever its sideways position: that set of points is a flat plane perpendicular to $\vb k$.
+\k{plane}{\text{a plane perpendicular to } \vb k}
+---
+> Hence the name. The crests are flat sheets, all perpendicular to the direction of travel, marching along it at speed $\omega/\abs{\vb k}$.
+! result
+\k{lam}{\lambda = \frac{2\pi}{\abs{\vb k}}}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$\vb k = (3, 4)\unit{rad/m}$. Its length is $\abs{\vb k} = \sqrt{9+16} = 5\unit{rad/m}$,
+        so $\lambda = 2\pi/5 = 1.257\unit{m}$, and the wave travels at
+        $\arctan(4/3) = 53.1^{\circ}$ above the $x$-axis.</p>
+        <p>The crests are lines perpendicular to that direction, spaced $1.257\unit{m}$ apart
+        measured along the direction of travel.</p>
+      </aside>
+
+      <p class="takeaway"><strong>In a plane wave the crests are flat sheets perpendicular to
+      $\vb k$, whose length is $2\pi/\lambda$ and whose direction is the direction of
+      travel.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="dispersion" data-section="The dispersion relation">
+    <div class="measure">
+      <h2 id="dispersion-h" data-short="The dispersion relation">What the medium decides</h2>
+
+      <p>So far $k$ and $\omega$ have been independent. In a real medium they are not: the physics
+      of the material links them, and that link is the <span class="term">dispersion
+      relation</span> $\omega(k)$.</p>
+
+      <p>To see where it comes from, take the wave equation, which section 2.4 derives from
+      Newton's second law for a string:</p>
+
+      <div class="eq" id="eq-2-3-2">
+        <div class="eq__body">$$ \frac{\partial^{2} y}{\partial t^{2}}
+        = v^{2}\,\frac{\partial^{2} y}{\partial x^{2}} $$</div>
+        <div class="eq__num">(2.3.2)</div>
+      </div>
+
+      <p>The curly $\partial$ means a <span class="term">partial derivative</span>: differentiate
+      with respect to one variable while holding the other fixed. $\partial y/\partial t$ is how
+      fast the string moves at a fixed place; $\partial y/\partial x$ is the slope of the string at
+      a fixed moment. Nothing more than that is needed here.</p>
+
+      <script type="text/x-derive" data-id="tw-wave-equation" data-title="What the wave equation demands">
+> Take the travelling wave and differentiate twice in time, holding $x$ fixed. Each derivative brings down $-\omega$ from inside the cosine.
+\k{dt}{\frac{\partial^{2} y}{\partial t^{2}}} = \k{w2}{-\omega^{2}}\,\k{y}{A\cos(kx - \omega t)}
+---
+> Now twice in space, holding $t$ fixed. Each of these brings down $k$ instead.
+\k{dx}{\frac{\partial^{2} y}{\partial x^{2}}} = \k{k2}{-k^{2}}\,\k{y}{A\cos(kx - \omega t)}
+---
+> Put both into the wave equation. The whole cosine is a common factor.
+\k{w2}{-\omega^{2}}\,\k{y}{A\cos(\ldots)} = \k{v2}{v^{2}}\,\k{k2}{\left(-k^{2}\right)}\,\k{y}{A\cos(\ldots)}
+---
+> Cancel it, and cancel the minus signs. The wave equation is satisfied only if $\omega$ and $k$ are related this way.
+! result
+\k{w2}{\omega^{2}} = \k{v2}{v^{2}}\,\k{k2}{k^{2}} \qquad\Longrightarrow\qquad \k{disp}{\omega = v k}
+      </script>
+
+      <p>Here $\omega$ is proportional to $k$, so $v = \omega/k$ is the same for every wavelength.
+      A medium like that is called <span class="term">non-dispersive</span>: a complicated shape
+      keeps its shape as it travels, because all of its harmonics move at the same speed. A string
+      under tension is like this, and so is light in vacuum.</p>
+
+      <p>Other media are not. Deep water waves obey $\omega = \sqrt{g k}$, so long waves outrun
+      short ones. A free quantum particle obeys $\omega = \hbar k^{2}/2m$. In both cases a pulse
+      made of many wavelengths comes apart as it travels, which is the subject of section 2.6.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Sound in air, $v = 340\unit{m/s}$, at $f = 1000\unit{Hz}$.</p>
+        <p>$\omega = 2\pi(1000) = 6283\unit{rad/s}$; from $\omega = vk$,
+        $k = 6283/340 = 18.5\unit{rad/m}$, and $\lambda = 2\pi/k = 0.340\unit{m}$ — which is also
+        $v/f$. ✓</p>
+        <p>Air is very nearly non-dispersive over the audible range, which is why an orchestra
+        arrives in the right order.</p>
+      </aside>
+
+      <p class="takeaway"><strong>The medium supplies a relation between $\omega$ and $k$; when it
+      is a straight proportion the medium is non-dispersive and every wavelength travels at the
+      same speed.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Which way, and how fast, does $y = 0.02\cos(5x + 3t)$ travel? Give $\lambda$ and $T$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The plus sign means it travels in the $-x$ direction, at $\omega/k = 3/5 =
+            0.6\unit{m/s}$. $\lambda = 2\pi/5 = 1.26\unit{m}$ and $T = 2\pi/3 = 2.09\unit{s}$.
+            </div></details></li>
+          <li>A wave has $\lambda = 2\unit{m}$ and $T = 0.5\unit{s}$. What is its speed?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $v = \lambda/T = 4\unit{m/s}$; equivalently $f = 2\unit{Hz}$ and $v = \lambda f$.
+            </div></details></li>
+          <li>Two waves in the same medium have the same $k$ but different $\omega$. Is that
+            possible?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            No, unless the medium supports more than one kind of wave. The dispersion relation is
+            a property of the medium, so fixing $k$ fixes $\omega$. (A string can carry both
+            transverse and longitudinal waves, which have different dispersion relations — but
+            they are different waves, not the same one.)
+            </div></details></li>
+          <li>What is a wavefront, and why is a plane wave called plane?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            A wavefront is a surface of constant phase — all the points currently at a crest.
+            For $\cos(\vb k\cdot\vb r - \omega t)$ those surfaces are flat planes perpendicular to
+            $\vb k$, because the dot product only constrains the distance measured along $\vb k$.
+            </div></details></li>
+          <li>Where is $y = A\sin(kx - \omega t)$ zero at $t = 0$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Wherever $\sin kx = 0$, that is $kx = n\pi$, so $x = n\pi/k = n\lambda/2$: the zeros
+            are half a wavelength apart, as they are for any sinusoid.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>
