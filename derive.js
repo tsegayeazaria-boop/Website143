@@ -40,7 +40,11 @@
      clone lifted out of such a container would be laid out differently, and it
      reads as a single symbol regardless, so the walk stops here. */
   var ATOMIC = ['accent', 'katex-accent', 'overline', 'underline', 'katex-overline',
-                'katex-underline', 'boxed', 'fbox', 'fcolorbox', 'cancel-pad', 'sout'];
+                'katex-underline', 'boxed', 'fbox', 'fcolorbox', 'cancel-pad', 'sout',
+                /* A tall bracket is built from stacked pieces whose font is set
+                   through the container, and a radical's tail is clipped by it;
+                   both read as one symbol, so both are cloned whole. */
+                'delimsizing', 'sqrt'];
   var FONT_CLASSES = ['mathnormal', 'mathrm', 'mathit', 'mathbf', 'boldsymbol', 'mathcal',
                       'mathbb', 'mathfrak', 'mathscr', 'mathsf', 'mathtt', 'amsrm',
                       'textrm', 'textit', 'textbf', 'textsf', 'texttt', 'mainrm'];
@@ -642,13 +646,27 @@
        wrapper by exactly that much, so the clone ends up sitting on top of the
        glyph it came from whatever the browser did with the line box. */
     var ob = d.el.fx.getBoundingClientRect();
+    /* Round the resting offset to the device pixel grid: a clone parked on a
+       fractional pixel is hinted differently from the glyph it stands in for,
+       which shows up as a fraction of a pixel of drift at the handover. */
+    var dpr = window.devicePixelRatio || 1;
+    var snap = function (v) { return Math.round(v * dpr) / dpr; };
     items.forEach(function (it) {
       var r = it.tagUnit ? inkRect({ el: it.c, kind: 'tag' }) : it.c.getBoundingClientRect();
       var ox = r.left - ob.left, oy = r.top - ob.top;
-      it.w.style.left = (it.home.x - ox) + 'px';
-      it.w.style.top = (it.home.y - oy) + 'px';
+      it.w.style.left = snap(it.home.x - ox) + 'px';
+      it.w.style.top = snap(it.home.y - oy) + 'px';
       /* Scale about the ink's own centre, not the wrapper's corner. */
       it.w.style.transformOrigin = (ox + r.width / 2) + 'px ' + (oy + r.height / 2) + 'px';
+    });
+    /* Record where each clone's ink actually came to rest. Motion is measured
+       from there rather than from where it was asked to go, so the leftover
+       fraction of a pixel from snapping is taken out by the transform instead of
+       being left as drift. The targets themselves stay as measured on the real
+       layers, so the alignment check still compares clones against glyphs. */
+    items.forEach(function (it) {
+      var r = it.tagUnit ? inkRect({ el: it.c, kind: 'tag' }) : it.c.getBoundingClientRect();
+      it.anchor = { cx: r.left - ob.left + r.width / 2, cy: r.top - ob.top + r.height / 2 };
     });
 
     d.trans[k] = { k: k, el: tr, items: items, counts: { pairs: m.pairs.length, outs: m.outs.length, ins: m.ins.length } };
@@ -669,8 +687,8 @@
       }
       var cx = M.lerp(it.from.cx, it.to.cx, e);
       var cy = M.lerp(it.from.cy, it.to.cy, e) - it.arc * Math.sin(Math.PI * e);
-      it.w.style.transform = 'translate(' + (cx - it.home.cx).toFixed(2) + 'px,' +
-                             (cy - it.home.cy).toFixed(2) + 'px) scale(' + s.toFixed(4) + ')';
+      it.w.style.transform = 'translate(' + (cx - it.anchor.cx).toFixed(3) + 'px,' +
+                             (cy - it.anchor.cy).toFixed(3) + 'px) scale(' + s.toFixed(4) + ')';
       it.w.style.opacity = op.toFixed(3);
     }
   }
@@ -838,7 +856,7 @@
         for (var k = 0; k < d.steps.length - 1; k++) {
           var tr = d.trans[k] || buildTransition(d, k);
           var ob = d.el.fx.getBoundingClientRect();
-          var worst = [0, 0], invisible = 0;
+          var worst = [0, 0], culprit = ['', ''], invisible = 0;
           [0, 1].forEach(function (end) {
             applyMorph(tr, end);
             tr.items.forEach(function (it) {
@@ -849,11 +867,16 @@
               var cx = r.left - ob.left + r.width / 2, cy = r.top - ob.top + r.height / 2;
               var want = end === 0 ? it.from : it.to;
               var dd = Math.max(Math.abs(cx - want.cx), Math.abs(cy - want.cy));
-              if (dd > worst[end]) worst[end] = dd;
+              if (dd > worst[end]) {
+                worst[end] = dd;
+                culprit[end] = (it.unit.text || it.unit.key || it.kind).slice(0, 24) +
+                               ' [' + it.unit.kind + '/' + it.kind + ']';
+              }
             });
           });
           out.push({ id: d.id, k: k, items: tr.items.length, counts: tr.counts,
-                     worst0: +worst[0].toFixed(3), worst1: +worst[1].toFixed(3), invisible: invisible });
+                     worst0: +worst[0].toFixed(3), worst1: +worst[1].toFixed(3),
+                     culprit0: culprit[0], culprit1: culprit[1], invisible: invisible });
         }
         d.applied = null;
       });

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>2.2 Coupled oscillators and normal modes · Physics 143a Pset 0</title>
+<title>2.2 Coupled oscillators · Physics 143a Pset 0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -13,8 +13,10 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/coupled-forces.js"></script>
+<script defer src="../demos/coupled-oscillators.js"></script>
 </head>
-<body data-page="2-2" data-stub="1">
+<body data-page="2-2">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,18 +30,637 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.2 · Physics · ~50 min</span>
     <h1>Coupled oscillators and normal modes</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Two masses joined by springs. Each one pulls on the other, so neither moves in
+    a simple way — and yet there are exactly two motions in which both move at a single shared
+    frequency. Finding them is an eigenvalue problem, and it is the same eigenvalue problem you
+    solved by hand in section 1.3.</p>
+    <div class="callout callout--remark">
+      <span class="callout__tag">You will need</span>
+      <p>Section 1.2 for the exponential guess and the counting of constants, section 1.3 for
+      matrices and eigenvectors, and section 2.1 for the single oscillator. On this page $k$ is a
+      <strong>spring constant</strong>, not a wavenumber, and the eigenvalues are written
+      $\omega^{2}$ rather than $\lambda$.</p>
+    </div>
   </header>
-  <section class="band" id="soon" data-section="Coupled oscillators and …">
+
+  <!-- ========================================================= setup ===== -->
+  <section class="band" id="setup" data-section="Two masses, three springs">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="setup-h" data-short="Two masses, three springs">Two masses, three springs</h2>
+
+      <p>Two equal masses $m$ sit on a frictionless line. Each is tied to a wall by a spring of
+      stiffness $k$, and they are tied to each other by a third spring of stiffness $\kappa$. Let
+      $x_1$ and $x_2$ be the displacements of the two masses from where they sit at rest, both
+      measured positive to the right.</p>
+
+      <p>Measuring from the rest position matters: it means every spring is at its natural length
+      when $x_1 = x_2 = 0$, so we never have to carry the equilibrium stretches around. Whatever
+      forces the springs exert in equilibrium already cancel.</p>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="coupled-forces"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the middle spring's force depends only on the difference
+        $x_2 - x_1$: slide both masses the same way by the same amount and it does not push at
+        all, however far they have gone.</figcaption>
+      </figure>
+
+      <h3>The force on the left-hand mass</h3>
+      <p>Two springs touch mass 1. The wall spring is stretched by $x_1$, so by Hooke's law it
+      pulls back with $-kx_1$ — the minus sign because the force opposes the displacement. The
+      middle spring is the one to be careful with.</p>
+
+      <script type="text/x-derive" data-id="cpl-forces-1" data-title="The force on the left-hand mass">
+> How much is the middle spring stretched? Its right-hand end has moved to $x_2$ and its left-hand end to $x_1$, so its length has changed by the difference.
+\k{ext}{\text{extension}} = \k{x2}{x_2} - \k{x1}{x_1}
+---
+> Hooke's law: a stretched spring pulls its ends together, so it pulls mass 1 to the right — the positive direction — when $x_2$ exceeds $x_1$.
+\k{Fmid}{F_{\text{middle}}} = \k{kap}{+\kappa}\left(\k{x2}{x_2} - \k{x1}{x_1}\right)
+---
+> The wall spring contributes on its own, opposing whatever $x_1$ is.
+\k{F1}{F_1} = \k{wall}{-k x_1} + \k{kap}{\kappa}\left(\k{x2}{x_2} - \k{x1}{x_1}\right)
+---
+> Multiply out and collect the two terms in $x_1$.
+! result
+\k{F1}{F_1} = \k{coef1}{-(k + \kappa)}\,\k{x1}{x_1} + \k{kap}{\kappa}\,\k{x2}{x_2}
+      </script>
+
+      <p>Read the answer: mass 1 is held by a total stiffness $k+\kappa$ of its own — both its
+      springs resist it moving — and it is pulled towards wherever mass 2 has gone, with strength
+      $\kappa$.</p>
+
+      <h3>The force on the right-hand mass</h3>
+      <p>Now Newton's third law does the work. The middle spring pulls the two masses towards
+      each other with forces that are equal and opposite, so whatever it does to mass 1, it does
+      the negative of to mass 2.</p>
+
+      <script type="text/x-derive" data-id="cpl-forces-2" data-title="The force on the right-hand mass">
+> The middle spring's force on mass 2 is minus its force on mass 1: same spring, same size, opposite direction.
+\k{Fmid2}{F_{\text{middle on }2}} = \k{neg}{-}\k{kap}{\kappa}\left(\k{x2}{x_2} - \k{x1}{x_1}\right)
+---
+> Add the second wall spring, which resists $x_2$ exactly as the first resisted $x_1$.
+\k{F2}{F_2} = \k{wall}{-k x_2} \k{neg}{-} \k{kap}{\kappa}\left(\k{x2}{x_2} - \k{x1}{x_1}\right)
+---
+> Multiply out and collect.
+! result
+\k{F2}{F_2} = \k{kap}{\kappa}\,\k{x1}{x_1} \k{coef2}{-(k + \kappa)}\,\k{x2}{x_2}
+      </script>
+
+      <p>The two force laws are mirror images, as they must be: the apparatus looks the same from
+      either end.</p>
+
+      <h3>The equations of motion</h3>
+
+      <script type="text/x-derive" data-id="cpl-eom" data-title="Newton's second law for both masses">
+> Newton's second law for mass 1, with the force we just found.
+\k{m}{m}\,\k{a1}{\ddot x_1} = \k{coef1}{-(k+\kappa)}\,\k{x1}{x_1} + \k{kap}{\kappa}\,\k{x2}{x_2}
+---
+> And for mass 2.
+\k{m}{m}\,\k{a2}{\ddot x_2} = \k{kap}{\kappa}\,\k{x1}{x_1} \k{coef2}{-(k+\kappa)}\,\k{x2}{x_2}
+---
+> Two equations, and neither can be solved alone: $\ddot x_1$ depends on $x_2$, and $\ddot x_2$ depends on $x_1$. That is what "coupled" means, and it is the whole difficulty.
+! result
+\k{m}{m}\,\k{a1}{\ddot x_1} = \k{coef1}{-(k+\kappa)}\k{x1}{x_1} + \k{kap}{\kappa}\k{x2}{x_2}, \qquad \k{m}{m}\,\k{a2}{\ddot x_2} = \k{kap}{\kappa}\k{x1}{x_1} \k{coef2}{-(k+\kappa)}\k{x2}{x_2}
+      </script>
+
+      <div class="eq" id="eq-2-2-1">
+        <div class="eq__body">$$ m\ddot x_1 = -(k+\kappa)x_1 + \kappa x_2 $$</div>
+        <div class="eq__num">(2.2.1)</div>
+      </div>
+      <div class="eq" id="eq-2-2-2">
+        <div class="eq__body">$$ m\ddot x_2 = \kappa x_1 - (k+\kappa)x_2 $$</div>
+        <div class="eq__num">(2.2.2)</div>
+      </div>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Take $m = 0.5\unit{kg}$, $k = 10\unit{N/m}$, $\kappa = 5\unit{N/m}$. At an instant when
+        $x_1 = +0.02\unit{m}$ and $x_2 = -0.01\unit{m}$:</p>
+        <p>The middle spring is <em>compressed</em> by $x_2 - x_1 = -0.03\unit{m}$, so it pushes
+        the masses apart: on mass 1 it acts with $\kappa(x_2-x_1) = 5 \times (-0.03) =
+        -0.15\unit{N}$, to the left. On mass 2 it acts with $+0.15\unit{N}$, to the right. Equal
+        and opposite. ✓</p>
+        <p>Totals: $F_1 = -(15)(0.02) + (5)(-0.01) = -0.30 - 0.05 = -0.35\unit{N}$ and
+        $F_2 = (5)(0.02) - (15)(-0.01) = 0.10 + 0.15 = +0.25\unit{N}$.</p>
+        <p>So $\ddot x_1 = -0.70\unit{m/s^2}$ and $\ddot x_2 = +0.50\unit{m/s^2}$: at this
+        instant the masses are accelerating towards each other.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Each mass feels its own wall spring plus the middle spring,
+      whose force depends only on how far apart the two masses have moved.</strong></p>
     </div>
   </section>
+
+  <!-- ==================================================== matrix form ==== -->
+  <section class="band" id="matrix-form" data-section="Matrix form">
+    <div class="measure">
+      <h2 id="matrix-form-h" data-short="Matrix form">The same equations, as one</h2>
+
+      <p>Stack the two displacements into a single vector $\vb x = (x_1, x_2)$. Both equations of
+      motion are then one equation between vectors, and everything section 1.3 proved becomes
+      available.</p>
+
+      <script type="text/x-derive" data-id="cpl-matrix-entries" data-title="Packing both equations into one">
+> Put the two accelerations on the left as a vector, and the two right-hand sides as a vector.
+\k{M}{m}\k{xdd}{\begin{pmatrix} \ddot x_1 \\ \ddot x_2 \end{pmatrix}} = \k{rhs}{\begin{pmatrix} -(k+\kappa)x_1 + \kappa x_2 \\ \kappa x_1 - (k+\kappa)x_2 \end{pmatrix}}
+---
+> Each entry on the right is a row of coefficients dotted with $(x_1, x_2)$ — which is exactly the multiplication rule of section 1.3, read backwards.
+\k{M}{m}\k{xdd}{\begin{pmatrix} \ddot x_1 \\ \ddot x_2 \end{pmatrix}} = \k{K}{\begin{pmatrix} -(k+\kappa) & \kappa \\ \kappa & -(k+\kappa) \end{pmatrix}}\k{x}{\begin{pmatrix} x_1 \\ x_2 \end{pmatrix}}
+---
+> Pull the minus sign out of the matrix, so that what is left is a stiffness rather than a force per unit length with a sign attached.
+\k{M}{m}\k{xdd}{\ddot{\vb x}} = \k{neg}{-}\k{K}{\begin{pmatrix} k+\kappa & -\kappa \\ -\kappa & k+\kappa \end{pmatrix}}\k{x}{\vb x}
+---
+> Give the two matrices names. This is Hooke's law for the whole system at once.
+! result
+\k{M}{\mat M}\k{xdd}{\ddot{\vb x}} = \k{neg}{-}\k{K}{\mat K}\k{x}{\vb x}
+      </script>
+
+      <div class="eq" id="eq-2-2-3">
+        <div class="eq__body">$$ \mat M \ddot{\vb x} = -\mat K \vb x, \qquad
+        \mat M = \begin{pmatrix} m & 0 \\ 0 & m \end{pmatrix}, \qquad
+        \mat K = \begin{pmatrix} k+\kappa & -\kappa \\ -\kappa & k+\kappa \end{pmatrix} $$</div>
+        <div class="eq__num">(2.2.3)</div>
+      </div>
+
+      <p>Every entry of $\mat K$ has a physical meaning, and it is worth naming them one at a
+      time rather than treating the matrix as a block of symbols.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Entry</th><th>Value</th><th>What it is</th></tr></thead>
+          <tbody>
+            <tr><td>$K_{11}$</td><td>$k + \kappa$</td>
+              <td>the restoring force on mass 1, per unit of its own displacement — both of its
+              springs push back</td></tr>
+            <tr><td>$K_{12}$</td><td>$-\kappa$</td>
+              <td>the force on mass 1 per unit displacement of mass 2; negative in this
+              convention because moving mass 2 to the right <em>pulls</em> mass 1 right, which
+              reduces the restoring force</td></tr>
+            <tr><td>$K_{21}$</td><td>$-\kappa$</td>
+              <td>the force on mass 2 per unit displacement of mass 1 — the same number</td></tr>
+            <tr><td>$K_{22}$</td><td>$k + \kappa$</td>
+              <td>the mirror image of $K_{11}$</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>$K_{12} = K_{21}$ is not an accident of this arrangement. One spring joins the two
+      masses, and Newton's third law forces its two ends to act with the same strength, so the
+      influence of mass 2 on mass 1 must equal the influence of mass 1 on mass 2. That is the
+      physical content of $\mat K$ being <strong>symmetric</strong>, and section 1.3 already told
+      us what symmetry buys: real eigenvalues, and perpendicular eigenvectors. Hold onto both —
+      the first will turn out to mean the system oscillates rather than flying apart, and the
+      second will mean the two motions we find do not interfere with each other.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>With $m = 0.5\unit{kg}$, $k = 10\unit{N/m}$ and $\kappa = 5\unit{N/m}$:</p>
+        <p>$\mat K = \begin{pmatrix} 15 & -5 \\ -5 & 15\end{pmatrix} \unit{N/m}$ and
+        $\mat M = \begin{pmatrix} 0.5 & 0 \\ 0 & 0.5\end{pmatrix}\unit{kg}$.</p>
+        <p>Check it reproduces the numbers from before: with $\vb x = (0.02, -0.01)$,
+        $-\mat K\vb x = -(15 \times 0.02 - 5\times(-0.01),\; -5\times 0.02 + 15\times(-0.01))
+        = -(0.35, -0.25) = (-0.35, 0.25)\unit{N}$. Same forces. ✓</p>
+      </aside>
+
+      <p class="takeaway"><strong>$\mat K$ is symmetric because a single spring joins the two
+      masses and Newton's third law makes its two ends act equally.</strong></p>
+    </div>
+  </section>
+
+  <!-- ======================================================== ansatz ===== -->
+  <section class="band" id="ansatz" data-section="The eigenvalue problem">
+    <div class="measure">
+      <h2 id="ansatz-h" data-short="The eigenvalue problem">Looking for a shared frequency</h2>
+
+      <p>The difficulty is that the two equations are tangled. Here is the move that unties them,
+      and it is a guess — a guess that we then check, which is a perfectly respectable way to
+      solve a differential equation, as section 1.2 argued.</p>
+
+      <p>Guess that there are special motions in which <em>both masses oscillate at the same
+      frequency, in step, keeping a fixed ratio of amplitudes</em>. Such a motion is called a
+      <span class="term">normal mode</span>. In symbols: $\vb x(t) = \vb a\, e^{i\omega t}$, where
+      $\vb a$ is a fixed vector of amplitudes and the single number $\omega$ is shared by both
+      masses. As in section 1.2 we work with the complex exponential and take the real part at
+      the end; the equations have real coefficients, so that is allowed.</p>
+
+      <script type="text/x-derive" data-id="cpl-ansatz" data-title="Substituting the guess">
+> The guess. One frequency, one fixed shape, and the time dependence is a single factor multiplying everything.
+\k{x}{\vb x(t)} = \k{a}{\vb a}\,\k{e}{e^{i\omega t}}
+---
+> Differentiate twice in time. The vector $\vb a$ is constant, so each derivative only touches the exponential and brings down a factor $i\omega$.
+\k{xdd}{\ddot{\vb x}(t)} = \k{iw}{(i\omega)^{2}}\,\k{a}{\vb a}\,\k{e}{e^{i\omega t}}
+---
+> And $(i\omega)^{2} = i^{2}\omega^{2} = -\omega^{2}$.
+\k{xdd}{\ddot{\vb x}(t)} = \k{w2}{-\omega^{2}}\,\k{a}{\vb a}\,\k{e}{e^{i\omega t}}
+---
+> Put both into the equation of motion (2.2.3).
+\k{M}{\mat M}\k{w2}{\left(-\omega^{2}\right)}\k{a}{\vb a}\,\k{e}{e^{i\omega t}} = \k{neg}{-}\k{K}{\mat K}\,\k{a}{\vb a}\,\k{e}{e^{i\omega t}}
+---
+> The exponential multiplies every term and is never zero, so it cancels — and with it goes all the time dependence. What is left is an equation about the shape alone.
+\k{M}{\mat M}\k{w2}{\omega^{2}}\k{a}{\vb a} = \k{K}{\mat K}\,\k{a}{\vb a}
+---
+> Gather it on one side.
+! result
+\k{bracket}{\left(\k{K}{\mat K} - \k{w2}{\omega^{2}}\k{M}{\mat M}\right)}\k{a}{\vb a} = \k{zero}{\vb 0}
+      </script>
+
+      <div class="eq" id="eq-2-2-4">
+        <div class="eq__body">$$ \left(\mat K - \omega^{2}\mat M\right)\vb a = \vb 0 $$</div>
+        <div class="eq__num">(2.2.4)</div>
+      </div>
+
+      <p>Stop and look at what happened. We started with two coupled differential equations in
+      time, and we now have an equation with no derivatives in it at all. The guess converted
+      calculus into algebra — and into algebra of a shape you have already met.</p>
+
+      <script type="text/x-derive" data-id="cpl-is-eigen" data-title="This is the eigenvalue problem">
+> Our masses are equal, so $\mat M = m\mat I$: it multiplies every vector by $m$ and nothing else.
+\k{bracket}{\left(\k{K}{\mat K} - \k{w2}{\omega^{2}}\k{mI}{m\mat I}\right)}\k{a}{\vb a} = \k{zero}{\vb 0}
+---
+> Multiply out and move the second term across.
+\k{K}{\mat K}\k{a}{\vb a} = \k{w2}{\omega^{2}}\k{m}{m}\,\k{a}{\vb a}
+---
+> Divide by the mass.
+\k{Km}{\frac{1}{m}\mat K}\,\k{a}{\vb a} = \k{w2}{\omega^{2}}\,\k{a}{\vb a}
+---
+> Compare with equation (1.3.5). It is the same statement, with the stiffness-over-mass matrix in the role of $\mat A$ and the squared frequency in the role of $\lambda$.
+! result
+\k{Km}{\mat A}\,\k{a}{\vb v} = \k{w2}{\lambda}\,\k{a}{\vb v}
+      </script>
+
+      <p>So the physical question — which motions keep their shape? — and the mathematical
+      question — which directions does this matrix only stretch? — are the same question. The
+      allowed frequencies are the eigenvalues; the shapes are the eigenvectors.</p>
+
+      <p>Solving it now needs nothing new. Equation (2.2.4) says the matrix
+      $\mat K - \omega^{2}\mat M$ sends the non-zero vector $\vb a$ to zero, and section 1.3
+      proved a matrix does that exactly when its determinant vanishes.</p>
+
+      <script type="text/x-derive" data-id="cpl-char-eq" data-title="The two allowed frequencies">
+> Write out the matrix, subtracting $\omega^{2}m$ from each diagonal entry.
+\k{det}{\det}\k{mat}{\begin{pmatrix} k + \kappa - m\omega^{2} & -\kappa \\ -\kappa & k + \kappa - m\omega^{2}\end{pmatrix}} = \k{zero}{0}
+---
+> Apply $ad - bc$. The diagonal entries are equal, so the first part is a square.
+\k{sq}{\left(k + \kappa - m\omega^{2}\right)^{2}} - \k{kap2}{\kappa^{2}} = \k{zero}{0}
+---
+> A difference of two squares. Rather than expanding into a quartic, take the square root of both sides — remembering that a square root has two signs, which is where the two modes come from.
+\k{sq}{k + \kappa - m\omega^{2}} = \k{pm}{\pm}\,\k{kap2}{\kappa}
+---
+> Take the upper sign first: the $\kappa$ terms cancel and only the wall spring is left.
+\k{res1}{m\omega^{2} = k} \qquad\Longrightarrow\qquad \k{w1}{\omega_1^{2} = \frac{k}{m}}
+---
+> Now the lower sign: the two $\kappa$ terms add instead.
+! result
+\k{res2}{m\omega^{2} = k + 2\kappa} \qquad\Longrightarrow\qquad \k{w2}{\omega_2^{2} = \frac{k + 2\kappa}{m}}
+      </script>
+
+      <div class="eq" id="eq-2-2-5">
+        <div class="eq__body">$$ \omega_1 = \sqrt{\frac{k}{m}}, \qquad
+        \omega_2 = \sqrt{\frac{k + 2\kappa}{m}} $$</div>
+        <div class="eq__num">(2.2.5)</div>
+      </div>
+
+      <p>Both are real, because $k$, $\kappa$ and $m$ are positive — and that is the promise of
+      symmetry being kept. Had a squared frequency come out negative, $\omega$ would have been
+      imaginary and $e^{i\omega t}$ a growing exponential: the system would run away instead of
+      oscillating. Symmetry is what rules that out.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>With $m = 0.5\unit{kg}$, $k = 10\unit{N/m}$, $\kappa = 5\unit{N/m}$:</p>
+        <p>$\omega_1 = \sqrt{10/0.5} = \sqrt{20} = 4.472\unit{rad/s}$, so $f_1 = 0.712\unit{Hz}$
+        and $T_1 = 1.405\unit{s}$.</p>
+        <p>$\omega_2 = \sqrt{(10 + 10)/0.5} = \sqrt{40} = 6.325\unit{rad/s}$, so
+        $f_2 = 1.007\unit{Hz}$ and $T_2 = 0.993\unit{s}$.</p>
+        <p>The second is faster, which it has to be: more stiffness for the same mass.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Asking for a motion in which both masses share one frequency
+      turns the differential equations into the eigenvalue problem
+      $(\mat K - \omega^{2}\mat M)\vb a = \vb 0$, whose eigenvalues are the allowed squared
+      frequencies.</strong></p>
+    </div>
+  </section>
+
+  <!-- ========================================================= modes ===== -->
+  <section class="band" id="modes" data-section="The two modes">
+    <div class="measure">
+      <h2 id="modes-h" data-short="The two modes">What the two motions actually look like</h2>
+
+      <p>We have the frequencies. Now the shapes: put each $\omega^{2}$ back into (2.2.4) and see
+      which vector gets sent to zero.</p>
+
+      <script type="text/x-derive" data-id="cpl-mode-shapes" data-title="The shape of each mode">
+> Take the slower frequency first, $m\omega_1^{2} = k$, and put it into the matrix. The diagonal entries become $k + \kappa - k = \kappa$.
+\k{mat}{\begin{pmatrix} \kappa & -\kappa \\ -\kappa & \kappa \end{pmatrix}}\k{a}{\begin{pmatrix} a_1 \\ a_2 \end{pmatrix}} = \k{zero}{\begin{pmatrix} 0 \\ 0 \end{pmatrix}}
+---
+> The top row reads $\kappa a_1 - \kappa a_2 = 0$. Divide by $\kappa$.
+\k{row1}{a_1 - a_2 = 0} \qquad\Longrightarrow\qquad \k{eq1}{a_2 = a_1}
+---
+> Equal amplitudes, same sign: the two masses move together. Only the ratio is fixed, as always with an eigenvector, so take the simplest pair.
+\k{mode1}{\vb a^{(1)} = \begin{pmatrix} 1 \\ 1 \end{pmatrix}} \quad\text{at}\quad \k{w1}{\omega_1 = \sqrt{k/m}}
+---
+> Now the faster one, $m\omega_2^{2} = k + 2\kappa$, so each diagonal entry becomes $k + \kappa - k - 2\kappa = -\kappa$.
+\k{mat}{\begin{pmatrix} -\kappa & -\kappa \\ -\kappa & -\kappa \end{pmatrix}}\k{a}{\begin{pmatrix} a_1 \\ a_2 \end{pmatrix}} = \k{zero}{\begin{pmatrix} 0 \\ 0 \end{pmatrix}}
+---
+> Now the top row reads $-\kappa a_1 - \kappa a_2 = 0$: the amplitudes are equal and opposite.
+! result
+\k{mode2}{\vb a^{(2)} = \begin{pmatrix} 1 \\ -1 \end{pmatrix}} \quad\text{at}\quad \k{w2}{\omega_2 = \sqrt{(k + 2\kappa)/m}}
+      </script>
+
+      <p>Those two vectors are perpendicular — $(1,1)\cdot(1,-1) = 1 - 1 = 0$ — which section 1.3
+      guaranteed the moment we noticed $\mat K$ was symmetric. It was not luck.</p>
+
+      <h3>Checking both against the physics directly</h3>
+      <p>Neither frequency needs the matrix at all once you know the shape, and confirming them
+      by elementary means is worth the two minutes.</p>
+
+      <script type="text/x-derive" data-id="cpl-mode-physics" data-title="The same two frequencies, without any matrices">
+> In the first mode both masses move together, so at every instant they are the same distance along.
+\k{cond1}{x_1 = x_2} \qquad\Longrightarrow\qquad \k{ext1}{x_2 - x_1 = 0}
+---
+> The middle spring's extension is that difference, so it is never stretched: it exerts no force at all, and mass 1 is left with only its wall spring.
+\k{eom1}{m\ddot x_1} = \k{wall}{-k x_1} + \k{mid}{\kappa \cdot 0}
+---
+> That is the single oscillator of section 2.1, whose frequency we already know.
+\k{eom1}{m\ddot x_1 = -k x_1} \qquad\Longrightarrow\qquad \k{w1}{\omega_1 = \sqrt{k/m}}
+---
+> In the second mode the masses move oppositely, $x_2 = -x_1$, so the middle spring's extension is twice as big as either displacement.
+\k{cond2}{x_2 = -x_1} \qquad\Longrightarrow\qquad \k{ext2}{x_2 - x_1 = -2x_1}
+---
+> Put that into the force law for mass 1: the middle spring now contributes $2\kappa$ of stiffness rather than $\kappa$.
+\k{eom2}{m\ddot x_1} = \k{wall}{-k x_1} + \k{mid}{\kappa(-2x_1)} = \k{tot}{-(k + 2\kappa)x_1}
+---
+> Same two frequencies, from Hooke's law and nothing else. The matrix was a way of finding the shapes, not a substitute for the physics.
+! result
+\k{w2}{\omega_2 = \sqrt{\frac{k + 2\kappa}{m}}}
+      </script>
+
+      <p>This also explains the ordering. In the in-phase mode the middle spring is idle, so the
+      system is as soft as a single mass on a single wall spring. In the out-of-phase mode the
+      middle spring is worked hardest — stretched by twice the displacement — so the system is
+      stiffer and rings faster. And if $\kappa \to 0$ the two frequencies collapse to the same
+      value, as they should: with no middle spring there is nothing to couple.</p>
+
+      <p class="takeaway"><strong>The two normal modes are the masses moving together at
+      $\omega_1 = \sqrt{k/m}$, where the middle spring never stretches, and moving oppositely at
+      $\omega_2 = \sqrt{(k+2\kappa)/m}$, where it is stretched twice as hard.</strong></p>
+    </div>
+  </section>
+
+  <!-- ================================================== superposition ==== -->
+  <section class="band" id="superposition" data-section="Any motion at all">
+    <div class="measure">
+      <h2 id="superposition-h" data-short="Any motion at all">Any motion at all</h2>
+
+      <p>A normal mode is a special motion. What if you start the system some other way — pull
+      one mass aside and let go, say? Then the motion is a sum of the two modes, and the reason
+      is the superposition principle of section 1.2: the equations are linear, so any sum of
+      solutions is a solution.</p>
+
+      <p>Each mode contributes an amplitude and a phase, or equivalently a cosine part and a sine
+      part, which is two constants each:</p>
+
+      <script type="text/x-derive" data-id="cpl-four-constants" data-title="Counting the constants">
+> Each mode oscillates at its own frequency with its own amplitude and phase; section 1.2 showed this is the same as a cosine plus a sine with two free constants.
+\k{x}{\vb x(t)} = \k{m1}{\begin{pmatrix} 1 \\ 1 \end{pmatrix}}\k{q1}{\left(C_1\cos\omega_1 t + C_2 \sin\omega_1 t\right)} + \k{m2}{\begin{pmatrix} 1 \\ -1 \end{pmatrix}}\k{q2}{\left(C_3\cos\omega_2 t + C_4 \sin\omega_2 t\right)}
+---
+> Set $t = 0$: the cosines are one, the sines are zero.
+\k{x0}{\begin{pmatrix} x_1(0) \\ x_2(0) \end{pmatrix}} = \k{m1}{\begin{pmatrix} 1 \\ 1 \end{pmatrix}}\k{C1}{C_1} + \k{m2}{\begin{pmatrix} 1 \\ -1 \end{pmatrix}}\k{C3}{C_3}
+---
+> Two equations: $x_1(0) = C_1 + C_3$ and $x_2(0) = C_1 - C_3$. Add them, then subtract them.
+\k{C1}{C_1 = \frac{x_1(0) + x_2(0)}{2}}, \qquad \k{C3}{C_3 = \frac{x_1(0) - x_2(0)}{2}}
+---
+> Differentiating first and then setting $t=0$ does the same job for the velocities, with a factor of $\omega$ from each derivative.
+! result
+\k{C2}{C_2 = \frac{\dot x_1(0) + \dot x_2(0)}{2\omega_1}}, \qquad \k{C4}{C_4 = \frac{\dot x_1(0) - \dot x_2(0)}{2\omega_2}}
+      </script>
+
+      <p>Four constants, and exactly four numbers needed to start the system: two positions and
+      two velocities. That is the count section 1.2 predicted — two per second-order equation,
+      and there are two equations. The books balance.</p>
+
+      <h3>What one mass, pulled aside, actually does</h3>
+
+      <script type="text/x-derive" data-id="cpl-beats" data-title="Energy moving from one mass to the other">
+> Hold mass 2 still, pull mass 1 aside by $A$, release both from rest. Then $C_2 = C_4 = 0$ and the two remaining constants are equal.
+\k{x1}{x_1(t)} = \k{half}{\tfrac{A}{2}}\k{c1}{\cos\omega_1 t} + \k{half2}{\tfrac{A}{2}}\k{c2}{\cos\omega_2 t}
+---
+> Two cosines of nearly equal frequency, added. Use $\cos P + \cos Q = 2\cos\frac{P-Q}{2}\cos\frac{P+Q}{2}$, which is the two angle-addition formulas added together.
+\k{x1}{x_1(t)} = \k{A}{A}\,\k{env}{\cos\!\left(\frac{\omega_2 - \omega_1}{2}t\right)}\,\k{car}{\cos\!\left(\frac{\omega_1 + \omega_2}{2}t\right)}
+---
+> Read it as a fast oscillation whose amplitude is itself slowly changing: the second factor rings at the average frequency, the first swells and dies at the difference frequency.
+! hl env
+\k{x1}{x_1(t)} = \k{env}{\underbrace{A\cos\!\left(\tfrac{\Delta\omega}{2}t\right)}_{\text{amplitude, slowly changing}}}\;\k{car}{\cos\!\left(\bar\omega t\right)}
+---
+> Subtracting the two modes instead of adding them gives mass 2, and turns the cosine envelope into a sine one: when one mass is at rest the other is at full swing.
+! result
+\k{x2}{x_2(t)} = \k{env2}{A\sin\!\left(\tfrac{\Delta\omega}{2}t\right)}\,\k{car2}{\sin\!\left(\bar\omega t\right)}
+      </script>
+
+      <p>So the energy does not stay where you put it. Mass 1 starts with all of it, hands it over
+      to mass 2, and gets it back, over and over. The envelope $\cos(\Delta\omega\, t/2)$ first
+      reaches zero when $\Delta\omega\, t/2 = \pi/2$, so the handover is complete after a time
+      $\pi/\Delta\omega$, and the full round trip — the <span class="term">beat period</span> —
+      takes $2\pi/\Delta\omega$.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>With the same numbers, $\omega_1 = 4.472$ and $\omega_2 = 6.325\unit{rad/s}$, so
+        $\Delta\omega = 1.853\unit{rad/s}$.</p>
+        <p>Beat period $= 2\pi/1.853 = 3.39\unit{s}$, and mass 1 first comes completely to rest —
+        with all the energy in mass 2 — after half of that, $1.70\unit{s}$.</p>
+        <p>The carrier frequency is $\bar\omega = (4.472+6.325)/2 = 5.40\unit{rad/s}$, so each
+        mass rings about $2.9$ times in the time it takes to hand the energy over. Weaker
+        coupling makes $\Delta\omega$ smaller and the handover slower.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Any motion is a sum of the two modes with four constants fixed
+      by the four initial conditions, and starting one mass alone makes the energy slosh back and
+      forth with period $2\pi/\Delta\omega$.</strong></p>
+    </div>
+  </section>
+
+  <!-- ============================================== normal coordinates === -->
+  <section class="band" id="normal-coordinates" data-section="Normal coordinates">
+    <div class="measure">
+      <h2 id="normal-coordinates-h" data-short="Normal coordinates">Untangling the equations by hand</h2>
+
+      <p>There is a second route to everything above, and it is worth seeing because it is
+      diagonalisation done in plain sight, without a matrix anywhere.</p>
+
+      <script type="text/x-derive" data-id="cpl-normal-coords" data-title="Two new variables that do not talk to each other">
+> Add the two equations of motion, (2.2.1) and (2.2.2), left side to left side and right to right.
+\k{lhs}{m(\ddot x_1 + \ddot x_2)} = \k{t1}{-(k+\kappa)(x_1 + x_2)} + \k{t2}{\kappa(x_1 + x_2)}
+---
+> Both right-hand terms contain the same combination $x_1 + x_2$. Collect it.
+\k{lhs}{m(\ddot x_1 + \ddot x_2)} = \k{coll}{\left[-(k+\kappa) + \kappa\right]}(x_1 + x_2) = \k{res1}{-k(x_1 + x_2)}
+---
+> Give that combination a name — call it $q_1$, twice the average position — and the equation is about $q_1$ alone.
+\k{q1}{q_1 \equiv \frac{x_1 + x_2}{2}} \qquad\Longrightarrow\qquad \k{eq1}{m\ddot q_1 = -k q_1}
+---
+> Now subtract the equations instead. This time the coupling terms have opposite signs and reinforce.
+\k{lhs2}{m(\ddot x_1 - \ddot x_2)} = \k{t3}{-(k+\kappa)(x_1 - x_2)} - \k{t4}{\kappa(x_1 - x_2)} = \k{res2}{-(k + 2\kappa)(x_1 - x_2)}
+---
+> Name that one $q_2$, half the separation, and it too stands alone.
+! result
+\k{q2}{q_2 \equiv \frac{x_1 - x_2}{2}} \qquad\Longrightarrow\qquad \k{eq2}{m\ddot q_2 = -(k + 2\kappa) q_2}
+      </script>
+
+      <p>Two independent oscillator equations, of exactly the form solved in section 2.1, with the
+      two frequencies of (2.2.5) sitting in them. The variables $q_1$ and $q_2$ are the
+      <span class="term">normal coordinates</span>. Solve each one separately, then recover the
+      masses from $x_1 = q_1 + q_2$ and $x_2 = q_1 - q_2$.</p>
+
+      <p>And this is not a different method. It is the change of basis of section 1.3, written
+      out.</p>
+
+      <script type="text/x-derive" data-id="cpl-diagonalize" data-title="The same thing, as a change of basis">
+> Recovering the displacements from the normal coordinates is a matrix acting on $\vb q$ — and its columns are the two mode shapes.
+\k{x}{\begin{pmatrix} x_1 \\ x_2 \end{pmatrix}} = \k{q1}{q_1}\k{m1}{\begin{pmatrix} 1 \\ 1\end{pmatrix}} + \k{q2}{q_2}\k{m2}{\begin{pmatrix} 1 \\ -1\end{pmatrix}}
+---
+> That is exactly $\vb x = \mat P \vb q$ with $\mat P$ built from the eigenvectors, the matrix of section 1.3.
+\k{x}{\vb x} = \k{P}{\begin{pmatrix} 1 & 1 \\ 1 & -1 \end{pmatrix}}\k{q}{\vb q}
+---
+> Its determinant is $-2$, so it can be undone; the formula from section 1.3 gives the inverse, which is what turns displacements into normal coordinates.
+\k{Pinv}{\mat P^{-1}} = \k{frac}{\frac{1}{-2}}\k{adj}{\begin{pmatrix} -1 & -1 \\ -1 & 1 \end{pmatrix}} = \k{res}{\begin{pmatrix} \tfrac12 & \tfrac12 \\ \tfrac12 & -\tfrac12 \end{pmatrix}}
+---
+> And those two rows are the definitions of $q_1$ and $q_2$ we guessed above: half the sum, and half the difference.
+\k{q}{\vb q} = \k{Pinv}{\mat P^{-1}}\k{x}{\vb x} = \k{res}{\begin{pmatrix} (x_1 + x_2)/2 \\ (x_1 - x_2)/2 \end{pmatrix}}
+---
+> So sandwiching the stiffness matrix between them must give the diagonal matrix of the two mode stiffnesses — which is the statement that in the mode basis the equations come apart.
+! result
+\k{Pinv}{\mat P^{-1}}\k{K}{\mat K}\k{P}{\mat P} = \k{D}{\begin{pmatrix} k & 0 \\ 0 & k + 2\kappa \end{pmatrix}}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Check the last line with numbers. $\mat K = \begin{pmatrix} 15 & -5 \\ -5 &
+        15\end{pmatrix}$, $\mat P = \begin{pmatrix} 1 & 1 \\ 1 & -1\end{pmatrix}$.</p>
+        <p>$\mat K \mat P$ has columns $\mat K(1,1) = (10, 10)$ and $\mat K(1,-1) = (20, -20)$,
+        so $\mat K\mat P = \begin{pmatrix} 10 & 20 \\ 10 & -20\end{pmatrix}$.</p>
+        <p>Then $\mat P^{-1}(\mat K\mat P)$: first column $= \begin{pmatrix} \tfrac12 & \tfrac12
+        \\ \tfrac12 & -\tfrac12\end{pmatrix}(10,10) = (10, 0)$; second column $=
+        \begin{pmatrix} \tfrac12 & \tfrac12 \\ \tfrac12 & -\tfrac12\end{pmatrix}(20,-20)
+        = (0, 20)$.</p>
+        <p>So $\mat P^{-1}\mat K\mat P = \begin{pmatrix} 10 & 0 \\ 0 & 20\end{pmatrix}\unit{N/m}$
+        — that is $k$ and $k + 2\kappa$, exactly as the derivation said. Dividing by
+        $m = 0.5\unit{kg}$ gives $\omega_1^{2} = 20$ and $\omega_2^{2} = 40$. ✓</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="coupled-oscillators"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that in a pure mode the two masses keep a fixed ratio for ever, while
+        any other start makes the energy slosh from one to the other — and that the two normal
+        coordinates underneath are always plain sine waves, whatever the masses are doing.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>Adding and subtracting the two equations gives two uncoupled
+      oscillators; that is diagonalisation, carried out by hand.</strong></p>
+    </div>
+  </section>
+
+  <!-- ======================================================== general ==== -->
+  <section class="band" id="general" data-section="Unequal masses">
+    <div class="measure">
+      <h2 id="general-h" data-short="Unequal masses">When the two sides are not the same</h2>
+
+      <p>Equal masses and equal wall springs made the arithmetic clean and put the modes at
+      $(1,1)$ and $(1,-1)$. Nothing about the method needed that. With masses $m_1, m_2$ and wall
+      springs $k_1, k_2$ the matrices become</p>
+
+      <div class="eq" id="eq-2-2-6">
+        <div class="eq__body">$$ \mat M = \begin{pmatrix} m_1 & 0 \\ 0 & m_2\end{pmatrix},
+        \qquad \mat K = \begin{pmatrix} k_1 + \kappa & -\kappa \\ -\kappa & k_2 + \kappa
+        \end{pmatrix} $$</div>
+        <div class="eq__num">(2.2.6)</div>
+      </div>
+
+      <script type="text/x-derive" data-id="cpl-general-char" data-title="The general characteristic equation">
+> Same condition as before: the determinant of $\mat K - \omega^{2}\mat M$ must vanish.
+\k{det}{\det}\k{mat}{\begin{pmatrix} k_1 + \kappa - m_1\omega^{2} & -\kappa \\ -\kappa & k_2 + \kappa - m_2\omega^{2}\end{pmatrix}} = \k{zero}{0}
+---
+> Apply $ad - bc$. The diagonal entries are no longer equal, so this is a product rather than a square.
+\k{prod}{\left(k_1 + \kappa - m_1\omega^{2}\right)\left(k_2 + \kappa - m_2\omega^{2}\right)} - \k{kap}{\kappa^{2}} = \k{zero}{0}
+---
+> Multiplying out leaves a quadratic in $\omega^{2}$ — not in $\omega$, which is why only squared frequencies ever appear.
+! result
+\k{quad}{m_1m_2\,(\omega^{2})^{2} - \left[m_1(k_2+\kappa) + m_2(k_1+\kappa)\right]\omega^{2} + \left[(k_1+\kappa)(k_2+\kappa) - \kappa^{2}\right]} = \k{zero}{0}
+      </script>
+
+      <p>Solve the quadratic for $\omega^{2}$, take square roots, put each back to find its mode
+      shape. The shapes will no longer be $(1,\pm 1)$ — the heavier mass moves less — but they
+      will still be two, still real, and still independent, because $\mat K$ is still symmetric
+      for the same third-law reason.</p>
+
+      <p class="takeaway"><strong>Unequal masses and springs change the numbers and the mode
+      shapes, but not the method: it is always a determinant set to zero, giving a quadratic in
+      $\omega^{2}$.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>What happens to $\omega_1$ and $\omega_2$ as $\kappa \to 0$, and why must it?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>Both approach $\sqrt{k/m}$. With no middle spring the masses are two independent
+            oscillators on identical wall springs, so of course they share one frequency; the
+            splitting between the modes is caused entirely by the coupling.</p>
+            </div></details></li>
+
+          <li>Now let $k \to 0$ instead, leaving only the middle spring. What is $\omega_1$, and
+            what motion does it describe?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>$\omega_1 = \sqrt{k/m} \to 0$. The in-phase mode is both masses sliding together
+            with the middle spring unstretched — and with no wall springs there is nothing to pull
+            them back, so they simply drift at constant velocity. A zero-frequency mode is a
+            free translation, not an oscillation. The other mode survives at
+            $\omega_2 = \sqrt{2\kappa/m}$.</p>
+            </div></details></li>
+
+          <li>Both masses are held at $x_1 = x_2 = 0.03\unit{m}$ and released from rest. Describe
+            the motion, and give its frequency for $m = 0.5\unit{kg}$, $k = 10\unit{N/m}$,
+            $\kappa = 5\unit{N/m}$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>The starting displacement is exactly $0.03\,(1,1)$, a pure first mode, so the
+            system stays in that mode for ever: both masses oscillate together with amplitude
+            $0.03\unit{m}$ at $\omega_1 = 4.472\unit{rad/s}$. The middle spring never stretches,
+            and no energy is ever handed over.</p>
+            <p>Formally, $C_3 = (x_1(0)-x_2(0))/2 = 0$ and $C_4 = 0$, so the second mode has zero
+            amplitude.</p>
+            </div></details></li>
+
+          <li>Show that the two mode shapes are perpendicular, and say which property of the
+            system guaranteed it in advance.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>$(1,1)\cdot(1,-1) = 1 - 1 = 0$.</p>
+            <p>It was guaranteed by $\mat K$ being symmetric — which in turn came from Newton's
+            third law, since one spring joins the masses and must act equally on both ends. The
+            proof is in section 1.3: eigenvectors of a symmetric matrix with different
+            eigenvalues are always perpendicular.</p>
+            </div></details></li>
+
+          <li>Mass 1 is pulled aside and released. How long until it is momentarily at rest with
+            all the energy in mass 2? Use $m = 0.5\unit{kg}$, $k = 10\unit{N/m}$,
+            $\kappa = 5\unit{N/m}$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            <p>$\Delta\omega = 6.325 - 4.472 = 1.853\unit{rad/s}$. The envelope
+            $\cos(\Delta\omega\,t/2)$ first vanishes at $t = \pi/\Delta\omega = 1.70\unit{s}$.
+            The full round trip takes $2\pi/\Delta\omega = 3.39\unit{s}$.</p>
+            </div></details></li>
+        </ol>
+      </aside>
+    </div>
+  </section>
+
   <nav class="pager"></nav>
 </main>
 

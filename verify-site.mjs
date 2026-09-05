@@ -462,11 +462,14 @@ async function checkPage(browser, p, theme) {
       if (s.missing.length) missing.push(`${d.id} step ${i + 1}: ${s.missing.join(', ')}`);
     }));
     if (missing.length) fail(`${tag} tagged terms that never reached the page: ${missing.slice(0, 4).join(' | ')}`);
-    const bad = derive.align.filter((a) => a.worst0 > 0.75 || a.worst1 > 0.75 || a.invisible > 0);
+    /* Resting clones are placed by measurement and then corrected, so this
+       should be a small fraction of a pixel. Anything approaching a whole pixel
+       means a clone has lost styling its original got from an ancestor. */
+    const bad = derive.align.filter((a) => a.worst0 > 0.3 || a.worst1 > 0.3 || a.invisible > 0);
     if (bad.length) {
       fail(`${tag} moving terms do not line up with the glyphs they replace: ` +
-           bad.slice(0, 4).map((a) => `${a.id} step ${a.k + 1}→${a.k + 2} off by ${Math.max(a.worst0, a.worst1)}px` +
-             (a.invisible ? `, ${a.invisible} invisible` : '')).join('; '));
+           bad.slice(0, 4).map((a) => `${a.id} step ${a.k + 1}→${a.k + 2} off by ${Math.max(a.worst0, a.worst1)}px ` +
+             `on "${a.culprit0 || a.culprit1}"` + (a.invisible ? `, ${a.invisible} invisible` : '')).join('; '));
     } else if (derive.align.length) {
       const worst = Math.max(...derive.align.map((a) => Math.max(a.worst0, a.worst1)));
       pass(`${tag} ${derive.align.length} transitions align within ${worst.toFixed(2)}px`);
