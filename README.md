@@ -124,6 +124,8 @@ site.js             numerics, physics, SVG helpers, controls, navigation, the rA
 derive.js           animated derivations
 sections/*.html     one page per section
 demos/*.js          one file per interactive demonstration
+viz/lib/*.js        the drawing primitives the companion pictures are built from
+viz/N-M.js          the per-derivation state tables, one file per section
 verify-site.mjs     the verification harness
 ```
 
@@ -153,7 +155,8 @@ both degrade to something readable. Screenshots land in `.verify/site/`.
 
 ## What is in it
 
-14 pages, 112 animated derivations, 19 interactive demonstrations. Every equation
+14 pages, 112 animated derivations each with a picture beside it, and 19
+interactive demonstrations. Every equation
 that appears is derived on the page it appears on; the only things taken as given
 are Newton's laws, Hooke's law, and — where it is used — that a particle's
 momentum is `p = hbar k`.
@@ -174,6 +177,48 @@ momentum is `p = hbar k`.
 | 2.7 double-slit interference | 6 | fringes on a screen |
 | 2.8 single-slit diffraction | 7 | the pattern as the slit narrows |
 | 3 quick reference | — | — |
+
+## Writing a companion picture
+
+Beside every derivation is a picture of the thing the algebra is about, driven by
+the same step index and the same eased fraction that drive the equation. It is
+registered against the derivation's id — that is the whole attachment mechanism,
+and a derivation with no entry builds exactly as it did before:
+
+```js
+A.viz('la-components-add', function (root, api) {
+  var p = V.plane(root, { unit: 84, cx: 44, cy: 222 });
+  var states = [ /* one plain object per step */ ];
+  return { update: function (k, f) { p.set(V.at(states, k, f)); } };
+});
+```
+
+A state is a plain object saying what the picture *is* at that step; `V.at`
+interpolates between two of them. Numbers are eased, arrays of objects are
+matched by their `key` so an item present on only one side fades rather than
+jumping, and curves are passed as sampled values rather than functions, so two
+arrays of the same length interpolate elementwise. That is why a state table
+never says how anything moves.
+
+A step that is pure algebra repeats the state before it and lights the part of
+the picture its terms name — `api.hl(k)` returns that step's `! hl` keys. Nothing
+is invented where there is no physics.
+
+Pictures return `{ update, animates }`; set `animates` when the drawing has its
+own clock, or it will be held still through the 52% of each step that is a hold.
+Six primitives cover all 112: `plane` (arrows, a grid carried by a 2×2 map,
+eigen-rays, shaded polygons), `curves` (sampled functions with their positive and
+negative areas shaded apart, bars, string hardware), `cells`, `bench` (masses on
+springs), and `aperture` (barrier, slits, screen, pattern). They draw through
+`A.svg` and take their numbers from `A.phys`, so a picture cannot agree with the
+algebra by construction — only by both being right.
+
+Layout is side by side, with the split computed per derivation from its own
+widest step: the equation keeps whatever renders it at 0.62 scale and the picture
+takes the rest. Two derivations on the site are too wide to share a row and stack
+instead. The visual's width is settled inside `layoutBoard` *before* any layer is
+measured, because every moving term is placed by measurement and a change of
+board width moves all of them.
 
 ## Writing a derivation
 
@@ -232,8 +277,19 @@ measures as zero.
 that possible — `A.currentPage()`, `A.href()` and `A.viewRoot()` — which the
 multi-page site leaves at their defaults and the bundle overrides.
 
+The picture library is inlined in a stated order rather than an alphabetical one:
+`viz/lib/kit.js` defines what the primitives are built out of, so sorting the
+directory would put `curves` before `kit` and break every one of them.
+
 `verify-artifact.mjs` opens the bundle with every request blocked and walks all
 fourteen views, asserting the same invariants as `verify-site.mjs` plus the ones
 that only exist here: nothing but the typefaces is ever requested, the embedded
 faces actually load, exactly one view is visible at a time, and a link from one
 view to an equation in another arrives at that equation.
+
+Both harnesses check the pictures by driving each one through every step and
+fingerprinting the attributes that carry its geometry, rather than inferring
+anything from a scroll sweep — a picture follows the smoothed scroll position, so
+a test that scrolls in jumps can leave it mid-ease through no fault of its own.
+The fingerprint fails a picture that throws on a step, draws nothing, or never
+changes across a multi-step derivation.
