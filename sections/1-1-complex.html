@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>1.1 Complex numbers and Euler’s formula · Physics 143a Pset 0</title>
+<title>1.1 Complex numbers and Euler's formula · Physics 143a Pset 0</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -13,8 +13,10 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/complex-multiply.js"></script>
+<script defer src="../demos/euler-circle.js"></script>
 </head>
-<body data-page="1-1" data-stub="1">
+<body data-page="1-1">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +30,322 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 1.1 · Mathematics · ~25 min</span>
-    <h1>Complex numbers and Euler’s formula</h1>
-    <p class="lede">This section is still being written.</p>
+    <h1>Complex numbers and Euler's formula</h1>
+    <p class="lede">Physicists solve oscillation problems with complex exponentials and then throw
+    the imaginary part away. That looks like a trick until you see why it works, which is what
+    this page is for.</p>
   </header>
-  <section class="band" id="soon" data-section="Complex numbers and Eule…">
+
+  <section class="band" id="plane" data-section="The complex plane">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="plane-h" data-short="The complex plane">Numbers with two parts</h2>
+
+      <p>A complex number $z = x + iy$ carries two real numbers, so it is naturally drawn as a
+      point in a plane: $x$ across, $y$ up. Everything you know about vectors in a plane applies —
+      addition is component by component, and the distance from the origin is
+      $\abs{z} = \sqrt{x^{2} + y^{2}}$, called the <span class="term">modulus</span>.</p>
+
+      <p>What makes complex numbers more than two-component vectors is that you can multiply two
+      of them and get a third, using nothing but $i^{2} = -1$ and ordinary algebra.</p>
+
+      <p>The <span class="term">complex conjugate</span> $z^{*} = x - iy$ is the reflection of $z$
+      across the horizontal axis. It is worth one derivation, because the result is used
+      constantly.</p>
+
+      <script type="text/x-derive" data-id="cx-modulus" data-title="Multiplying a number by its conjugate">
+> Write out the product of a number and its conjugate.
+\k{prod}{z z^{*}} = \k{a}{(x + iy)}\k{b}{(x - iy)}
+---
+> Expand, exactly as you would with real brackets.
+\k{prod}{z z^{*}} = \k{t1}{x^{2}} \k{t2}{- ixy} \k{t3}{+ ixy} \k{t4}{- i^{2}y^{2}}
+---
+> The two middle terms cancel, and $i^{2} = -1$ turns the last minus into a plus.
+\k{prod}{z z^{*}} = \k{t1}{x^{2}} \k{t4}{+ y^{2}}
+---
+> Which is the square of the distance from the origin. So multiplying by the conjugate is how you get a real, positive number out of a complex one.
+! result
+\k{prod}{z z^{*}} = \k{mod}{\abs{z}^{2}}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$z = 3 + 4i$. Then $\abs{z} = \sqrt{9+16} = 5$, and $z^{*} = 3 - 4i$, and
+        $zz^{*} = 9 + 16 = 25 = 5^{2}$. ✓</p>
+        <p>Its angle from the positive real axis is $\arctan(4/3) = 53.13^{\circ}$.</p>
+      </aside>
+
+      <p class="takeaway"><strong>A complex number is a point in a plane, and multiplying it by
+      its conjugate gives the square of its distance from the origin.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="polar" data-section="Polar form">
+    <div class="measure">
+      <h2 id="polar-h" data-short="Polar form">Multiplication turns and stretches</h2>
+
+      <p>Instead of "across and up", describe a complex number by "how far and at what angle":
+      $z = r(\cos\theta + i\sin\theta)$, where $r = \abs{z}$ and $\theta$ is the angle from the
+      positive real axis. Nothing new yet — that is just polar coordinates. But watch what
+      multiplication does in this description.</p>
+
+      <script type="text/x-derive" data-id="cx-product-angles" data-title="Multiplying adds the angles">
+> Two numbers in polar form.
+\k{prod}{z_1 z_2} = \k{r1}{r_1}\k{p1}{\left(\cos\theta_1 + i\sin\theta_1\right)}\;\k{r2}{r_2}\k{p2}{\left(\cos\theta_2 + i\sin\theta_2\right)}
+---
+> The two lengths are ordinary numbers, so pull them out in front and expand the brackets.
+\k{r1}{r_1}\k{r2}{r_2}\left[\k{cc}{\cos\theta_1\cos\theta_2} + \k{ics}{i\cos\theta_1\sin\theta_2} + \k{isc}{i\sin\theta_1\cos\theta_2} + \k{ss}{i^{2}\sin\theta_1\sin\theta_2}\right]
+---
+> Use $i^{2} = -1$ on the last term, then sort into a real part and an imaginary part.
+\k{r1}{r_1}\k{r2}{r_2}\left[\left(\k{cc}{\cos\theta_1\cos\theta_2} - \k{ss}{\sin\theta_1\sin\theta_2}\right) + i\left(\k{isc}{\sin\theta_1\cos\theta_2} + \k{ics}{\cos\theta_1\sin\theta_2}\right)\right]
+---
+> Both brackets are angle-addition formulas you already know.
+\k{r1}{r_1}\k{r2}{r_2}\left[\k{cc}{\cos(\theta_1 + \theta_2)} + i\,\k{isc}{\sin(\theta_1 + \theta_2)}\right]
+---
+> So the lengths multiply and the angles add. Multiplication by a complex number is a stretch together with a turn.
+! result
+\k{prod}{z_1z_2} = \k{r1r2}{r_1r_2}\left[\cos(\k{sum}{\theta_1+\theta_2}) + i\sin(\k{sum}{\theta_1+\theta_2})\right]
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$(1+i)$ has $r = \sqrt2$ and $\theta = 45^{\circ}$. Squaring it should double the angle
+        and square the length: $r^{2} = 2$ at $90^{\circ}$, which is $2i$.</p>
+        <p>Check by expanding: $(1+i)^{2} = 1 + 2i + i^{2} = 2i$. ✓</p>
+        <p>And $(1+i)^{8}$: length $(\sqrt2)^{8} = 16$, angle $8 \times 45^{\circ} = 360^{\circ}$,
+        so $16$. Working that out by expanding brackets would take a page.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="complex-multiply"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the product's angle is always the sum of the two angles and its
+        length the product of the two lengths, so multiplying by a number of length one turns
+        without stretching.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>Multiplying complex numbers multiplies their lengths and adds
+      their angles.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="euler" data-section="Euler's formula">
+    <div class="measure">
+      <h2 id="euler-h" data-short="Euler's formula">Euler's formula</h2>
+
+      <p>Adding angles is exactly what exponents do: $e^{A}e^{B} = e^{A+B}$. That is a strong hint
+      that $\cos\theta + i\sin\theta$ is an exponential of something proportional to $\theta$.
+      Here are two derivations of the fact, because it is the single most useful identity on this
+      site.</p>
+
+      <h3>First, from the series</h3>
+      <p>You know the Maclaurin series of these three functions from calculus: differentiate
+      repeatedly, evaluate at zero, divide by the factorials.</p>
+
+      <script type="text/x-derive" data-id="cx-euler-series" data-title="Euler's formula from the series">
+> Take the series for $e^{u}$ and put $u = i\theta$.
+\k{e}{e^{i\theta}} = \k{t0}{1} + \k{t1}{i\theta} + \k{t2}{\frac{(i\theta)^{2}}{2!}} + \k{t3}{\frac{(i\theta)^{3}}{3!}} + \k{t4}{\frac{(i\theta)^{4}}{4!}} + \cdots
+---
+> The powers of $i$ cycle: $i^{2} = -1$, $i^{3} = -i$, $i^{4} = +1$, and then it repeats.
+\k{e}{e^{i\theta}} = \k{t0}{1} + \k{t1}{i\theta} \k{t2}{- \frac{\theta^{2}}{2!}} \k{t3}{- i\frac{\theta^{3}}{3!}} + \k{t4}{\frac{\theta^{4}}{4!}} + \cdots
+---
+> Sort them: the terms without an $i$ have even powers, and the ones with an $i$ have odd powers.
+! hl t1,t3
+\k{e}{e^{i\theta}} = \left(\k{t0}{1} \k{t2}{- \frac{\theta^{2}}{2!}} + \k{t4}{\frac{\theta^{4}}{4!}} - \cdots\right) + i\left(\k{t1}{\theta} \k{t3}{- \frac{\theta^{3}}{3!}} + \cdots\right)
+---
+> And those two brackets are the series for cosine and for sine.
+! result
+\k{e}{e^{i\theta}} = \k{cos}{\cos\theta} + i\,\k{sin}{\sin\theta}
+      </script>
+
+      <h3>Second, without the series</h3>
+      <p>If you would rather not rearrange an infinite sum, here is an argument that does not.</p>
+
+      <script type="text/x-derive" data-id="cx-euler-ode" data-title="Euler's formula from a derivative">
+> Define a function and differentiate it.
+\k{f}{f(\theta)} = \k{cos}{\cos\theta} + i\,\k{sin}{\sin\theta}
+---
+> Differentiating a cosine gives minus a sine, and a sine gives a cosine.
+\k{fp}{f'(\theta)} = \k{msin}{-\sin\theta} + i\,\k{cos2}{\cos\theta}
+---
+> Now factor an $i$ out of the whole thing, using $i \times i\sin\theta = -\sin\theta$.
+\k{fp}{f'(\theta)} = \k{i}{i}\left(\k{cos2}{\cos\theta} + i\,\k{msin}{\sin\theta}\right)
+---
+> The bracket is the function we started with. So $f$ is a function whose derivative is $i$ times itself, and $f(0) = 1$ — which is precisely the defining property of $e^{i\theta}$.
+! result
+\k{fp}{f'(\theta)} = \k{i}{i}\,\k{f}{f(\theta)}, \quad \k{f0}{f(0) = 1} \qquad\Longrightarrow\qquad \k{f}{f(\theta)} = \k{e}{e^{i\theta}}
+      </script>
+
+      <p>Two immediate consequences. Setting $\theta \to -\theta$ gives
+      $e^{-i\theta} = \cos\theta - i\sin\theta$, so $e^{-i\theta}$ is the conjugate of
+      $e^{i\theta}$; and therefore $\abs{e^{i\theta}}^{2} = e^{i\theta}e^{-i\theta} = e^{0} = 1$.
+      <strong>A complex exponential with a real angle always has length exactly one</strong>: it
+      is a point on the unit circle, and multiplying by it is a pure rotation.</p>
+
+      <p>Running the formula backwards gives the two identities you will use whenever a cosine
+      needs to become exponentials:</p>
+
+      <script type="text/x-derive" data-id="cx-cos-sin" data-title="Cosine and sine as exponentials">
+> Write the formula for $+\theta$ and for $-\theta$, remembering that cosine is even and sine is odd.
+\k{ep}{e^{i\theta}} = \k{c}{\cos\theta} + \k{is}{i\sin\theta} \qquad \k{em}{e^{-i\theta}} = \k{c}{\cos\theta} - \k{is}{i\sin\theta}
+---
+> Add them: the sine parts cancel and the cosines double.
+\k{ep}{e^{i\theta}} + \k{em}{e^{-i\theta}} = \k{c}{2\cos\theta}
+---
+> Subtract them instead: now the cosines cancel.
+\k{ep}{e^{i\theta}} - \k{em}{e^{-i\theta}} = \k{is}{2i\sin\theta}
+---
+> Divide each by its factor.
+! result
+\k{c}{\cos\theta = \frac{e^{i\theta} + e^{-i\theta}}{2}}, \qquad \k{is}{\sin\theta = \frac{e^{i\theta} - e^{-i\theta}}{2i}}
+      </script>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="euler-circle"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the shadow the rotating arrow casts on the horizontal axis traces
+        out exactly a cosine, and that the arrow's length never changes however fast it
+        turns.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>$e^{i\theta} = \cos\theta + i\sin\theta$ is a point on the unit
+      circle at angle $\theta$, so multiplying by it rotates without stretching.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="physics" data-section="Why physicists use it">
+    <div class="measure">
+      <h2 id="physics-h" data-short="Why physicists use it">Why oscillation problems are done this way</h2>
+
+      <p>Two reasons, and both are about making calculus easier.</p>
+
+      <h3>Differentiating an exponential is multiplication</h3>
+
+      <script type="text/x-derive" data-id="cx-derivative" data-title="What a time derivative does to a rotating arrow">
+> Differentiate the exponential in time. The chain rule brings down the factor multiplying $t$.
+\k{ddt}{\frac{\dd}{\dd t}}\k{e}{e^{i\omega t}} = \k{iw}{i\omega}\,\k{e}{e^{i\omega t}}
+---
+> But $i$ is a quarter turn and $\omega$ is a stretch, so differentiating rotates the arrow by $90^{\circ}$ and lengthens it by $\omega$. That is what "velocity leads displacement by a quarter cycle" means, drawn.
+! hl iw
+\k{ddt}{\frac{\dd}{\dd t}}\k{e}{e^{i\omega t}} = \k{iw}{i\omega}\,\k{e}{e^{i\omega t}}
+---
+> Do it twice and you get two quarter turns, which is a half turn: a change of sign.
+\k{ddt2}{\frac{\dd^{2}}{\dd t^{2}}}\k{e}{e^{i\omega t}} = \k{iw2}{(i\omega)^{2}}\,\k{e}{e^{i\omega t}}
+---
+> So a second time derivative just multiplies by $-\omega^{2}$. Calculus has become arithmetic, which is the entire reason for doing oscillations this way.
+! result
+\k{ddt2}{\frac{\dd^{2}}{\dd t^{2}}}\k{e}{e^{i\omega t}} = \k{iw2}{-\omega^{2}}\,\k{e}{e^{i\omega t}}
+      </script>
+
+      <h3>Taking the real part is safe</h3>
+      <p>Physical displacements are real numbers, so at the end we keep only the real part. That
+      is only legitimate if the real part of a complex solution is itself a solution, which needs
+      proof rather than assertion.</p>
+
+      <script type="text/x-derive" data-id="cx-real-part" data-title="Why keeping the real part is allowed">
+> Suppose a complex $z(t)$ solves an equation whose coefficients are all real — for example this one.
+\k{eq}{\ddot z + \omega^{2} z} = \k{zero}{0}
+---
+> Write $z = u + iv$ with $u$ and $v$ real, and substitute. Differentiation acts on the real and imaginary parts separately, because $i$ is a constant.
+\k{re}{\left(\ddot u + \omega^{2}u\right)} + i\,\k{im}{\left(\ddot v + \omega^{2}v\right)} = \k{zero}{0}
+---
+> A complex number is zero only when both of its parts are zero — and both brackets are real, since $\omega$ is.
+\k{re}{\ddot u + \omega^{2}u = 0} \qquad\text{and}\qquad \k{im}{\ddot v + \omega^{2}v = 0}
+---
+> So the real part solves the equation on its own. Solve with complex exponentials, take the real part at the end, and nothing has been lost.
+! result
+\k{re}{u = \operatorname{Re} z} \;\text{ solves the same equation}
+      </script>
+
+      <p>Putting the two together: to solve an oscillation problem, guess $z = c\,e^{i\omega t}$
+      with $c$ a complex constant, use the fact that each time derivative is a multiplication,
+      solve the resulting algebra for $c$, and take the real part. The complex amplitude $c$
+      carries the real amplitude as its length and the phase as its angle, so one complex number
+      does the work of two real ones.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Write $2\cos\omega t - 2\sin\omega t$ as a single cosine.</p>
+        <p>Look for a complex $c$ with $\operatorname{Re}\left[c\,e^{i\omega t}\right]$ equal to
+        it. Since $e^{i\omega t} = \cos\omega t + i\sin\omega t$, writing $c = A + iB$ gives
+        $\operatorname{Re}[c e^{i\omega t}] = A\cos\omega t - B\sin\omega t$. Matching:
+        $A = 2$ and $B = 2$, so $c = 2 + 2i$.</p>
+        <p>In polar form $c$ has length $2\sqrt2 = 2.828$ and angle $45^{\circ}$, so
+        $c = 2\sqrt2\,e^{i\pi/4}$ and
+        $\operatorname{Re}\left[2\sqrt2 e^{i(\omega t + \pi/4)}\right]
+        = 2\sqrt2\cos(\omega t + 45^{\circ})$.</p>
+        <p>Check at $t=0$: $2\sqrt2\cos 45^{\circ} = 2$, and the original gives
+        $2 - 0 = 2$. ✓</p>
+      </aside>
+
+      <h3>Adding two waves of the same frequency</h3>
+      <p>One more identity, used on every interference page later. Two oscillations of equal
+      amplitude and the same frequency, one lagging the other by a phase $\delta$, add to a single
+      oscillation — and the algebra is a line long in exponential form.</p>
+
+      <script type="text/x-derive" data-id="cx-phasor-sum" data-title="Two equal waves, added">
+> Two arrows of the same length turning together, the second behind the first by $\delta$.
+\k{sum}{E} = \k{E0}{E_0}\k{e1}{e^{i\omega t}} + \k{E0b}{E_0}\k{e2}{e^{i(\omega t + \delta)}}
+---
+> Take out the common factor.
+\k{sum}{E} = \k{E0}{E_0}\k{e1}{e^{i\omega t}}\left(\k{one}{1} + \k{ed}{e^{i\delta}}\right)
+---
+> Now the trick: pull half the phase out of the bracket, so what is left is symmetric about zero.
+\k{sum}{E} = \k{E0}{E_0}\k{e1}{e^{i\omega t}}\,\k{half}{e^{i\delta/2}}\left(\k{one}{e^{-i\delta/2}} + \k{ed}{e^{+i\delta/2}}\right)
+---
+> That bracket is twice a cosine, by the identity we just derived.
+\k{sum}{E} = \k{E0}{E_0}\,\k{cos}{2\cos\!\left(\tfrac{\delta}{2}\right)}\,\k{e1}{e^{i\omega t}}\k{half}{e^{i\delta/2}}
+---
+> A single oscillation, of amplitude $2E_0\cos(\delta/2)$, sitting halfway between the two in phase. When $\delta = \pi$ the cosine is zero and the two cancel completely.
+! result
+\k{sum}{E} = \k{cos}{2E_0\cos\!\left(\tfrac{\delta}{2}\right)}\,\k{e1}{e^{i\left(\omega t + \delta/2\right)}}
+      </script>
+
+      <p class="takeaway"><strong>Each time derivative of $e^{i\omega t}$ is a multiplication by
+      $i\omega$, and the real part of a complex solution solves the same real equation — so the
+      complex method costs nothing and turns calculus into algebra.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Give $\abs{3-4i}$ and its angle.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\abs{z} = 5$; the angle is $\arctan(-4/3) = -53.13^{\circ}$, below the real axis.
+            </div></details></li>
+          <li>Use the angle rule to show $(\cos\theta + i\sin\theta)^{2} = \cos 2\theta +
+            i\sin 2\theta$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Both factors have length 1 and angle $\theta$. Lengths multiply to 1, angles add to
+            $2\theta$. In exponential form it is just $\left(e^{i\theta}\right)^{2} = e^{2i\theta}$.
+            </div></details></li>
+          <li>Find $c$ with $\operatorname{Re}\left[c e^{i\omega t}\right] = 3\cos\omega t +
+            4\sin\omega t$, and give the amplitude and phase.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\operatorname{Re}[(A+iB)e^{i\omega t}] = A\cos\omega t - B\sin\omega t$, so $A = 3$
+            and $B = -4$: $c = 3 - 4i$. Amplitude $\abs{c} = 5$, phase $\arg c = -53.13^{\circ}$,
+            so the sum is $5\cos(\omega t - 53.13^{\circ})$.
+            </div></details></li>
+          <li>Why can $e^{i\theta}$ never be zero for real $\theta$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\abs{e^{i\theta}}^{2} = e^{i\theta}e^{-i\theta} = e^{0} = 1$, so its length is always
+            one. This is why dividing an equation through by $e^{i\omega t}$ — as section 2.2 does
+            — is always allowed.
+            </div></details></li>
+          <li>What is $\dfrac{\dd}{\dd t}e^{i(\omega t + \varphi)}$, and by what angle does
+            differentiating turn the arrow?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $i\omega\, e^{i(\omega t + \varphi)}$. Multiplying by $i$ is a quarter turn
+            anticlockwise, so the derivative leads the original by $90^{\circ}$ and is $\omega$
+            times as long.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

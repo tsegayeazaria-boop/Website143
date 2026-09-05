@@ -13,8 +13,10 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/harmonic-builder.js"></script>
+<script defer src="../demos/gaussian-transform.js"></script>
 </head>
-<body data-page="1-4" data-stub="1">
+<body data-page="1-4">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +30,416 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 1.4 · Mathematics · ~45 min</span>
     <h1>Fourier series and Fourier transforms</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Any repeating shape, however jagged, is a sum of sines and cosines. Section
+    1.3 already explained why that is possible and how to find the amounts; this page carries it
+    through, and then takes the limit where the repetition goes away.</p>
+    <div class="callout callout--remark">
+      <span class="callout__tag">Note on letters</span>
+      <p>From here on $k$ means a <strong>wavenumber</strong>, $2\pi$ divided by a wavelength —
+      not a spring constant. $T$ is a period and $\omega_0 = 2\pi/T$ the fundamental angular
+      frequency.</p>
+    </div>
   </header>
-  <section class="band" id="soon" data-section="Fourier series and Fouri…">
+
+  <section class="band" id="coefficients" data-section="The coefficients">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="coefficients-h" data-short="The coefficients">Finding the amounts</h2>
+
+      <p>Suppose a function repeats with period $T$. The claim is that it can be written as a
+      constant plus a sum of cosines and sines whose frequencies are whole multiples of
+      $\omega_0 = 2\pi/T$:</p>
+
+      <div class="eq" id="eq-1-4-1">
+        <div class="eq__body">$$ f(t) = a_0 + \sum_{n=1}^{\infty}
+        \left[a_n\cos n\omega_0 t + b_n \sin n\omega_0 t\right] $$</div>
+        <div class="eq__num">(1.4.1)</div>
+      </div>
+
+      <p>Only whole multiples appear, because anything else would not repeat with period $T$: a
+      frequency $1.5\,\omega_0$ would take two periods to come back to where it started, so the
+      sum would not have the period we assumed.</p>
+
+      <p>Section 1.3 established the fact that makes the coefficients findable: over one period,
+      any two different harmonics are perpendicular, and every sine is perpendicular to every
+      cosine. So take the inner product with the one you want and everything else drops out.</p>
+
+      <script type="text/x-derive" data-id="fs-a0" data-title="The constant term is the average">
+> Integrate the whole series over one period.
+\k{int}{\int_{0}^{T}} \k{f}{f(t)}\;\k{dt}{\dd t} = \k{int2}{\int_{0}^{T}} \k{a0}{a_0}\;\k{dt}{\dd t} + \k{sum}{\sum_n \int_{0}^{T}\left[a_n\cos n\omega_0 t + b_n\sin n\omega_0 t\right]\dd t}
+---
+> Every cosine and sine in the sum runs through a whole number of complete cycles, so each has as much area above the axis as below and integrates to nothing.
+! hl sum
+\k{int}{\int_{0}^{T}} \k{f}{f(t)}\;\k{dt}{\dd t} = \k{a0}{a_0}\,\k{T}{T} + \k{sum}{0}
+---
+> Divide by the period.
+! result
+\k{a0}{a_0} = \k{frac}{\frac{1}{T}}\k{int}{\int_{0}^{T}} \k{f}{f(t)}\;\k{dt}{\dd t}
+      </script>
+
+      <p>So $a_0$ is simply the average value of $f$ over a period — its DC offset, in the
+      language of circuits.</p>
+
+      <script type="text/x-derive" data-id="fs-an-bn" data-title="The rest of the coefficients">
+> Multiply the whole series by one particular cosine, then integrate over a period.
+\k{int}{\int_{0}^{T}} \k{f}{f(t)}\,\k{cm}{\cos m\omega_0 t}\;\k{dt}{\dd t} = \k{sum}{\sum_n a_n \int_{0}^{T}\cos n\omega_0 t\,\cos m\omega_0 t\;\dd t} + \k{sum2}{\sum_n b_n\int_{0}^{T}\sin n\omega_0 t\,\cos m\omega_0 t\;\dd t}
+---
+> Section 1.3 showed every one of those sine-against-cosine integrals is zero, and the cosine-against-cosine ones are zero except when $n = m$.
+! hl sum2
+\k{int}{\int_{0}^{T}} \k{f}{f(t)}\,\k{cm}{\cos m\omega_0 t}\;\k{dt}{\dd t} = \k{am}{a_m}\,\k{self}{\int_{0}^{T}\cos^{2} m\omega_0 t\;\dd t}
+---
+> That last integral is the average of $\cos^{2}$, which is one half, times the length of the interval.
+\k{int}{\int_{0}^{T}} \k{f}{f(t)}\,\k{cm}{\cos m\omega_0 t}\;\k{dt}{\dd t} = \k{am}{a_m}\,\k{self}{\frac{T}{2}}
+---
+> Rearrange. Multiplying by a sine instead gives the matching formula for $b_m$.
+! result
+\k{am}{a_m} = \k{frac}{\frac{2}{T}}\k{int}{\int_{0}^{T}}\k{f}{f(t)}\,\k{cm}{\cos m\omega_0 t}\;\k{dt}{\dd t}, \qquad \k{bm}{b_m} = \k{frac}{\frac{2}{T}}\k{int}{\int_{0}^{T}}\k{f}{f(t)}\,\k{sm}{\sin m\omega_0 t}\;\k{dt}{\dd t}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$f(t) = 2 + 3\cos\omega_0 t - \sin 2\omega_0 t$ is already a Fourier series, so its
+        coefficients can be read off: $a_0 = 2$, $a_1 = 3$, $b_2 = -1$, everything else zero.</p>
+        <p>Confirm $a_1$ from the integral: $\frac{2}{T}\int_0^T f\cos\omega_0 t\,\dd t$. The
+        constant contributes nothing, the $-\sin 2\omega_0 t$ contributes nothing, and the
+        $3\cos\omega_0 t$ contributes $\frac{2}{T} \times 3 \times \frac{T}{2} = 3$. ✓</p>
+      </aside>
+
+      <p class="takeaway"><strong>Each coefficient is found by multiplying by the harmonic you
+      want and integrating: every other term is perpendicular to it and disappears.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="symmetry" data-section="Symmetry shortcuts">
+    <div class="measure">
+      <h2 id="symmetry-h" data-short="Symmetry shortcuts">What symmetry tells you before you integrate</h2>
+
+      <p>Often half the coefficients are zero for reasons you can see by looking at the shape,
+      and knowing which half saves the work of finding out.</p>
+
+      <script type="text/x-derive" data-id="fs-even-odd" data-title="Even and odd functions">
+> Take a function that is even, meaning $f(-t) = f(t)$: a mirror image about the vertical axis. Compute a sine coefficient over a symmetric interval.
+\k{b}{b_n} = \k{frac}{\frac{2}{T}}\k{int}{\int_{-T/2}^{T/2}} \k{f}{f(t)}\,\k{s}{\sin n\omega_0 t}\;\k{dt}{\dd t}
+---
+> Replace $t$ by $-t$ everywhere. The function is unchanged; the sine flips sign because sine is odd.
+\k{integrand}{f(-t)\sin(-n\omega_0 t)} = \k{f}{f(t)}\times\k{s}{\left(-\sin n\omega_0 t\right)}
+---
+> So the integrand at $-t$ is minus the integrand at $+t$: whatever the left half of the interval contributes, the right half cancels exactly.
+! result
+\k{b}{b_n} = \k{zero}{0} \quad\text{for every } n, \text{ when } f \text{ is even}
+      </script>
+
+      <p>The same argument with the roles swapped shows an odd function has no cosine terms and no
+      constant. Cosines are even and sines are odd, so a function built only of cosines is even
+      and one built only of sines is odd — the series cannot help but respect the symmetry.</p>
+
+      <script type="text/x-derive" data-id="fs-half-wave" data-title="Half-wave symmetry kills the even harmonics">
+> Some shapes repeat inverted after half a period: $f(t + T/2) = -f(t)$. A square wave does this. Split the coefficient integral at the halfway point.
+\k{a}{a_n} = \k{frac}{\frac{2}{T}}\left[\k{i1}{\int_{0}^{T/2} f(t)\cos n\omega_0 t\;\dd t} + \k{i2}{\int_{T/2}^{T} f(t)\cos n\omega_0 t\;\dd t}\right]
+---
+> In the second integral substitute $t = s + T/2$, so $s$ runs over the same range as the first.
+\k{i2}{\int_{0}^{T/2} f(s + T/2)\cos\!\left(n\omega_0 s + n\pi\right)\;\dd s}
+---
+> The function flips sign by assumption, and shifting a cosine by $n\pi$ multiplies it by $(-1)^{n}$.
+\k{i2}{\int_{0}^{T/2} \left(-f(s)\right)\left(-1\right)^{n}\cos n\omega_0 s\;\dd s} = \k{i2b}{-(-1)^{n}\,\k{i1}{I}}
+---
+> So the two halves are $I$ and $-(-1)^{n}I$. For even $n$ they cancel; for odd $n$ they add.
+! result
+\k{a}{a_n} = \k{frac}{\frac{2}{T}}\,\k{i1}{I}\left[\k{fac}{1 - (-1)^{n}}\right] = \k{res}{\begin{cases} 0 & n \text{ even} \\ \tfrac{4}{T}I & n \text{ odd}\end{cases}}
+      </script>
+
+      <p class="takeaway"><strong>An even function has only cosines, an odd one only sines, and a
+      shape that inverts after half a period has only odd harmonics.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="square-wave" data-section="The square wave">
+    <div class="measure">
+      <h2 id="square-wave-h" data-short="The square wave">The square wave, and what changes when you narrow it</h2>
+
+      <p>Take the square wave that sits at $+1$ for the first half of each period and $-1$ for the
+      second. It is odd, so only sines appear, and it inverts after half a period, so only odd
+      harmonics appear. That leaves one integral to do.</p>
+
+      <script type="text/x-derive" data-id="fs-square50" data-title="The square wave's coefficients">
+> The sine coefficient, with the function replaced by $+1$ on the first half and $-1$ on the second.
+\k{b}{b_n} = \k{frac}{\frac{2}{T}}\left[\k{i1}{\int_{0}^{T/2}\sin n\omega_0 t\;\dd t} - \k{i2}{\int_{T/2}^{T}\sin n\omega_0 t\;\dd t}\right]
+---
+> Integrate: the antiderivative of $\sin n\omega_0 t$ is $-\cos n\omega_0 t / (n\omega_0)$. Use $\omega_0 T = 2\pi$ to simplify the limits.
+\k{b}{b_n} = \k{frac}{\frac{2}{T}}\cdot\k{pref}{\frac{1}{n\omega_0}}\left[\k{i1}{\left(1 - \cos n\pi\right)} - \k{i2}{\left(\cos n\pi - \cos 2n\pi\right)}\right]
+---
+> $\cos 2n\pi = 1$ always, so the two brackets are the same thing and add.
+\k{b}{b_n} = \k{frac}{\frac{2}{T}}\cdot\k{pref}{\frac{1}{n\omega_0}}\cdot\k{both}{2\left(1 - \cos n\pi\right)}
+---
+> Put $\omega_0 = 2\pi/T$; the periods cancel. And $\cos n\pi$ is $+1$ for even $n$ and $-1$ for odd $n$, so the bracket is $0$ or $2$.
+! result
+\k{b}{b_n} = \k{res}{\frac{2\left(1 - \cos n\pi\right)}{n\pi}} = \k{res2}{\begin{cases} \dfrac{4}{n\pi} & n \text{ odd} \\[4pt] 0 & n \text{ even}\end{cases}}
+      </script>
+
+      <p>So the square wave is $\frac{4}{\pi}\left[\sin\omega_0 t + \frac13\sin 3\omega_0 t +
+      \frac15 \sin 5\omega_0 t + \cdots\right]$: only odd harmonics, falling off as $1/n$. The
+      slow fall-off is the price of the vertical jumps — a sharp corner needs high frequencies.</p>
+
+      <h3>A narrower pulse changes everything</h3>
+      <p>Now take a pulse that is on for only a quarter of each period, and sits at $0$ rather than
+      $-1$ the rest of the time. It is neither odd nor half-wave symmetric any more, so both of
+      the shortcuts above are lost — and the coefficients say so.</p>
+
+      <script type="text/x-derive" data-id="fs-square25" data-title="A quarter-duty pulse">
+> A pulse of height 1 that is on for a fraction $d$ of each period, centred on $t=0$. It is even, so only cosines survive, and the constant term is its average.
+\k{a0}{a_0} = \k{frac}{\frac{1}{T}}\k{int}{\int_{-dT/2}^{+dT/2}} 1 \;\k{dt}{\dd t} = \k{res0}{d}
+---
+> For the harmonics, integrate the cosine across the interval where the pulse is on.
+\k{an}{a_n} = \k{frac}{\frac{2}{T}}\k{int}{\int_{-dT/2}^{+dT/2}} \k{c}{\cos n\omega_0 t}\;\k{dt}{\dd t}
+---
+> The antiderivative is $\sin(n\omega_0 t)/(n\omega_0)$, evaluated between limits symmetric about zero, so the two ends add rather than cancel.
+\k{an}{a_n} = \k{frac}{\frac{2}{T}}\cdot\k{pref}{\frac{2}{n\omega_0}}\,\k{s}{\sin\!\left(\frac{n\omega_0 dT}{2}\right)}
+---
+> With $\omega_0 T = 2\pi$ the periods cancel again and the argument becomes $n\pi d$.
+! result
+\k{an}{a_n} = \k{res}{\frac{2}{n\pi}\sin\!\left(n\pi d\right)}, \qquad \k{a0}{a_0 = d}
+      </script>
+
+      <p>Check the two cases against each other. At $d = \tfrac12$ the formula gives
+      $a_n = \frac{2}{n\pi}\sin(n\pi/2)$, which is zero for even $n$ and
+      $\pm 2/(n\pi)$ for odd $n$ — the odd-harmonic-only pattern again, at half the size because
+      this pulse swings between 0 and 1 rather than $-1$ and $+1$.</p>
+
+      <p>At $d = \tfrac14$, though, $a_2 = \frac{2}{2\pi}\sin(\pi/2) = 1/\pi = 0.318$, which is not
+      zero: <strong>the even harmonics have come back</strong>, because the shape no longer
+      inverts after half a period. And $a_0 = 0.25$ rather than $0$: a DC offset has appeared,
+      because the pulse spends more time at 0 than at 1.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>Half duty, $\pm1$ square wave: $b_1 = 4/\pi = 1.273$, $b_3 = 4/3\pi = 0.424$,
+        $b_5 = 4/5\pi = 0.255$, and $b_2 = b_4 = 0$.</p>
+        <p>Quarter duty, 0-to-1 pulse: $a_0 = 0.250$, $a_1 = \frac{2}{\pi}\sin 45^{\circ} =
+        0.450$, $a_2 = \frac{1}{\pi}\sin 90^{\circ} = 0.318$, $a_3 = \frac{2}{3\pi}\sin 135^{\circ}
+        = 0.150$, and $a_4 = \frac{1}{2\pi}\sin 180^{\circ} = 0$.</p>
+        <p>The fourth harmonic vanishes for a different reason than before: $n\pi d$ hits a
+        multiple of $\pi$ exactly when $n$ is a multiple of $1/d = 4$.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="harmonic-builder"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the 50% square wave uses only odd harmonics, while narrowing the
+        pulse brings the even ones back and lifts the whole curve onto a DC offset — and that the
+        corners are the last thing to be built, however many harmonics you add.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>The square wave needs only odd harmonics falling as $1/n$;
+      narrowing the pulse breaks that symmetry, so the even harmonics and a constant term
+      return.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="transform" data-section="The Fourier transform">
+    <div class="measure">
+      <h2 id="transform-h" data-short="The Fourier transform">When the repetition goes away</h2>
+
+      <p>A Fourier series needs a repeating function. A single pulse — one wave packet, one flash
+      of light, one slit — does not repeat. The fix is to let the period grow without bound, and
+      watch what the series becomes.</p>
+
+      <p>First rewrite the series in exponential form, which halves the bookkeeping.</p>
+
+      <script type="text/x-derive" data-id="ft-complex-series" data-title="The series in exponential form">
+> Take one harmonic and replace the cosine and sine with exponentials, using the identities of section 1.1.
+\k{term}{a_n\cos n\omega_0 t + b_n\sin n\omega_0 t} = \k{an}{a_n}\k{ce}{\frac{e^{in\omega_0t} + e^{-in\omega_0t}}{2}} + \k{bn}{b_n}\k{se}{\frac{e^{in\omega_0t} - e^{-in\omega_0t}}{2i}}
+---
+> Collect the two exponentials.
+\k{term}{\ldots} = \k{cp}{\left(\frac{a_n}{2} + \frac{b_n}{2i}\right)}\k{ep}{e^{in\omega_0 t}} + \k{cm}{\left(\frac{a_n}{2} - \frac{b_n}{2i}\right)}\k{em}{e^{-in\omega_0 t}}
+---
+> Each bracket is one complex number. Call them $c_n$ and $c_{-n}$, and the whole series becomes a single sum over positive and negative $n$.
+! result
+\k{f}{f(t)} = \k{sum}{\sum_{n=-\infty}^{\infty}} \k{cn}{c_n}\,\k{ep}{e^{in\omega_0 t}}, \qquad \k{cn}{c_n} = \k{frac}{\frac{1}{T}}\k{int}{\int_{-T/2}^{T/2}} \k{f}{f(t)}\,\k{em}{e^{-in\omega_0 t}}\;\k{dt}{\dd t}
+      </script>
+
+      <p>Now let $T$ grow. Since $\omega_0 = 2\pi/T$, the allowed frequencies $n\omega_0$ crowd
+      closer and closer together, and in the limit every frequency is allowed.</p>
+
+      <script type="text/x-derive" data-id="ft-limit" data-title="From a sum over harmonics to an integral over frequencies">
+> Write the spacing between neighbouring frequencies. Every term in the sum advances the frequency by exactly this much.
+\k{dw}{\Delta\omega} = \k{w0}{\omega_0} = \k{frac}{\frac{2\pi}{T}}
+---
+> Define a new quantity that stays finite as $T$ grows: the coefficient divided by the spacing, times $2\pi$.
+\k{F}{F(\omega_n)} \equiv \k{T}{T}\,\k{cn}{c_n} = \k{int}{\int_{-T/2}^{T/2}} \k{f}{f(t)}\,\k{e}{e^{-i\omega_n t}}\;\k{dt}{\dd t}
+---
+> Substitute $c_n = F/T = F\,\Delta\omega/2\pi$ back into the series.
+\k{f}{f(t)} = \k{sum}{\sum_n} \k{F}{F(\omega_n)}\,\k{e}{e^{i\omega_n t}}\,\k{frac2}{\frac{\Delta\omega}{2\pi}}
+---
+> That is a Riemann sum: a value times a spacing, added up. As $T \to \infty$ the spacing goes to zero and the sum becomes an integral, exactly as in section 1.3.
+! result
+\k{f}{f(t)} = \k{frac2}{\frac{1}{2\pi}}\k{int2}{\int_{-\infty}^{\infty}} \k{F}{F(\omega)}\,\k{e}{e^{i\omega t}}\;\k{dw}{\dd\omega}
+      </script>
+
+      <p>The pair of formulas is the <span class="term">Fourier transform</span> and its inverse.
+      Written in space rather than time, which is the form the wave pages need:</p>
+
+      <div class="eq" id="eq-1-4-2">
+        <div class="eq__body">$$ F(k) = \int_{-\infty}^{\infty} f(x)\,e^{-ikx}\;\dd x,
+        \qquad f(x) = \frac{1}{2\pi}\int_{-\infty}^{\infty} F(k)\,e^{ikx}\;\dd k $$</div>
+        <div class="eq__num">(1.4.2)</div>
+      </div>
+
+      <p>$F(k)$ says how much of the wave $e^{ikx}$ is present in $f$. It is the same statement as
+      a Fourier coefficient — a component along a basis direction — with the basis now continuous.</p>
+
+      <script type="text/x-derive" data-id="ft-rect" data-title="The transform of a rectangle">
+> Take $f$ equal to 1 across a width $a$ and zero outside. The integral only runs over that width.
+\k{F}{F(k)} = \k{int}{\int_{-a/2}^{a/2}} \k{e}{e^{-ikx}}\;\k{dx}{\dd x}
+---
+> Integrate the exponential: the antiderivative is itself divided by $-ik$.
+\k{F}{F(k)} = \k{frac}{\left[\frac{e^{-ikx}}{-ik}\right]_{-a/2}^{a/2}} = \k{res}{\frac{e^{-ika/2} - e^{+ika/2}}{-ik}}
+---
+> The numerator is $-2i\sin(ka/2)$, by the identity for sine in section 1.1.
+\k{F}{F(k)} = \k{res}{\frac{-2i\sin(ka/2)}{-ik}} = \k{res2}{\frac{2\sin(ka/2)}{k}}
+---
+> Multiply and divide by $a/2$ to write it in terms of the function $\operatorname{sinc}u = \sin u / u$, which will reappear in section 2.8 as the shape of a diffraction pattern.
+! result
+\k{F}{F(k)} = \k{res2}{a\,\operatorname{sinc}\!\left(\frac{ka}{2}\right)}
+      </script>
+
+      <p>The zeros of that transform are at $ka/2 = \pi, 2\pi, \ldots$, that is at
+      $k = 2\pi/a, 4\pi/a, \ldots$. <strong>Narrow the rectangle and its transform spreads
+      out.</strong> That reciprocity is the subject of the next subsection and, in different
+      clothes, of sections 2.6 and 2.8.</p>
+
+      <p class="takeaway"><strong>Letting the period grow without bound turns the sum over
+      harmonics into an integral over all frequencies: that integral is the Fourier
+      transform.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="gaussian" data-section="The Gaussian">
+    <div class="measure">
+      <h2 id="gaussian-h" data-short="The Gaussian">The Gaussian, and the width trade-off</h2>
+
+      <p>One shape transforms into itself: the Gaussian $e^{-x^{2}/2\sigma^{2}}$. It is worth
+      doing because it gives the cleanest possible statement of the reciprocity between a pulse's
+      width and its spectrum's width — and because that statement, dressed in physical constants,
+      is the uncertainty principle.</p>
+
+      <p>First an integral that is needed on the way, and that cannot be done by finding an
+      antiderivative because it does not have one in elementary terms.</p>
+
+      <script type="text/x-derive" data-id="ft-gauss-integral" data-title="The area under a Gaussian">
+> Call the answer $I$ and consider its square, written as two integrals in different variables.
+\k{I2}{I^{2}} = \k{ix}{\int_{-\infty}^{\infty} e^{-x^{2}}\dd x} \;\k{iy}{\int_{-\infty}^{\infty} e^{-y^{2}}\dd y}
+---
+> A product of two single integrals is one integral over the plane, and the two exponentials combine.
+\k{I2}{I^{2}} = \k{ixy}{\iint e^{-\left(x^{2} + y^{2}\right)}\;\dd x\,\dd y}
+---
+> But $x^{2} + y^{2} = r^{2}$: the integrand depends only on the distance from the origin. Split the plane into thin rings of radius $r$ and thickness $\dd r$, each of area $2\pi r\,\dd r$.
+\k{I2}{I^{2}} = \k{ring}{\int_{0}^{\infty} e^{-r^{2}}\,2\pi r\;\dd r}
+---
+> Now there is an $r$ in front, and $\dd(r^{2}) = 2r\,\dd r$, so the substitution $u = r^{2}$ makes it elementary.
+\k{I2}{I^{2}} = \k{ring}{\pi\int_{0}^{\infty} e^{-u}\;\dd u} = \k{res}{\pi}
+---
+> Take the square root.
+! result
+\k{I}{\int_{-\infty}^{\infty} e^{-x^{2}}\;\dd x} = \k{res}{\sqrt{\pi}}
+      </script>
+
+      <script type="text/x-derive" data-id="ft-gauss-ode" data-title="The transform of a Gaussian is a Gaussian">
+> The transform. The function is even, so the imaginary part of the exponential integrates to zero and only the cosine survives.
+\k{F}{F(k)} = \k{int}{\int_{-\infty}^{\infty}} \k{g}{e^{-x^{2}/2\sigma^{2}}}\,\k{c}{\cos kx}\;\k{dx}{\dd x}
+---
+> Differentiate with respect to $k$, under the integral sign. Only the cosine depends on $k$.
+\k{Fp}{F'(k)} = \k{int}{-\int_{-\infty}^{\infty}} \k{x}{x}\,\k{g}{e^{-x^{2}/2\sigma^{2}}}\,\k{s}{\sin kx}\;\k{dx}{\dd x}
+---
+> Now integrate by parts, taking $x e^{-x^{2}/2\sigma^{2}}$ as the part to integrate — its antiderivative is $-\sigma^{2}e^{-x^{2}/2\sigma^{2}}$. The boundary term vanishes because the Gaussian dies at both ends.
+\k{Fp}{F'(k)} = \k{res}{-\sigma^{2}k\int_{-\infty}^{\infty} e^{-x^{2}/2\sigma^{2}}\cos kx\;\dd x}
+---
+> But that integral is $F(k)$ again. So $F$ obeys a first-order equation of exactly the kind whose solution is an exponential.
+\k{Fp}{F'(k)} = \k{res}{-\sigma^{2}k}\,\k{F}{F(k)}
+---
+> Separating and integrating gives $\ln F = -\sigma^{2}k^{2}/2 + \text{constant}$, and the constant is fixed by $F(0)$, which is the area under the Gaussian — the previous derivation, rescaled.
+! result
+\k{F}{F(k)} = \k{amp}{\sigma\sqrt{2\pi}}\;\k{gk}{e^{-\sigma^{2}k^{2}/2}}
+      </script>
+
+      <p>A Gaussian of width $\sigma$ in $x$ has become a Gaussian of width $1/\sigma$ in $k$. The
+      narrower the pulse, the broader its spectrum, and the product of the two widths is fixed.
+      Making that precise needs a definition of "width": the standard deviation of
+      $\abs{f}^{2}$, which is what a physical measurement of a spread responds to.</p>
+
+      <script type="text/x-derive" data-id="ft-widths" data-title="The product of the two widths">
+> The pulse is $e^{-x^{2}/2\sigma^{2}}$, so its square is $e^{-x^{2}/\sigma^{2}}$ — a Gaussian of standard deviation $\sigma/\sqrt2$, since $e^{-x^{2}/2s^{2}}$ has standard deviation $s$.
+\k{dx}{\Delta x} = \k{res1}{\frac{\sigma}{\sqrt{2}}}
+---
+> The transform is $e^{-\sigma^{2}k^{2}/2}$, so its square is $e^{-\sigma^{2}k^{2}}$, and by the same reading its standard deviation is one over $\sigma\sqrt2$.
+\k{dk}{\Delta k} = \k{res2}{\frac{1}{\sigma\sqrt{2}}}
+---
+> Multiply. Every $\sigma$ cancels.
+\k{prod}{\Delta x\,\Delta k} = \k{res1}{\frac{\sigma}{\sqrt2}}\cdot\k{res2}{\frac{1}{\sigma\sqrt2}}
+---
+> A pure number, the same for every Gaussian however wide or narrow. No other shape does better; every other shape does worse.
+! result
+\k{prod}{\Delta x\,\Delta k} = \k{half}{\frac{1}{2}}
+      </script>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>A pulse with $\sigma = 2\unit{mm}$ has $\Delta x = 2/\sqrt2 = 1.414\unit{mm}$ and
+        $\Delta k = 1/(2\sqrt2) = 0.354\unit{mm^{-1}}$. Their product is $0.500$. ✓</p>
+        <p>Squeeze it to $\sigma = 0.2\unit{mm}$: now $\Delta x = 0.141\unit{mm}$ and
+        $\Delta k = 3.54\unit{mm^{-1}}$ — ten times narrower in space, ten times wider in
+        wavenumber, and the same product.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="gaussian-transform"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that squeezing the pulse on the left always broadens the spectrum on
+        the right, and that the product of the two widths printed underneath never
+        moves.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>A Gaussian transforms into a Gaussian, and the product of the
+      widths in $x$ and in $k$ is exactly one half — no shape does better.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>A sawtooth rises linearly from $-1$ to $+1$ over each period and drops instantly
+            back. Which coefficients vanish, and why?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            It is odd about the centre of its rise, so all $a_n$ vanish and $a_0 = 0$; only sine
+            terms survive. It does not have half-wave symmetry, so both even and odd harmonics
+            appear.
+            </div></details></li>
+          <li>Which harmonics does $\abs{\sin\omega_0 t}$ contain?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Taking the absolute value halves the period, so what was the second harmonic is now
+            the fundamental: only even multiples of $\omega_0$ appear. It is also even in time,
+            so only cosines, and its average is not zero — $a_0 = 2/\pi$.
+            </div></details></li>
+          <li>What is $b_1$ for a square wave that swings between $-5$ and $+5$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The coefficients scale with the function, so $b_1 = 5 \times 4/\pi = 20/\pi = 6.37$.
+            </div></details></li>
+          <li>A pulse is made twice as narrow. What happens to its spectrum?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            It becomes twice as wide, and the product of the widths is unchanged. For a rectangle
+            the first zero moves from $2\pi/a$ to $4\pi/a$; for a Gaussian $\Delta k$ doubles.
+            </div></details></li>
+          <li>Where is the first zero of the transform of a rectangle of width $a$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $F(k) = a\operatorname{sinc}(ka/2)$ vanishes when $ka/2 = \pi$, so $k = 2\pi/a$.
+            Section 2.8 meets the same expression as the first dark fringe of a single slit.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

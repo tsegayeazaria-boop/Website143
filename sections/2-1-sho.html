@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/sho-mass-spring.js"></script>
 </head>
-<body data-page="2-1" data-stub="1">
+<body data-page="2-1">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,266 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 2.1 · Physics · ~30 min</span>
     <h1>The simple harmonic oscillator</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">One mass, one spring. Everything on the rest of this site is built out of
+    this, so it is worth doing slowly: where the equation comes from, why its solution needs two
+    constants, and what the energy is doing while the mass moves.</p>
+    <div class="callout callout--remark">
+      <span class="callout__tag">You will need</span>
+      <p>Section 1.1 for complex exponentials and section 1.2 for the exponential guess. On this
+      page $k$ is a <strong>spring constant</strong>; from section 2.3 onwards it will be a
+      wavenumber instead.</p>
+    </div>
   </header>
-  <section class="band" id="soon" data-section="The simple harmonic osci…">
+
+  <section class="band" id="eom" data-section="The equation of motion">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="eom-h" data-short="The equation of motion">Where the equation comes from</h2>
+
+      <p>A mass $m$ on a spring of stiffness $k$, on a frictionless surface, with $x$ measured
+      from the position where the spring is unstretched. Hooke's law says the spring pulls back
+      in proportion to how far it has been stretched: $F = -kx$, the minus sign meaning the force
+      always points back towards $x = 0$.</p>
+
+      <script type="text/x-derive" data-id="sho-eom" data-title="Newton's second law for a mass on a spring">
+> Newton's second law, with Hooke's law for the force.
+\k{m}{m}\k{a}{\ddot x} = \k{F}{-k x}
+---
+> Divide by the mass and bring everything to one side.
+\k{a}{\ddot x} + \k{km}{\frac{k}{m}}\,\k{x}{x} = \k{zero}{0}
+---
+> The combination $k/m$ is positive and has units of one over time squared, so it is the square of a frequency. Name it.
+! hl km
+\k{w2}{\omega^{2}} \equiv \k{km}{\frac{k}{m}}
+---
+> Which leaves the equation every oscillation on this site reduces to.
+! result
+\k{a}{\ddot x} + \k{w2}{\omega^{2}}\,\k{x}{x} = \k{zero}{0}, \qquad \k{w}{\omega = \sqrt{\frac{k}{m}}}
+      </script>
+
+      <p>Note what the frequency does <em>not</em> depend on: how far you pulled the mass. A stiff
+      spring or a light mass gives a fast oscillation, and that is the whole story. The amplitude
+      is set by how you started it and never affects the timing.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$k = 200\unit{N/m}$, $m = 0.5\unit{kg}$.</p>
+        <p>$\omega = \sqrt{200/0.5} = \sqrt{400} = 20\unit{rad/s}$, so $f = \omega/2\pi =
+        3.18\unit{Hz}$ and $T = 1/f = 0.314\unit{s}$.</p>
+        <p>Quadruple the mass and $\omega$ halves, so the period doubles.</p>
+      </aside>
+
+      <p class="takeaway"><strong>Hooke's law plus Newton's second law gives
+      $\ddot x + \omega^{2}x = 0$ with $\omega = \sqrt{k/m}$, and the frequency does not depend on
+      how hard you started it.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="solution" data-section="The solution">
+    <div class="measure">
+      <h2 id="solution-h" data-short="The solution">Checking the solution, and the three forms</h2>
+
+      <p>Section 1.2 solved this equation with the exponential guess and got
+      $x = C_1\cos\omega t + C_2\sin\omega t$. It is worth substituting the amplitude-and-phase
+      form back in directly, because the mechanism — each derivative pulling down a factor of
+      $\omega$ — is the same one that will do the work in every later section.</p>
+
+      <script type="text/x-derive" data-id="sho-verify" data-title="Checking that a cosine really solves it">
+> The proposed solution.
+\k{x}{x(t)} = \k{A}{A}\k{c}{\cos(\omega t + \varphi)}
+---
+> Differentiate once. The chain rule brings down the $\omega$ from inside the bracket, and the cosine becomes a sine.
+\k{v}{\dot x} = \k{mA}{-A\omega}\,\k{s}{\sin(\omega t + \varphi)}
+---
+> Differentiate again: another $\omega$ comes down, and the sine becomes a cosine with another sign change.
+\k{a}{\ddot x} = \k{mA2}{-A\omega^{2}}\,\k{c}{\cos(\omega t + \varphi)}
+---
+> Notice the right-hand side is the original function again, times $-\omega^{2}$.
+\k{a}{\ddot x} = \k{w2}{-\omega^{2}}\,\k{x}{x}
+---
+> Which rearranges to exactly the equation of motion, for any $A$ and any $\varphi$. Both constants are free, which is what a second-order equation is entitled to.
+! result
+\k{a}{\ddot x} + \k{w2}{\omega^{2}}\k{x}{x} = \k{zero}{0}
+      </script>
+
+      <p>The three ways of writing it, from section 1.2, all appear in the literature and all mean
+      the same motion:</p>
+
+      <div class="eq" id="eq-2-1-1">
+        <div class="eq__body">$$ x(t) = A\cos(\omega t + \varphi)
+        \;=\; C_1\cos\omega t + C_2\sin\omega t
+        \;=\; \operatorname{Re}\!\left[c\,e^{i\omega t}\right] $$</div>
+        <div class="eq__num">(2.1.1)</div>
+      </div>
+
+      <script type="text/x-derive" data-id="sho-complex-check" data-title="The complex form solves it too, for any complex amplitude">
+> Take the complex form, with $c$ any complex number.
+\k{x}{x(t)} = \k{Re}{\operatorname{Re}}\left[\k{c}{c}\,\k{e}{e^{i\omega t}}\right]
+---
+> Section 1.1 showed each time derivative of the exponential multiplies it by $i\omega$, so two derivatives multiply by $-\omega^{2}$. The constant $c$ just goes along.
+\k{a}{\ddot x} = \k{Re}{\operatorname{Re}}\left[\k{w2}{-\omega^{2}}\,\k{c}{c}\,\k{e}{e^{i\omega t}}\right]
+---
+> Add $\omega^{2}x$ and the two terms cancel inside the bracket, whatever $c$ is.
+\k{a}{\ddot x} + \k{w2}{\omega^{2}}\k{x}{x} = \k{Re}{\operatorname{Re}}\left[\left(\k{w2}{-\omega^{2}} + \k{w2b}{\omega^{2}}\right)\k{c}{c}\,\k{e}{e^{i\omega t}}\right]
+---
+> So a single complex constant carries both real constants: its length is the amplitude, its angle is minus the phase.
+! result
+\k{zero}{0}, \qquad \k{c}{c = A e^{i\varphi}}
+      </script>
+
+      <p class="takeaway"><strong>Two derivatives of a sinusoid give back the same sinusoid times
+      $-\omega^{2}$, which is exactly what the equation of motion asks for.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="initial-conditions" data-section="Starting it off">
+    <div class="measure">
+      <h2 id="initial-conditions-h" data-short="Starting it off">Starting it off</h2>
+
+      <p>Section 1.2 showed $C_1 = x(0)$ and $C_2 = \dot x(0)/\omega$. Converting those to
+      amplitude and phase is worth having explicitly, because it is the form you actually want
+      when you are told a mass was released with a given speed.</p>
+
+      <script type="text/x-derive" data-id="sho-ic" data-title="Amplitude and phase from the start">
+> Start from the two coefficients, which section 1.2 read straight off the initial conditions.
+\k{C1}{C_1 = x_0}, \qquad \k{C2}{C_2 = \frac{v_0}{\omega}}
+---
+> Section 1.2 also showed the amplitude is the length of the pair.
+\k{A}{A} = \k{sqrt}{\sqrt{\k{C1}{C_1}^{2} + \k{C2}{C_2}^{2}}}
+---
+> Substitute both in.
+! result
+\k{A}{A} = \k{sqrt}{\sqrt{\k{C1}{x_0}^{2} + \left(\k{C2}{\frac{v_0}{\omega}}\right)^{2}}}, \qquad \k{tan}{\tan\varphi = -\frac{v_0}{\omega x_0}}
+      </script>
+
+      <p>Read the amplitude formula physically. Even a mass released at $x_0 = 0$ has an amplitude,
+      $v_0/\omega$, because the speed you gave it carries it out to that distance before the
+      spring stops it. Conversely a mass released from rest at $x_0$ has amplitude exactly $x_0$.
+      The two contributions add in quadrature — as squares — because the position and the velocity
+      are a quarter cycle out of step, which section 1.1 drew as a right angle.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$k = 200\unit{N/m}$, $m = 0.5\unit{kg}$, so $\omega = 20\unit{rad/s}$. The mass is at
+        $x_0 = 0.05\unit{m}$ and moving at $v_0 = -1.0\unit{m/s}$.</p>
+        <p>$C_1 = 0.05\unit{m}$, $C_2 = -1.0/20 = -0.05\unit{m}$.</p>
+        <p>$A = \sqrt{0.05^{2} + 0.05^{2}} = 0.0707\unit{m}$ and $\tan\varphi = -(-0.05)/0.05 = 1$,
+        so $\varphi = 45^{\circ}$ and $x(t) = 0.0707\cos(20t + 45^{\circ})\unit{m}$.</p>
+        <p>Check: $x(0) = 0.0707\cos 45^{\circ} = 0.0500\unit{m}$ ✓, and
+        $\dot x(0) = -0.0707 \times 20 \times \sin 45^{\circ} = -1.00\unit{m/s}$ ✓.</p>
+      </aside>
+
+      <p class="takeaway"><strong>The amplitude is $\sqrt{x_0^{2} + (v_0/\omega)^{2}}$: position
+      and velocity both contribute, and they add as squares because they are a quarter cycle
+      apart.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="energy" data-section="Energy">
+    <div class="measure">
+      <h2 id="energy-h" data-short="Energy">Energy</h2>
+
+      <p>The kinetic energy is $\half m\dot x^{2}$ and the energy stored in a spring stretched by
+      $x$ is $\half k x^{2}$ — the work $\int_0^x kx'\,\dd x'$ done against it. Their sum is
+      constant, and there are two ways to see that.</p>
+
+      <script type="text/x-derive" data-id="sho-energy-const" data-title="The total energy does not change">
+> Write the total energy and differentiate it in time.
+\k{E}{E} = \k{KE}{\tfrac{1}{2}m\dot x^{2}} + \k{PE}{\tfrac{1}{2}k x^{2}}
+---
+> Each term needs the chain rule: differentiating $\dot x^{2}$ gives $2\dot x \ddot x$, and $x^{2}$ gives $2x\dot x$. The halves cancel the twos.
+\k{dE}{\frac{\dd E}{\dd t}} = \k{KE}{m\dot x\,\ddot x} + \k{PE}{k x\,\dot x}
+---
+> Both terms share a factor $\dot x$. Take it out.
+\k{dE}{\frac{\dd E}{\dd t}} = \k{v}{\dot x}\left(\k{KE}{m\ddot x} + \k{PE}{k x}\right)
+---
+> And the bracket is the equation of motion, which is zero. So the energy never changes — not approximately, exactly.
+! result
+\k{dE}{\frac{\dd E}{\dd t}} = \k{zero}{0}
+      </script>
+
+      <script type="text/x-derive" data-id="sho-energy-value" data-title="And its value is set by the amplitude">
+> Substitute the solution and its derivative into the energy.
+\k{E}{E} = \k{KE}{\tfrac{1}{2}m\left(-A\omega\sin(\omega t + \varphi)\right)^{2}} + \k{PE}{\tfrac{1}{2}k\left(A\cos(\omega t + \varphi)\right)^{2}}
+---
+> Square both brackets. The minus sign disappears and each picks up $A^{2}$.
+\k{E}{E} = \k{KE}{\tfrac{1}{2}mA^{2}\omega^{2}\sin^{2}} + \k{PE}{\tfrac{1}{2}kA^{2}\cos^{2}}
+---
+> But $m\omega^{2} = k$, by the definition of $\omega$. That makes the two coefficients identical.
+! hl KE
+\k{E}{E} = \k{KE}{\tfrac{1}{2}kA^{2}\sin^{2}} + \k{PE}{\tfrac{1}{2}kA^{2}\cos^{2}}
+---
+> Take out the common factor; what remains is $\sin^{2} + \cos^{2} = 1$.
+! result
+\k{E}{E} = \k{tot}{\tfrac{1}{2}kA^{2}}
+      </script>
+
+      <p>So the energy depends on the amplitude alone, and it moves back and forth between the two
+      forms twice per cycle: all potential at the turning points where the mass is momentarily
+      still, all kinetic as it flies through the middle.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>With $A = 0.0707\unit{m}$ and $k = 200\unit{N/m}$:
+        $E = \half(200)(0.0707)^{2} = 0.500\unit{J}$.</p>
+        <p>Check it against the starting conditions directly:
+        $\half(0.5)(1.0)^{2} + \half(200)(0.05)^{2} = 0.250 + 0.250 = 0.500\unit{J}$ ✓ — and note
+        the energy happened to be exactly half kinetic and half potential at that instant, which
+        is why the phase came out at $45^{\circ}$.</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="sho-mass-spring"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the mass is always the shadow of the turning arrow, that the
+        velocity arrow is a quarter turn ahead of the position, and that the two energies trade
+        places twice per cycle while their total never moves.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>Total energy is $\half kA^{2}$, fixed by the amplitude alone,
+      and it shuttles between kinetic and potential twice each cycle.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>The mass is doubled and the spring left alone. What happens to the period?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\omega = \sqrt{k/m}$ falls by $\sqrt2$, so the period $T = 2\pi/\omega$ grows by
+            $\sqrt2 = 1.414$. It does not double.
+            </div></details></li>
+          <li>A mass is at $x = 0$ at $t = 0$ and moving at $v_0$. Give $x(t)$ and its amplitude.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $C_1 = 0$ and $C_2 = v_0/\omega$, so $x(t) = (v_0/\omega)\sin\omega t$ and
+            $A = v_0/\omega$. The faster the oscillator, the less far a given kick carries it.
+            </div></details></li>
+          <li>Write $2\cos 5t - 2\sin 5t$ as a single cosine.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $A = \sqrt{4+4} = 2\sqrt2 = 2.828$ and $\tan\varphi = -(-2)/2 = 1$, so
+            $\varphi = 45^{\circ}$ and it is $2\sqrt2\cos(5t + 45^{\circ})$.
+            </div></details></li>
+          <li>For $x = A\cos\omega t$, show the energy at $t = 0$ equals the energy at $t = T/4$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            At $t=0$: the mass is at $x = A$ and still, so $E = \half kA^{2}$, all potential.
+            At $t = T/4$ the phase is $\pi/2$: $x = 0$ and $\dot x = -A\omega$, so
+            $E = \half m A^{2}\omega^{2} = \half kA^{2}$, all kinetic. The same, as the derivation
+            promised.
+            </div></details></li>
+          <li>Which of $\omega$, $A$, $\varphi$, $E$ is fixed by the apparatus rather than by how
+            you start it?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Only $\omega$, which depends on $k$ and $m$ alone. The amplitude and phase come from
+            the initial conditions, and the energy $\half kA^{2}$ depends on the amplitude, so it
+            does too.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>

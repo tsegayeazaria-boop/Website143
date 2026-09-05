@@ -13,8 +13,9 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.18.5/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 <script defer src="../site.js"></script>
 <script defer src="../derive.js"></script>
+<script defer src="../demos/ode-initial-conditions.js"></script>
 </head>
-<body data-page="1-2" data-stub="1">
+<body data-page="1-2">
 
 <div class="toolbar">
   <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="sidebar">Contents</button>
@@ -28,16 +29,336 @@
 <div class="sidebar__fill"></div>
 
 <main class="page">
+
   <header class="section-head measure">
     <span class="kicker">§ 1.2 · Mathematics · ~25 min</span>
     <h1>Second-order linear differential equations</h1>
-    <p class="lede">This section is still being written.</p>
+    <p class="lede">Newton's second law is a statement about acceleration, so almost every
+    equation in mechanics is second order. This page is about what that costs you — two free
+    constants — and how to find the solutions without guessing blindly.</p>
   </header>
-  <section class="band" id="soon" data-section="Second-order linear diff…">
+
+  <section class="band" id="linear" data-section="Linear means superposition">
     <div class="measure">
-      <h2 id="soon-h">Not written yet</h2>
-      <p>The contents, the reading order and the dependency map are already in place;
-      the text of this section is on its way.</p>
+      <h2 id="linear-h" data-short="Linear means superposition">Linear means solutions add</h2>
+
+      <p>An equation is <span class="term">linear</span> if the unknown function and its
+      derivatives appear only to the first power, never multiplied together, never inside a
+      sine or a square root. So $\ddot x + \omega^{2}x = 0$ is linear; $\ddot x + x^{2} = 0$ is
+      not, and neither is $\ddot x + \sin x = 0$ — which is the exact pendulum, and is exactly
+      why the small-angle approximation gets made.</p>
+
+      <p>Linearity buys one enormous thing: solutions can be added.</p>
+
+      <script type="text/x-derive" data-id="ode-superpose" data-title="Why solutions of a linear equation add">
+> Suppose $x_1$ and $x_2$ both solve the equation, and try their combination.
+\k{x}{x} = \k{c1}{c_1}\k{x1}{x_1} + \k{c2}{c_2}\k{x2}{x_2}
+---
+> Substitute it in. Differentiation splits across a sum and constants come out in front, which is the entire content of the word "linear".
+\k{lhs}{\ddot x + \omega^{2}x} = \k{c1}{c_1}\k{p1}{\ddot x_1} + \k{c2}{c_2}\k{p2}{\ddot x_2} + \omega^{2}\left(\k{c1}{c_1}\k{x1}{x_1} + \k{c2}{c_2}\k{x2}{x_2}\right)
+---
+> Regroup so that each original solution keeps its own terms together.
+\k{lhs}{\ddot x + \omega^{2}x} = \k{c1}{c_1}\k{g1}{\left(\ddot x_1 + \omega^{2}x_1\right)} + \k{c2}{c_2}\k{g2}{\left(\ddot x_2 + \omega^{2}x_2\right)}
+---
+> Each bracket is zero, because each of $x_1$ and $x_2$ was a solution.
+! result
+\k{lhs}{\ddot x + \omega^{2}x} = \k{c1}{c_1}\k{g1}{\cdot 0} + \k{c2}{c_2}\k{g2}{\cdot 0} = \k{zero}{0}
+      </script>
+
+      <p>Now watch the same attempt fail for a non-linear equation, because seeing where it breaks
+      is more useful than being told that it does.</p>
+
+      <script type="text/x-derive" data-id="ode-nonlinear-fails" data-title="Where superposition breaks">
+> Take a non-linear equation, and suppose $x_1$ and $x_2$ each solve it.
+\k{eq}{\ddot x + x^{2}} = \k{zero}{0}
+---
+> Substitute the sum. The second derivative still splits — that part is fine — but the square does not.
+\k{lhs}{(\ddot x_1 + \ddot x_2)} + \k{sq}{(x_1 + x_2)^{2}}
+---
+> Expanding the square produces a term belonging to neither solution.
+\k{lhs}{(\ddot x_1 + \ddot x_2)} + \k{s1}{x_1^{2}} + \k{cross}{2x_1x_2} + \k{s2}{x_2^{2}}
+---
+> Gather what each solution contributes; each of those brackets vanishes, as before.
+\k{g1}{\left(\ddot x_1 + x_1^{2}\right)} + \k{g2}{\left(\ddot x_2 + x_2^{2}\right)} + \k{cross}{2x_1x_2}
+---
+> But the cross term is left over, and there is no reason for it to vanish. The sum is not a solution.
+! result
+\k{cross}{2x_1x_2} \ne \k{zero}{0}
+      </script>
+
+      <p>Every superposition argument on this site — adding normal modes, adding harmonics into a
+      Fourier series, adding the waves from two slits — rests on the first derivation and would
+      collapse under the second.</p>
+
+      <p class="takeaway"><strong>In a linear equation any sum of solutions is another solution;
+      the cross terms of a non-linear one destroy that immediately.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="order" data-section="Order and constants">
+    <div class="measure">
+      <h2 id="order-h" data-short="Order and constants">Why second order means two constants</h2>
+
+      <p>The <span class="term">order</span> of a differential equation is the highest derivative
+      in it. The rule is that the order equals the number of free constants in the general
+      solution, and the reason is simply that undoing a derivative always leaves one.</p>
+
+      <script type="text/x-derive" data-id="ode-order-constants" data-title="Each integration leaves a constant">
+> The simplest second-order equation: no acceleration at all.
+\k{eq}{\ddot x} = \k{zero}{0}
+---
+> Integrate once. The velocity is constant, and which constant is not decided by the equation.
+\k{v}{\dot x} = \k{c1}{C_1}
+---
+> Integrate again, and a second undetermined constant appears.
+\k{x}{x(t)} = \k{c1}{C_1}\,\k{t}{t} + \k{c2}{C_2}
+---
+> Two integrations, two constants — and they are exactly the initial velocity and the initial position. A second-order equation always needs two numbers to pin it down.
+! result
+\k{x}{x(t)} = \k{c1}{\dot x(0)}\,\k{t}{t} + \k{c2}{x(0)}
+      </script>
+
+      <p class="takeaway"><strong>A second-order equation needs two initial numbers, because
+      undoing two derivatives leaves two constants.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="ansatz" data-section="The exponential guess">
+    <div class="measure">
+      <h2 id="ansatz-h" data-short="The exponential guess">Solving it: guess an exponential</h2>
+
+      <p>There is no general recipe for solving differential equations, but for linear ones with
+      constant coefficients there is, and it is a guess that always works. The reason it works:
+      differentiating $e^{rt}$ gives back $e^{rt}$ times a number, so every term in the equation
+      ends up with the same exponential factor and it cancels.</p>
+
+      <script type="text/x-derive" data-id="ode-ansatz" data-title="The characteristic equation">
+> The equation, and the guess.
+\k{eq}{\ddot x + \omega^{2}x = 0}, \qquad \k{try}{x = e^{rt}}
+---
+> Each derivative brings down a factor of $r$, so two derivatives bring down $r^{2}$.
+\k{r2}{r^{2}}\k{e}{e^{rt}} + \k{w2}{\omega^{2}}\k{e}{e^{rt}} = \k{zero}{0}
+---
+> The exponential is a common factor, and it is never zero, so it can be divided out. The differential equation has become an ordinary one.
+\k{r2}{r^{2}} + \k{w2}{\omega^{2}} = \k{zero}{0}
+---
+> Solve it. Both roots are imaginary, which is what oscillation looks like in this language.
+! result
+\k{r}{r} = \k{pm}{\pm}\, \k{iw}{i\omega}
+      </script>
+
+      <p>That quadratic is called the <span class="term">characteristic equation</span>. Two roots
+      means two solutions, $e^{+i\omega t}$ and $e^{-i\omega t}$, and by superposition any
+      combination of them is a solution too. Section 1.1 turns those into real functions.</p>
+
+      <script type="text/x-derive" data-id="ode-real-solutions" data-title="From exponentials to real functions">
+> Superposition says any combination of the two exponentials solves the equation. Take the two most useful ones.
+\k{sum}{\frac{e^{i\omega t} + e^{-i\omega t}}{2}} \qquad\text{and}\qquad \k{diff}{\frac{e^{i\omega t} - e^{-i\omega t}}{2i}}
+---
+> These are exactly the two identities derived in section 1.1.
+\k{sum}{\cos\omega t} \qquad\text{and}\qquad \k{diff}{\sin\omega t}
+---
+> So a cosine and a sine both solve the equation, and by superposition so does any combination of them, with two free constants — the number a second-order equation is entitled to.
+! result
+\k{x}{x(t)} = \k{c1}{C_1}\k{sum}{\cos\omega t} + \k{c2}{C_2}\k{diff}{\sin\omega t}
+      </script>
+
+      <p>The same method handles damping, which is worth seeing once even though the rest of this
+      site does not need it.</p>
+
+      <script type="text/x-derive" data-id="ode-char-general" data-title="The same method with a damping term">
+> Add a term proportional to the velocity — air resistance, or friction in a circuit.
+\k{eq}{\ddot x + b\dot x + cx = 0}, \qquad \k{try}{x = e^{rt}}
+---
+> Each derivative brings down one factor of $r$, and the exponential cancels as before.
+\k{quad}{r^{2} + br + c} = \k{zero}{0}
+---
+> An ordinary quadratic, solved the ordinary way.
+\k{r}{r} = \k{half}{\frac{-b \pm \sqrt{b^{2} - 4c}}{2}}
+---
+> When $b^{2} \lt 4c$ the square root is imaginary: the root is a negative real part plus an imaginary part, which is a decaying oscillation. Setting $b = 0$ recovers the undamped case.
+! result
+\k{x}{x(t)} = \k{decay}{e^{-bt/2}}\left(\k{c1}{C_1}\cos\omega' t + \k{c2}{C_2}\sin\omega' t\right)
+      </script>
+
+      <p class="takeaway"><strong>Guessing $e^{rt}$ turns a linear differential equation with
+      constant coefficients into a polynomial, whose roots give the solutions.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="three-forms" data-section="Three forms">
+    <div class="measure">
+      <h2 id="three-forms-h" data-short="Three forms">The same solution, written three ways</h2>
+
+      <p>You will meet the general solution of $\ddot x + \omega^{2}x = 0$ in three costumes.
+      They are the same function, and being able to move between them quickly is worth the ten
+      minutes it takes to see why.</p>
+
+      <div class="eq" id="eq-1-2-1">
+        <div class="eq__body">$$ x(t) = C_1\cos\omega t + C_2 \sin\omega t
+        \;=\; A\cos(\omega t + \varphi)
+        \;=\; \operatorname{Re}\!\left[c\,e^{i\omega t}\right] $$</div>
+        <div class="eq__num">(1.2.1)</div>
+      </div>
+
+      <script type="text/x-derive" data-id="ode-A-to-C" data-title="From amplitude and phase to two coefficients">
+> Start from the amplitude-and-phase form.
+\k{x}{x(t)} = \k{A}{A}\k{cos}{\cos(\omega t + \varphi)}
+---
+> Expand with the angle-addition formula.
+\k{x}{x(t)} = \k{A}{A}\left[\k{cc}{\cos\omega t\cos\varphi} - \k{ss}{\sin\omega t \sin\varphi}\right]
+---
+> Rearrange so that the time-dependent factors stand alone.
+\k{x}{x(t)} = \k{C1}{A\cos\varphi}\,\k{cc}{\cos\omega t} \k{C2}{- A\sin\varphi}\,\k{ss}{\sin\omega t}
+---
+> Comparing with the first form identifies the two constants.
+! result
+\k{C1}{C_1 = A\cos\varphi}, \qquad \k{C2}{C_2 = -A\sin\varphi}
+      </script>
+
+      <script type="text/x-derive" data-id="ode-C-to-A" data-title="And back again">
+> Square both relations and add them.
+\k{sum}{C_1^{2} + C_2^{2}} = \k{a1}{A^{2}\cos^{2}\varphi} + \k{a2}{A^{2}\sin^{2}\varphi}
+---
+> Take out the common $A^{2}$; what is left is one.
+\k{sum}{C_1^{2} + C_2^{2}} = \k{A2}{A^{2}}\left(\k{a1}{\cos^{2}\varphi} + \k{a2}{\sin^{2}\varphi}\right) = \k{A2}{A^{2}}
+---
+> Divide the two relations instead, and the amplitude cancels.
+\k{ratio}{\frac{C_2}{C_1}} = \k{tan}{\frac{-A\sin\varphi}{A\cos\varphi}} = \k{tan2}{-\tan\varphi}
+---
+> So the amplitude is the length of the pair and the phase is their angle — the polar form of section 1.1, applied to the two coefficients.
+! result
+\k{A2}{A = \sqrt{C_1^{2} + C_2^{2}}}, \qquad \k{tan2}{\tan\varphi = -\frac{C_2}{C_1}}
+      </script>
+
+      <script type="text/x-derive" data-id="ode-complex-form" data-title="And the complex form">
+> Take a complex constant $c = C_1 - iC_2$ and multiply it by the rotating exponential.
+\k{c}{c\,e^{i\omega t}} = \k{cc}{(C_1 - iC_2)}\left(\k{cos}{\cos\omega t} + \k{isin}{i\sin\omega t}\right)
+---
+> Expand. Only the terms without an $i$ survive the real part, and $-i \times i = +1$.
+\k{c}{c\,e^{i\omega t}} = \k{re}{\left(C_1\cos\omega t + C_2\sin\omega t\right)} + \k{im}{i\left(C_1\sin\omega t - C_2\cos\omega t\right)}
+---
+> Take the real part, which section 1.1 showed is a solution in its own right.
+! result
+\k{re}{\operatorname{Re}\!\left[c\,e^{i\omega t}\right] = C_1\cos\omega t + C_2\sin\omega t}
+      </script>
+
+      <p>So the complex amplitude $c$ carries both constants at once: its length is $A$ and minus
+      its angle is $\varphi$. One complex number, two real facts.</p>
+
+      <p class="takeaway"><strong>Amplitude-and-phase, cosine-plus-sine, and a complex amplitude
+      are three names for the same two constants.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="two-constants" data-section="Fixing the constants">
+    <div class="measure">
+      <h2 id="two-constants-h" data-short="Fixing the constants">Fixing the constants from the start</h2>
+
+      <script type="text/x-derive" data-id="ode-ic" data-title="Reading the constants off the initial conditions">
+> The general solution, and its derivative.
+\k{x}{x(t)} = \k{C1}{C_1}\cos\omega t + \k{C2}{C_2}\sin\omega t
+---
+> Differentiate. Each term picks up a factor $\omega$ and cosine and sine trade places.
+\k{v}{\dot x(t)} = \k{C1}{-C_1}\omega\sin\omega t + \k{C2}{C_2}\omega\cos\omega t
+---
+> Now set $t = 0$: every cosine is one and every sine is zero, so each equation keeps a single term.
+\k{x0}{x(0)} = \k{C1}{C_1}, \qquad \k{v0}{\dot x(0)} = \k{C2}{C_2}\,\omega
+---
+> Which gives both constants directly.
+! result
+\k{C1}{C_1 = x(0)}, \qquad \k{C2}{C_2 = \frac{\dot x(0)}{\omega}}
+      </script>
+
+      <p>This also settles a question that trips people up: why is $x = A\cos\omega t$ not the
+      general solution? Because it has one constant, and setting $t=0$ in its derivative gives
+      $\dot x(0) = 0$ always. It can only describe motions released from rest. Any problem where
+      the object is given a push at $t = 0$ needs the sine term as well.</p>
+
+      <aside class="callout callout--example">
+        <span class="callout__tag">Worked example</span>
+        <p>$\ddot x + 9x = 0$ with $x(0) = 0.2\unit{m}$ and $\dot x(0) = -0.9\unit{m/s}$. Here
+        $\omega = 3\unit{rad/s}$.</p>
+        <p>$C_1 = 0.2\unit{m}$ and $C_2 = -0.9/3 = -0.3\unit{m}$, so
+        $x(t) = 0.2\cos 3t - 0.3\sin 3t$ metres.</p>
+        <p>In amplitude-and-phase form: $A = \sqrt{0.04 + 0.09} = 0.3606\unit{m}$ and
+        $\tan\varphi = -(-0.3)/0.2 = 1.5$, so $\varphi = 56.31^{\circ}$ and
+        $x(t) = 0.361\cos(3t + 56.31^{\circ})\unit{m}$.</p>
+        <p>Check at $t = 0$: $0.361\cos(56.31^{\circ}) = 0.361 \times 0.5547 = 0.200$. ✓</p>
+      </aside>
+
+      <figure class="fig fig--demo">
+        <div class="fig__frame"><div class="scene-host" data-scene="ode-initial-conditions"></div></div>
+        <div class="fig__controls"></div>
+        <figcaption>Notice that the solid curve is always the sum of the two dashed pieces, and
+        that changing the initial velocity only changes the sine piece — the cosine piece is fixed
+        by the starting position alone.</figcaption>
+      </figure>
+
+      <p class="takeaway"><strong>The cosine coefficient is the starting position and the sine
+      coefficient is the starting velocity divided by $\omega$; a one-constant solution can only
+      describe a start from rest.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="systems" data-section="Looking ahead">
+    <div class="measure">
+      <h2 id="systems-h" data-short="Looking ahead">More than one moving thing</h2>
+
+      <p>Everything above was one unknown function. When two objects influence each other you get
+      two coupled second-order equations, and the counting still holds: two equations of second
+      order need four constants, which is exactly the two positions and two velocities you would
+      have to specify to start such a system.</p>
+
+      <p>The method survives too. Guess that everything oscillates at one shared frequency, with a
+      <em>vector</em> of amplitudes instead of a single one — $\vb x = \vb a\,e^{i\omega t}$ — and
+      the exponential cancels exactly as it did here, leaving algebra. That algebra turns out to
+      be the eigenvalue problem of section 1.3, and section 2.2 carries it through.</p>
+
+      <p class="takeaway"><strong>The same exponential guess, with a vector amplitude, handles
+      systems of coupled oscillators.</strong></p>
+    </div>
+  </section>
+
+  <section class="band" id="check" data-section="Check yourself">
+    <div class="measure">
+      <aside class="callout callout--check">
+        <span class="callout__tag">Check yourself</span>
+        <ol class="check__list">
+          <li>Which of these are linear: $\ddot x + 4x = 0$, $\ddot x + x^{2} = 0$,
+            $\ddot x + t^{2}x = 0$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The first and the third. Linearity is about how $x$ appears, not $t$: a coefficient
+            that varies with time is still linear, and superposition still holds. Only $x^{2}$
+            breaks it.
+            </div></details></li>
+          <li>Verify that $e^{-i\omega t}$ solves $\ddot x + \omega^{2}x = 0$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            Each derivative brings down $-i\omega$, so two bring down
+            $(-i\omega)^{2} = i^{2}\omega^{2} = -\omega^{2}$. Then
+            $-\omega^{2}e^{-i\omega t} + \omega^{2}e^{-i\omega t} = 0$. ✓
+            </div></details></li>
+          <li>Solve $\ddot x + 16x = 0$ with $x(0) = 1$, $\dot x(0) = 0$.
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $\omega = 4$, so $C_1 = 1$ and $C_2 = 0/4 = 0$: $x(t) = \cos 4t$. Released from rest,
+            so no sine term.
+            </div></details></li>
+          <li>Why can no choice of $A$ make $A\cos\omega t$ satisfy $x(0) = 0$ with
+            $\dot x(0) = 1$?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            $x(0) = A$ forces $A = 0$, and then $x$ is zero for all time, so $\dot x(0) = 0 \ne 1$.
+            One constant cannot meet two conditions. The correct solution is
+            $x = (1/\omega)\sin\omega t$.
+            </div></details></li>
+          <li>Give the general solution of $\ddot x - 4x = 0$. Why is it not an oscillation?
+            <details class="answer"><summary>Answer</summary><div class="answer__body">
+            The characteristic equation is $r^{2} - 4 = 0$, so $r = \pm 2$ — real, not imaginary —
+            and $x = C_1e^{2t} + C_2e^{-2t}$. A real exponent means growth and decay rather than
+            oscillation. Physically the sign has flipped: the force pushes the object away from
+            the origin instead of back towards it.
+            </div></details></li>
+        </ol>
+      </aside>
     </div>
   </section>
   <nav class="pager"></nav>
