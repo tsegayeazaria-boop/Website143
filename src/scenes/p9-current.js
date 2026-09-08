@@ -883,7 +883,7 @@
          A e^(i(kx − ωt)) the numbers above use, scaled by wamp/|A| — so the
          quarter-cycle offset between them is A's own, not an assumption. The
          travelling term carries no sign of its own: the sign of k already sits
-         in `cycles`, so a negative k sends the crests left, as it must. */
+         in "cycles", so a negative k sends the crests left, as it must. */
       var time = api.reduced ? 0.0 : tSec;
       var cycles = kU * 5.5;
       var sgn = kU >= 0 ? 1 : -1;

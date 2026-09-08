@@ -322,8 +322,12 @@
     lineM.setAttribute('stroke-dasharray', '6 5');
     svg.appendChild(para); svg.appendChild(lineP); svg.appendChild(lineM);
 
-    S.setD(para, S.polyD(S.sample(200, 0, uMax, function (u) {
-      return [PX(u), PY(Math.min(yHi, u * u))];
+    /* Stop the parabola where it leaves the frame. Clamping it to yHi instead
+       would draw a horizontal run along the top edge, which reads as the curve
+       straightening out — the one thing this figure says it does not do. */
+    var uTop = Math.min(uMax, Math.sqrt(yHi));
+    S.setD(para, S.polyD(S.sample(200, 0, uTop, function (u) {
+      return [PX(u), PY(u * u)];
     })));
     S.setD(lineP, S.polyD(S.sample(2, 0, uMax, function (u) {
       return [PX(u), PY(Math.min(yHi, u))];
@@ -399,9 +403,10 @@
       var vph = wNow / kNow;
       var vgr = 2 * C.hbar * kNow / (2 * C.me);
 
+      var rPar = u * u, rLin = u;
       read1.textContent = 'at k = ' + u.toFixed(2) + ' k*:   parabola ω/ω* = ' +
-        (u * u).toFixed(3) + ',   line ω/ω* = ' + u.toFixed(3) +
-        ',   they differ by ×' + (1 / u).toFixed(2);
+        rPar.toFixed(3) + ',   line ω/ω* = ' + rLin.toFixed(3) +
+        ',   parabola ÷ line = ' + (rPar / rLin).toFixed(2);
       read2.textContent = 'group velocity dω/dk = ℏk/m = ' + sci(vgr) + ' m/s = ' +
         (vgr / C.c).toFixed(3) + ' c   —  this is the speed of the particle';
       read3.textContent = 'phase velocity ω/k = ' + sci(vph) + ' m/s, so ω/k ÷ dω/dk = ' +
@@ -471,9 +476,13 @@
         put(g2, x + 78, 266, row[0], 's-lbl-w', 'middle', 22);
         g2.appendChild(S.arrow(svg, x + 112, 258, x + 190, 258, 'm'));
         put(g2, x + 232, 266, row[0], 's-lbl-q', 'middle', 22);
-        var caret = S.path('M' + (x + 222) + ' 240L' + (x + 232) + ' 231L' + (x + 242) + ' 240',
+        /* The hat is drawn rather than typed so it can be animated on. Its
+           geometry is set by the size the glyph actually renders at — the
+           s-lbl-* classes carry a font-size, so the attribute above does not
+           win — otherwise the caret floats well clear of the letter. */
+        var caret = S.path('M' + (x + 227) + ' 255L' + (x + 232) + ' 249.5L' + (x + 237) + ' 255',
           's-quantum');
-        caret.setAttribute('stroke-width', '2.2');
+        caret.setAttribute('stroke-width', '1.4');
         g2.appendChild(caret);
         hats.push(caret);
         put(g2, x + 160, 286, row[1], 's-lbl', 'middle', 11);
@@ -513,7 +522,7 @@
     put(g5, W / 2, 660, 'iℏ ∂ψ/∂t  =  Ĥ ψ', 's-lbl-q', 'middle', 16);
 
     var check = put(svg, W / 2, 704,
-      'check on the plane wave: Ĥψ = (ℏ²k²/2m) ψ, which for an electron at λ = 1 Å is ' +
+      'check on the free plane wave, V = 0:  Ĥψ = (ℏ²k²/2m) ψ, which for an electron at λ = 1 Å is ' +
       a.eV.toFixed(1) + ' eV times ψ', 's-lbl-q', 'middle', 12);
     var foot = put(svg, W / 2, 732,
       'one gap in the recipe: x̂p̂ ≠ p̂x̂, so a classical product x pₓ has no unique image — symmetrise it as (x̂p̂ + p̂x̂)/2',
@@ -828,19 +837,43 @@
     put(gT, 70, 448, 'time is a label, not an operator', 's-lbl-q', 'start', 13);
     put(gT, 70, 486, 'p̂ acts here, inside one frame', 's-lbl-p', 'start', 11);
 
+    /* The three boxes are one state at three times, not three drawings of the
+       same picture. Each is the sum of the plane waves the packet is made of,
+       every component carried forward by the free dispersion ω = k²/2 in units
+       ℏ = m = 1. The packet therefore moves at the group velocity k₀ and
+       spreads, because nothing here lets it do anything else. */
+    var K0 = 2, DK = 0.8, NK = 48, X0 = -3, XW = 6;
+    var TT = [0, 1, 2];
+    function packetRe(X, tt) {
+      var re = 0, j, k, amp, ph;
+      for (j = 0; j <= NK; j++) {
+        k = K0 + DK * (-3 + 6 * j / NK);
+        amp = Math.exp(-(k - K0) * (k - K0) / (2 * DK * DK));
+        ph = k * (X - X0) - 0.5 * k * k * tt;
+        re += amp * Math.cos(ph);
+      }
+      return re;
+    }
+    /* One scale shared by all three boxes, so the drop in height is the
+       spreading and not a change of ruler. */
+    var pk = 0, ia, ja;
+    for (ia = 0; ia <= 120; ia++) {
+      for (ja = 0; ja < 3; ja++) {
+        pk = Math.max(pk, Math.abs(packetRe(-XW + 2 * XW * ia / 120, TT[ja])));
+      }
+    }
+
     var frames = [];
-    var rnd = M.rng(101011);
     [0, 1, 2].forEach(function (i) {
       var x = 90 + i * 180;
       var g = S.g({});
       gT.appendChild(g);
       card(g, x, 500, 130, 100, i === 1 ? 'var(--probability)' : null);
-      var seed = 0.6 + rnd() * 0.8;
       var w = S.path('', 's-wave');
       g.appendChild(w);
-      S.setD(w, S.polyD(S.sample(80, 0, 1, function (u) {
+      S.setD(w, S.polyD(S.sample(160, 0, 1, function (u) {
         return [M.lerp(x + 10, x + 120, u),
-          556 - 22 * Math.exp(-Math.pow((u - 0.5) * 3.1, 2)) * Math.cos(u * 5.2 * M.TAU + i * seed)];
+          556 - 24 * packetRe(-XW + 2 * XW * u, TT[i]) / pk];
       })));
       put(g, x + 65, 620, 't' + ['₁', '₂', '₃'][i], 's-lbl-b', 'middle', 12);
       if (i < 2) g.appendChild(S.arrow(svg, x + 138, 556, x + 174, 556, 'q'));
