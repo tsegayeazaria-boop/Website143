@@ -37,9 +37,12 @@
     if (Math.abs(m) >= 10 - 0.5 * Math.pow(10, -dd)) { m /= 10; e += 1; }
     return num(m, dd) + ' × 10' + sup(e);
   }
+  /* Several labels here line two columns up by padding with spaces, and SVG
+     collapses runs of whitespace unless told not to. */
   function put(parent, x, y, str, cls, anchor, size) {
     var t = S.text(x, y, str, cls, anchor);
     if (size) t.setAttribute('font-size', String(size));
+    t.setAttribute('xml:space', 'preserve');
     parent.appendChild(t);
     return t;
   }
@@ -138,8 +141,8 @@
     put(svg, W / 2, 40, 'one wavefunction, two orders of operation', 's-lbl-b', 'middle', 15);
 
     var CA = 62, CB = 646;
-    var hdA = put(svg, CA, 76, 'apply x̂ first, then p̂ₓ        p̂ₓ x̂ ψ', 's-lbl-q', 'start', 13);
-    var hdB = put(svg, CB, 76, 'apply p̂ₓ first, then x̂        x̂ p̂ₓ ψ', 's-lbl-w', 'start', 13);
+    var hdA = put(svg, CA, 76, 'apply x̂ first, then p̂ₓ   →   p̂ₓ x̂ ψ', 's-lbl-q', 'start', 13);
+    var hdB = put(svg, CB, 76, 'apply p̂ₓ first, then x̂   →   x̂ p̂ₓ ψ', 's-lbl-w', 'start', 13);
     var divide = S.line(620, 62, 620, 328, 's-axis s-dash');
     svg.appendChild(divide);
 
@@ -373,8 +376,8 @@
       'the same algebra with ∂/∂y, and the extra term is gone', 's-lbl-b', 'middle', 15);
 
     var CA = 62, CB = 646;
-    var hdA = put(svg, CA, 76, 'derivative along x        [ x̂ , p̂ₓ ]', 's-lbl-q', 'start', 13);
-    var hdB = put(svg, CB, 76, 'derivative along y        [ x̂ , p̂_y ]', 's-lbl-w', 'start', 13);
+    var hdA = put(svg, CA, 76, 'derivative along x   →   [ x̂ , p̂ₓ ]', 's-lbl-q', 'start', 13);
+    var hdB = put(svg, CB, 76, 'derivative along y   →   [ x̂ , p̂_y ]', 's-lbl-w', 'start', 13);
     var divide = S.line(620, 62, 620, 300, 's-axis s-dash');
     svg.appendChild(divide);
 
@@ -913,7 +916,7 @@
       [682, 'Â = x̂ , B̂ = p̂ₓ :    ⟨ iℏ 1̂ ⟩ = iℏ ⟨ψ|ψ⟩ = iℏ ,    | iℏ | = ℏ', 's-lbl-b', 13],
       [712, 'δx δpₓ  ≥  ℏ/2  =  ' + sci(C.hbar / 2, 6) + ' J s', 's-lbl-p', 14],
       [746, 'Â = x̂ , B̂ = p̂_y :    ⟨ 0 ⟩ = 0 ,    | 0 | = 0', 's-lbl-b', 13],
-      [774, 'δx δp_y  ≥  0        no restriction at all', 's-lbl-w', 13]
+      [774, 'δx δp_y  ≥  0    —    no restriction at all', 's-lbl-w', 13]
     ].map(function (L) { return put(svg, W / 2, L[0], L[1], L[2], 'middle', L[3]); });
 
     var caveats = [
