@@ -759,7 +759,7 @@
     var lam = 0.5e-9;
     var kSI = M.TAU / lam;
     var vSI = C.hbar * kSI / C.me;
-    var siLine = S.text(560, 670,
+    var siLine = S.text(90, 674,
       'electron at λ = 0.50 nm :  k = ' + ex(kSI, 3) + ' m⁻¹,  v = ℏk/m = ' +
       ex(vSI, 3) + ' m/s', 's-lbl-w', 'start');
     svg.appendChild(siLine);
