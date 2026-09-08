@@ -319,9 +319,9 @@
     gChain.appendChild(box);
 
     /* --- a concrete state to check it on: P(x) = x^2 e^{-x} / 2 --- */
-    var xs = [], fs = [], N = 4000, i, x;
+    var xs = [], fs = [], N = 6000, i, x;
     for (i = 0; i <= N; i++) {
-      x = 24 * i / N;
+      x = 40 * i / N;
       xs.push(x);
       fs.push(0.5 * x * x * Math.exp(-x));
     }
@@ -1061,8 +1061,9 @@
         sci(DP, 4) + ' kg m s⁻¹, measured from the right-hand curve';
       readout[1].textContent = 'the electron’s velocity is uncertain by Δv = Δp/mₑ = ' +
         sci(dv, 3) + ' m s⁻¹';
-      readout[2].textContent = 'Δx Δp = ' + sci(prod, 4) + ' J s  =  ' +
-        num(prod / (C.hbar / 2), 4) + ' × (ℏ/2)   and  ℏ_eff/2 = ' + sci(hb / 2, 4) + ' J s';
+      readout[2].textContent = 'Δx Δp = ' + sci(prod, 4) + ' J s      ℏ_eff/2 = ' +
+        sci(hb / 2, 4) + ' J s      ratio ' + num(prod / (hb / 2), 4) +
+        ' — saturated, but the floor itself has moved';
       readout[3].textContent = 'de Broglie wavelength at this momentum: λ = h_eff/p = ' +
         sci(lamdB, 3) + ' m — the wave shrinks away with ℏ';
 
