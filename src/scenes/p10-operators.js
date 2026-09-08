@@ -63,7 +63,7 @@
      =================================================================== */
 
   A.scene('planewave-test', function (root) {
-    var W = 1180, H = 740;
+    var W = 1180, H = 760;
     var svg = S.root(W, H,
       'The plane wave substituted into the free Schrodinger equation. One time derivative ' +
       'brings down h-bar omega, two space derivatives bring down h-bar squared k squared ' +
@@ -83,82 +83,82 @@
     svg.appendChild(gL);
     put(gL, 70, 104, 'LEFT SIDE     iℏ ∂ψ/∂t', 's-lbl-w', 'start', 13);
     var Ltext = [
-      '∂ψ/∂t = A · ∂/∂t e^{i(k·r − ωt)}',
-      '      = (−iω) A e^{i(k·r − ωt)} = −iω ψ',
-      'iℏ · (−iω) = −i²ℏω = +ℏω     because i² = −1'
+      'e^{i(k·r − ωt)} = e^{i k·r} · e^{−iωt}, and only the second factor sees t',
+      '∂ψ/∂t = A e^{i k·r} (−iω) e^{−iωt} = (−iω) ψ(r,t)',
+      'iℏ · (−iω) = −i²ℏω = +ℏω        because  i² = −1'
     ];
     var Lrows = Ltext.map(function (s, i) {
       return put(gL, 70, 138 + i * 30, s, 's-lbl', 'start', 12);
     });
-    var Lend = put(gL, 70, 234, 'iℏ ∂ψ/∂t  =  ℏω ψ(r,t)', 's-lbl-b', 'start', 14);
+    var Lend = put(gL, 70, 240, 'iℏ ∂ψ/∂t  =  ℏω · ψ(r,t)', 's-lbl-b', 'start', 14);
 
     /* ---- right column: the Laplacian ---- */
     var gR = S.g({});
     svg.appendChild(gR);
     put(gR, 620, 104, 'RIGHT SIDE     −(ℏ²/2m) ∇²ψ', 's-lbl-w', 'start', 13);
     var Rtext = [
-      'each ∂/∂xⱼ pulls down i kⱼ, so ∇ψ = i k ψ',
-      '∇²ψ = ∇·(i k ψ) = (i k)·(i k) ψ = −k² ψ',
-      'k² here is k·k = |k|², a scalar, not a vector'
+      'k·r = kₓx + k_y y + k_z z, so each ∂/∂xⱼ pulls down i kⱼ',
+      '∇ψ = i k ψ,  then  ∇²ψ = ∇·(i k ψ) = (i k)·(i k) ψ = −k² ψ',
+      'k² here means k·k = |k|², a scalar — k is constant, so it slides out'
     ];
     var Rrows = Rtext.map(function (s, i) {
       return put(gR, 620, 138 + i * 30, s, 's-lbl', 'start', 12);
     });
-    var Rend = put(gR, 620, 234, '−(ℏ²/2m)(−k²ψ)  =  +(ℏ²k²/2m) ψ(r,t)', 's-lbl-b', 'start', 14);
+    var Rend = put(gR, 620, 240, '−(ℏ²/2m)(−k²ψ)  =  (ℏ²k²/2m) · ψ(r,t)', 's-lbl-b', 'start', 14);
 
-    var gapNote = put(svg, 620, 262,
-      'the handout skips this line and drops the ψ on the right', 's-lbl-f', 'start', 11);
+    var gapNote = put(svg, 620, 268,
+      'the handout drops this ψ and writes a function equal to a number', 's-lbl-f', 'start', 11);
 
     /* ---- the middle: equate, divide, conclude ---- */
     var gM = S.g({});
     svg.appendChild(gM);
-    put(gM, W / 2, 306, 'equate:    ℏω ψ(r,t)  =  (ℏ²k²/2m) ψ(r,t)', 's-lbl-q', 'middle', 14);
-    put(gM, W / 2, 334,
-      '|ψ| = |A|·|e^{i(k·r−ωt)}| = |A| ≠ 0 at every r and t, so ψ may be divided out',
+    put(gM, W / 2, 312, 'equate:    ℏω ψ(r,t)  =  (ℏ²k²/2m) ψ(r,t)', 's-lbl-q', 'middle', 14);
+    put(gM, W / 2, 340,
+      '|ψ| = |A| · |e^{i(k·r−ωt)}| = |A| ≠ 0 at every r and t, so ψ may be divided out',
       's-lbl', 'middle', 12);
 
     var gBox = S.g({});
     svg.appendChild(gBox);
-    card(gBox, 340, 356, 500, 62, 'var(--quantum)');
-    put(gBox, W / 2, 394, 'ℏω = ℏ²k²/2m        ω(k) = ℏk²/2m', 's-lbl-b', 'middle', 17);
-    put(gBox, W / 2, 438,
-      'A cancelled and the direction of k cancelled: the equation is linear and isotropic',
+    card(gBox, 330, 362, 520, 64, 'var(--quantum)');
+    put(gBox, W / 2, 402, 'ℏω = ℏ²k²/2m         ω(k) = ℏk²/2m', 's-lbl-b', 'middle', 17);
+    put(gBox, W / 2, 448,
+      'and only then: the plane wave solves the free equation if and only if this holds',
       's-lbl', 'middle', 12);
 
     /* ---- the four options ---- */
     var gO = S.g({});
     svg.appendChild(gO);
-    put(gO, 70, 480, 'the four options offered', 's-lbl-q', 'start', 13);
+    put(gO, 70, 494, 'the four options offered', 's-lbl-q', 'start', 13);
     var opts = [
       ['(A)  ℏω = ℏ²k²/2m', 's-lbl-w',
         'exactly the condition just derived — this is the answer'],
       ['(B)  ℏω = pc', 's-lbl-f',
-        'the photon relation: at λ = 1 Å it wants ℏω larger by pc/E = ' + ratioB.toFixed(1)],
+        'the photon relation: at λ = 1 Å it wants ℏω bigger by pc/E = ' + ratioB.toFixed(1)],
       ['(C)  any relation between ω and k', 's-lbl-f',
         'no: double ω and the left side reads ' + (2 * a.eV).toFixed(1) +
         ' eV while the right still reads ' + a.eV.toFixed(1) + ' eV'],
       ['(D)  not at all', 's-lbl-f',
-        'contradicted by (A), which satisfies the equation identically']
+        'contradicted by (A), which satisfies the equation identically in r and t']
     ];
     var rows = opts.map(function (o, i) {
       var g = S.g({});
       gO.appendChild(g);
-      put(g, 70, 512 + i * 32, o[0], o[1], 'start', 13);
-      put(g, 470, 512 + i * 32, o[2], i === 0 ? 's-lbl-b' : 's-lbl', 'start', 12);
+      put(g, 70, 526 + i * 32, o[0], o[1], 'start', 13);
+      put(g, 470, 526 + i * 32, o[2], i === 0 ? 's-lbl-b' : 's-lbl', 'start', 12);
       return g;
     });
 
     /* ---- the numeric anchor ---- */
     var gN = S.g({});
     svg.appendChild(gN);
-    put(gN, 70, 660,
+    put(gN, 70, 674,
       'anchor — electron at λ = 1 Å:   k = 2π/λ = ' + sci(a.k) + ' m⁻¹,   p = ℏk = ' +
       sci(a.p) + ' kg m/s', 's-lbl-q', 'start', 12);
-    put(gN, 70, 686,
+    put(gN, 70, 700,
       'ℏω = ℏ²k²/2m = ' + sci(a.E) + ' J = ' + a.eV.toFixed(1) + ' eV,   so ω = ' +
       sci(a.w) + ' rad/s', 's-lbl-q', 'start', 12);
 
-    var moral = put(svg, W / 2, 718,
+    var moral = put(svg, W / 2, 736,
       'the plane wave is a solution of the free equation only on the parabola ω = ℏk²/2m',
       's-lbl-b', 'middle', 13);
 
@@ -193,6 +193,9 @@
     root.appendChild(svg);
 
     var a = anchor();
+    /* The eigenvalue each machine hands back, evaluated rather than asserted. */
+    var Eout = C.hbar * a.w;
+    var pout = C.hbar * a.k;
 
     var head = put(svg, W / 2, 44,
       'the same two derivatives, read as machines that act on the state',
@@ -228,22 +231,22 @@
 
     var mA = machine(130, 'iℏ ∂/∂t', 'differentiates the label t',
       'ℏω ψ  =  E ψ',
-      'E = ' + a.eV.toFixed(1) + ' eV   (electron, λ = 1 Å)', 'q');
+      'E = ' + sci(Eout) + ' J = ' + (Eout / C.e).toFixed(1) + ' eV', 'q');
     var mB = machine(370, '−iℏ ∇', 'differentiates the argument r',
       'ℏk ψ  =  p ψ',
-      'p = ' + sci(a.p) + ' kg m/s', 'p');
+      'p = ' + sci(pout) + ' kg m/s', 'p');
 
     var workA = put(svg, 70, 300,
-      'iℏ ∂/∂t ( A e^{i(k·r−ωt)} ) = iℏ(−iω) A e^{i(k·r−ωt)} = ℏω ψ,   and  E = ℏω',
+      'iℏ ∂/∂t ( A e^{i(k·r−ωt)} ) = iℏ(−iω) A e^{i(k·r−ωt)} = ℏω ψ,   and we call ℏω the energy E',
       's-lbl-q', 'start', 12);
     var workB = put(svg, 70, 540,
-      '−iℏ ∇ ( A e^{i(k·r−ωt)} ) = −iℏ(i k) A e^{i(k·r−ωt)} = ℏk ψ,   and  p = ℏk',
+      '−iℏ ∇ ( A e^{i(k·r−ωt)} ) = −iℏ(i k) A e^{i(k·r−ωt)} = ℏk ψ,   and de Broglie calls ℏk the momentum p',
       's-lbl-p', 'start', 12);
 
     var notes = [
-      'same state out, multiplied by a number: that is the whole reason these operators are worth having',
-      'but the first machine only works because this state has one single ω. for a superposition of energies',
-      'iℏ ∂ψ/∂t = Ĥψ still holds and no single number E does — the two lines are not on the same footing'
+      'same state out, multiplied by a number: that is the whole reason these two operators are worth having',
+      'but the first machine only works because this state has a single ω. for a superposition of energies',
+      'iℏ ∂ψ/∂t = Ĥψ still holds while no single number E does — the two lines are not on the same footing'
     ].map(function (s, i) {
       return put(svg, 70, 588 + i * 26, s, i === 0 ? 's-lbl-b' : 's-lbl', 'start', 12);
     });
@@ -279,7 +282,7 @@
      =================================================================== */
 
   A.scene('dispersion-contrast', function (root) {
-    var W = 1180, H = 720;
+    var W = 1180, H = 740;
     var svg = S.root(W, H,
       'The Schrodinger dispersion relation is a parabola and the wave equation dispersion ' +
       'relation is a straight line. They meet only at the origin and at one isolated ' +
@@ -347,6 +350,7 @@
       ['so they meet only at k = 0 and k = k*', 's-lbl'],
       ['', 's-lbl'],
       ['k* = ' + sci(kStar) + ' m⁻¹', 's-lbl-b'],
+      ['ω* = ck* = ' + sci(wStar) + ' rad/s', 's-lbl-b'],
       ['λ* = 2π/k* = ' + (lamStar * 1e12).toFixed(3) + ' pm', 's-lbl-b'],
       ['which is half the Compton wavelength,', 's-lbl'],
       ['λ_C = h/mc = ' + (lamC * 1e12).toFixed(3) + ' pm', 's-lbl'],
@@ -371,16 +375,14 @@
     var dotW = S.circle(0, 0, 4.5, 's-fill-w');
     svg.appendChild(dotS); svg.appendChild(dotW);
 
-    var read1 = put(svg, 110, 570, '', 's-lbl-b', 'start', 13);
-    var read2 = put(svg, 110, 598, '', 's-lbl', 'start', 12);
-    var read3 = put(svg, 110, 624,
-      'the phase velocity ω/k = ℏk/2m is half of that, which is why it is not the physical one',
-      's-lbl', 'start', 12);
+    var read1 = put(svg, 110, 578, '', 's-lbl-b', 'start', 13);
+    var read2 = put(svg, 110, 606, '', 's-lbl', 'start', 12);
+    var read3 = put(svg, 110, 632, '', 's-lbl', 'start', 12);
 
-    var moral = put(svg, W / 2, 676,
+    var moral = put(svg, W / 2, 686,
       'one equation carries the Newtonian energy-momentum relation, the other the photon one',
       's-lbl-b', 'middle', 14);
-    var moral2 = put(svg, W / 2, 702,
+    var moral2 = put(svg, W / 2, 714,
       'and because ω ∝ k² is not a straight line, free matter packets spread while light pulses do not',
       's-lbl', 'middle', 12);
 
@@ -390,12 +392,20 @@
       dotS.setAttribute('cx', PX(u)); dotS.setAttribute('cy', PY(Math.min(yHi, u * u)));
       dotW.setAttribute('cx', PX(u)); dotW.setAttribute('cy', PY(Math.min(yHi, u)));
 
-      var vg = 2 * C.c * u;                     /* dω/dk = hbar k / m = 2 c u */
+      /* Both velocities read off the parabola in SI: omega = omega* u^2,
+         k = k* u, so v_ph = c u and v_gr = 2 c u. Printed, never assumed. */
+      var kNow = kStar * u;
+      var wNow = wStar * u * u;
+      var vph = wNow / kNow;
+      var vgr = 2 * C.hbar * kNow / (2 * C.me);
+
       read1.textContent = 'at k = ' + u.toFixed(2) + ' k*:   parabola ω/ω* = ' +
         (u * u).toFixed(3) + ',   line ω/ω* = ' + u.toFixed(3) +
         ',   they differ by ×' + (1 / u).toFixed(2);
-      read2.textContent = 'group velocity dω/dk = ℏk/m = ' + sci(vg) + ' m/s = ' +
-        (vg / C.c).toFixed(3) + ' c';
+      read2.textContent = 'group velocity dω/dk = ℏk/m = ' + sci(vgr) + ' m/s = ' +
+        (vgr / C.c).toFixed(3) + ' c   —  this is the speed of the particle';
+      read3.textContent = 'phase velocity ω/k = ' + sci(vph) + ' m/s, so ω/k ÷ dω/dk = ' +
+        (vph / vgr).toFixed(3) + ' exactly, for every k';
 
       S.op(bad, M.beat(p, 0.60, 0.72) * 0.07);
       S.op(badLbl, M.beat(p, 0.60, 0.72));
@@ -407,7 +417,7 @@
       S.op(labL, M.beat(p, 0.18, 0.28));
       S.op(lineM, M.beat(p, 0.28, 0.38));
       S.op(labM, M.beat(p, 0.30, 0.40));
-      side.forEach(function (s, i) { S.op(s, M.beat(p, 0.20 + i * 0.028, 0.32 + i * 0.028)); });
+      side.forEach(function (s, i) { S.op(s, M.beat(p, 0.20 + i * 0.026, 0.32 + i * 0.026)); });
       S.op(cross, M.beat(p, 0.52, 0.62));
       S.op(mark, M.beat(p, 0.42, 0.50));
       S.op(dotS, M.beat(p, 0.42, 0.50));
@@ -532,7 +542,7 @@
      =================================================================== */
 
   A.scene('eigenvalue-view', function (root) {
-    var W = 1180, H = 760;
+    var W = 1180, H = 780;
     var svg = S.root(W, H,
       'On the left a two by two matrix and the two directions it leaves unturned. On the ' +
       'right the same idea for functions: a cosine is an eigenfunction of the free ' +
@@ -625,7 +635,7 @@
       gR.appendChild(g);
       var mid = (yTop + yBot) / 2;
       g.appendChild(S.line(xa, mid, xb, mid, 's-axis'));
-      put(g, 540, yTop - 12, label, 's-lbl-b', 'start', 12);
+      put(g, xa, yTop - 12, label, 's-lbl-b', 'start', 12);
 
       var d = applyH(fn, la, lb, 400);
       var fMax = 0, hMax = 0, i;
@@ -667,40 +677,40 @@
       function (x) { return Math.exp(-x * x / (2 * sig * sig)); }, -8e-11, 8e-11, 'bad');
 
     var r1a = put(gR, 540, 288,
-      'measured Ĥφ/φ at ' + row1.n + ' sample points: every one of them ' +
-      row1.lo.toFixed(1) + ' eV', 's-lbl-p', 'start', 12);
+      'measured Ĥφ/φ at ' + row1.n + ' sample points: ' + row1.lo.toFixed(1) + ' eV to ' +
+      row1.hi.toFixed(1) + ' eV', 's-lbl-p', 'start', 12);
     var r1b = put(gR, 540, 310,
-      'a constant, and the two curves lie on top of each other — φ is an eigenfunction',
+      'one number, and the two curves have the same shape — φ is an eigenfunction',
       's-lbl-b', 'start', 12);
 
     var r2a = put(gR, 540, 498,
       'measured Ĥg/g runs from ' + row2.lo.toFixed(1) + ' eV to ' + row2.hi.toFixed(1) + ' eV',
       's-lbl-f', 'start', 12);
     var r2b = put(gR, 540, 520,
-      'not a constant, and the shapes differ — g is not an eigenfunction of Ĥ',
+      'not one number, and the shapes differ — g is not an eigenfunction of Ĥ',
       's-lbl-b', 'start', 12);
 
-    var diff = put(gR, 540, 544,
+    var diff = put(gR, 540, 546,
       'what the matrix picture does not have: the vectors are functions and',
       's-lbl', 'start', 11);
-    var diff2 = put(gR, 540, 562,
+    var diff2 = put(gR, 540, 564,
       'the operator is a derivative, the space has no finite basis, and here',
       's-lbl', 'start', 11);
-    var diff3 = put(gR, 540, 580,
+    var diff3 = put(gR, 540, 582,
       'the spectrum is a continuum rather than a list of numbers',
       's-lbl', 'start', 11);
 
     /* ---------------- the honest caveat ---------------- */
-    svg.appendChild(S.line(60, 598, 1120, 598, 's-axis'));
+    svg.appendChild(S.line(60, 604, 1120, 604, 's-axis'));
     var gC = S.g({});
     svg.appendChild(gC);
-    put(gC, 60, 624, 'and one thing to be careful about', 's-lbl-q', 'start', 13);
+    put(gC, 60, 630, 'and one thing to be careful about', 's-lbl-q', 'start', 13);
     [
       'iℏ ∂ψ/∂t = Ĥψ is satisfied by every physical state, so it singles nothing out; it is not the',
       'eigenvalue equation. the eigenvalue equation is Ĥφ(r) = E φ(r) with E a number, and only',
-      'special φ satisfy it. substituting E → iℏ∂/∂t into Eψ = Ĥψ gives that same equation back.'
+      'special φ satisfy it. substituting E → iℏ∂/∂t into Eψ = Ĥψ hands that same equation back.'
     ].forEach(function (s, i) {
-      put(gC, 60, 650 + i * 22, s, 's-lbl', 'start', 12);
+      put(gC, 60, 656 + i * 22, s, 's-lbl', 'start', 12);
     });
 
     /* A two-energy superposition: the spread computed two independent ways. */
@@ -712,11 +722,11 @@
 
     var gS = S.g({});
     svg.appendChild(gS);
-    put(gS, 60, 722, 'superpose E₁ = ' + E1.toFixed(2) + ' eV and E₂ = ' + E2.toFixed(2) +
+    put(gS, 60, 736, 'superpose E₁ = ' + E1.toFixed(2) + ' eV and E₂ = ' + E2.toFixed(2) +
       ' eV with weights ' + wa.toFixed(2) + ' and ' + wb.toFixed(2) + ':   ⟨E⟩ = ' +
       mean.toFixed(3) + ' eV', 's-lbl-q', 'start', 12);
-    put(gS, 60, 744, 'ΔE = √(⟨E²⟩ − ⟨E⟩²) = ' + spread.toFixed(3) + ' eV = √(ab)|E₁ − E₂| = ' +
-      spread2.toFixed(3) + ' eV, so no single E exists', 's-lbl-q', 'start', 12);
+    put(gS, 60, 760, 'ΔE = √(⟨E²⟩ − ⟨E⟩²) = ' + spread.toFixed(3) + ' eV = √(ab)|E₁ − E₂| = ' +
+      spread2.toFixed(3) + ' eV ≠ 0, so no single E exists', 's-lbl-q', 'start', 12);
 
     return function (p) {
       /* Sweep a unit vector and report the angle its image makes with it. */
@@ -838,7 +848,7 @@
     });
     var inner = S.arrow(svg, 200, 512, 240, 512, 'p');
     gT.appendChild(inner);
-    var evoLbl = put(gT, 90, 646,
+    var evoLbl = put(gT, 90, 648,
       'evolution carries you along this row; the operators act within one box',
       's-lbl', 'start', 11);
 

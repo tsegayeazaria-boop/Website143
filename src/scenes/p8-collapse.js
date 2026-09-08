@@ -162,8 +162,9 @@
       dots.push(d);
     }
 
-    var hitLine = S.line(0, yT, 0, yBar + hBar, 's-quantum s-dash');
-    svg.appendChild(hitLine);
+    var hitLine = S.line(0, yT, 0, yB, 's-quantum s-dash');
+    var hitStub = S.line(0, yBar - 22, 0, yBar + hBar, 's-quantum s-dash');
+    svg.appendChild(hitLine); svg.appendChild(hitStub);
     var hitLbl = S.text(0, yT - 14, 'A', 's-lbl-q', 'middle');
     svg.appendChild(hitLbl);
     var flash = S.circle(0, yBar + hBar / 2, 6, null);
@@ -229,6 +230,7 @@
       fill.setAttribute('d', S.areaD(livePts, yB));
 
       hitLine.setAttribute('x1', PX(hit)); hitLine.setAttribute('x2', PX(hit));
+      hitStub.setAttribute('x1', PX(hit)); hitStub.setAttribute('x2', PX(hit));
       hitLbl.setAttribute('x', M.clamp(PX(hit), x0 + 10, x1 - 10));
       var pixL = -HALF + Math.floor((hit + HALF) / PITCH) * PITCH;
       pixHit.setAttribute('x', PX(pixL));
@@ -265,6 +267,7 @@
       S.op(dots[0], second ? 1 : clicked);
       S.op(dots[1], second ? clicked : 0);
       S.op(hitLine, clicked);
+      S.op(hitStub, clicked);
       S.op(hitLbl, clicked);
       S.op(brack, M.beat(c, 0.55, 1));
       S.op(afterLbl, M.beat(c, 0.1, 0.5));
@@ -656,10 +659,10 @@
     var lineQ = S.line(px0, PYs(qMax), px1, PYs(qMax), 's-quantum s-dash');
     var lineA = S.line(px0, PYs(alg), px1, PYs(alg), 's-ghost s-dash');
     svg.appendChild(lineL); svg.appendChild(lineQ); svg.appendChild(lineA);
-    var labLhv = S.text(px1 - 8, PYs(lhv) - 8,
-      'every local model lives at or below |S| = ' + lhv.toFixed(3), 's-lbl-w', 'end');
-    var labQ = S.text(px1 - 8, PYs(qMax) - 8,
-      'quantum maximum ' + qMax.toFixed(4), 's-lbl-q', 'end');
+    var labLhv = S.text(px0 + 12, PYs(lhv) + 20,
+      'every local model lives at or below |S| = ' + lhv.toFixed(3), 's-lbl-w', 'start');
+    var labQ = S.text(px0 + 12, PYs(qMax) - 10,
+      'quantum maximum ' + qMax.toFixed(4) + ', reached at one setting only', 's-lbl-q', 'start');
     var labA = S.text(px1 - 8, PYs(alg) - 8,
       'algebraic maximum ' + alg.toFixed(3) + ', which nature does not use', 's-lbl', 'end');
     svg.appendChild(labLhv); svg.appendChild(labQ); svg.appendChild(labA);
