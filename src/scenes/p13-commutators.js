@@ -212,8 +212,8 @@
     var legend = [
       ['∂/∂x ( x ψ )', 's-quantum', 's-lbl-q'],
       ['x ∂ψ/∂x', 's-wave', 's-lbl-w'],
-      ['their difference', 's-prob', 's-lbl-p'],
-      ['ψ itself, dashed', 's-ghost', 's-lbl']
+      ['difference, dashed', 's-prob', 's-lbl-p'],
+      ['ψ itself', 's-ghost', 's-lbl']
     ];
     legend.forEach(function (L, i) {
       var y = 528 + i * 30;
@@ -252,8 +252,9 @@
       S.op(gPlot, M.beat(p, 0.52, 0.60));
       S.draw(cF1, M.easeOut(M.beat(p, 0.54, 0.66)));
       S.draw(cF2, M.easeOut(M.beat(p, 0.57, 0.69)));
-      S.draw(cDf, M.easeOut(M.beat(p, 0.64, 0.76)));
-      S.op(cGhost, M.beat(p, 0.68, 0.76) * 0.8);
+      /* the difference keeps its dash pattern, so it is revealed by opacity */
+      S.op(cGhost, M.beat(p, 0.64, 0.72) * 0.8);
+      S.op(cDf, M.beat(p, 0.68, 0.78));
       S.op(gLeg, M.beat(p, 0.60, 0.70));
 
       S.op(read1, M.beat(p, 0.74, 0.82));
@@ -409,17 +410,23 @@
     put(gRay, ox - 10, 344, 'y', 's-lbl-b', 'end', 13);
 
     var xRay = [0.9, 1.4, 1.9, 2.4, 2.9];
-    var yRay = [0.5, 0.9, 1.3, 1.7, 2.1];
+    var yRay = [0.9, 1.2, 1.5, 1.8, 2.1];
     gRay.appendChild(S.arrow(svg, RX(0.9), RY(0.5), RX(3.05), RY(0.5), 'q'));
     gRay.appendChild(S.arrow(svg, RX(0.9), RY(0.5), RX(0.9), RY(2.25), 'w'));
 
+    /* The multiplier is the coordinate x that x-hat multiplies the state by.
+       Along the first ray it is read at each dot; along the second it is the
+       x of the same vertical line, and both are printed as they come out. */
+    function multiplier(pt) { return pt[0]; }
     xRay.forEach(function (xv) {
       gRay.appendChild(S.circle(RX(xv), RY(0.5), 4.2, 's-fill-q'));
-      put(gRay, RX(xv), RY(0.5) - 12, 'x = ' + num(xv, 1), 's-lbl-q', 'middle', 11);
+      put(gRay, RX(xv), RY(0.5) - 12, 'x = ' + num(multiplier([xv, 0.5]), 1),
+        's-lbl-q', 'middle', 11);
     });
     yRay.forEach(function (yv) {
       gRay.appendChild(S.circle(RX(0.9), RY(yv), 4.2, 's-fill-w'));
-      put(gRay, RX(0.9) + 12, RY(yv) + 4, 'x = ' + num(0.9, 1), 's-lbl-w', 'middle', 11);
+      put(gRay, RX(0.9) + 13, RY(yv) + 4, 'x = ' + num(multiplier([0.9, yv]), 1),
+        's-lbl-w', 'start', 11);
     });
     put(gRay, RX(0.9) + 46, 344,
       'moving in y: the multiplier x does not change', 's-lbl-w', 'start', 12);
@@ -427,8 +434,10 @@
       'moving in x: the multiplier x changes', 's-lbl-q', 'start', 12);
 
     /* Slopes read off the drawn dots, so the 1 and the 0 are measured. */
-    var slopeX = (xRay[4] - xRay[0]) / (xRay[4] - xRay[0]);
-    var slopeY = (0.9 - 0.9) / (yRay[4] - yRay[0]);
+    var pA = [xRay[0], 0.5], pB = [xRay[4], 0.5];
+    var qA = [0.9, yRay[0]], qB = [0.9, yRay[4]];
+    var slopeX = (multiplier(pB) - multiplier(pA)) / (pB[0] - pA[0]);
+    var slopeY = (multiplier(qB) - multiplier(qA)) / (qB[1] - qA[1]);
 
     /* --- the same two statements on a genuine two-dimensional psi --- */
     function psi2(x, y) {
@@ -824,7 +833,7 @@
     var bumpRatio = Wb.dx * Wb.dp / (C.hbar / 2);
 
     /* --- three panels: the state in space, and its two momentum spreads --- */
-    var XFULL = 14 * ANG, PFULL = 2.5e-24;
+    var XFULL = 14 * ANG, PFULL = 3.2e-24;
     var pyT = 122, pyB = 288;
     var PAN = [
       { x0: 80, x1: 400, cap: '|ψ|²  along x  (violet)  and along y  (cyan)' },
@@ -835,8 +844,8 @@
       svg.appendChild(S.line(P.x0, pyB, P.x1, pyB, 's-axis'));
       put(svg, (P.x0 + P.x1) / 2, 100, P.cap, 's-lbl-b', 'middle', 12);
     });
-    put(svg, 240, 344, 'x and y in ångström, ±14', 's-lbl', 'middle', 11);
-    put(svg, 620, 344, 'pₓ, fixed axis ±2.5 × 10⁻²⁴ kg m s⁻¹', 's-lbl', 'middle', 11);
+    put(svg, 240, 344, 'x and y in ångström, ±' + num(XFULL / ANG, 0), 's-lbl', 'middle', 11);
+    put(svg, 620, 344, 'pₓ, fixed axis ±' + sci(PFULL, 1) + ' kg m s⁻¹', 's-lbl', 'middle', 11);
     put(svg, 1000, 344, 'p_y, the same axis', 's-lbl', 'middle', 11);
 
     var PXs = function (v) { return M.map(v, -XFULL, XFULL, PAN[0].x0, PAN[0].x1); };
