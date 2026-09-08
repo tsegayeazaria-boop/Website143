@@ -126,6 +126,10 @@ async function sweep(theme) {
   const clipped = await page.evaluate(() => {
     const out = [];
     document.querySelectorAll('svg[viewBox]').forEach((sv) => {
+      /* Only the hand-authored scene figures. MathJax lays out in ex-units with
+         its own baseline conventions, so its geometry is not comparable, and it
+         is checked separately below. */
+      if (sv.closest('mjx-container')) return;
       const vb = sv.getAttribute('viewBox').split(/[\s,]+/).map(Number);
       sv.querySelectorAll('text').forEach((el) => {
         let bb;
@@ -148,6 +152,26 @@ async function sweep(theme) {
          clipped.slice(0, 10).join('\n        '));
   } else {
     pass('[' + theme + '] no SVG labels clipped by their viewBox');
+  }
+
+  /* MathJax renders every glyph it knows as a <path> from its local font cache.
+     A <text> element inside an mjx-container means it had no glyph and fell back
+     to whatever font the reader's browser happens to supply, which on a page that
+     deliberately ships no maths fonts is a missing character. \mathbb{1} is the
+     usual culprit: blackboard bold exists for letters, not for digits. */
+  const mjFallback = await page.evaluate(() => {
+    const seen = new Map();
+    document.querySelectorAll('mjx-container text').forEach((el) => {
+      const ch = (el.textContent || '').trim();
+      if (ch) seen.set(ch, (seen.get(ch) || 0) + 1);
+    });
+    return [...seen].map(([ch, n]) => '"' + ch + '" x' + n);
+  });
+  if (mjFallback.length) {
+    fail('[' + theme + '] MathJax had no glyph for ' + mjFallback.length +
+         ' character(s), so they fall back to a system font: ' + mjFallback.join(', '));
+  } else {
+    pass('[' + theme + '] every maths glyph came from the build-time font cache');
   }
 
   if (blocked.size) console.log('  note  sandbox blocked (fine in the browser): ' + [...blocked].join(', '));
