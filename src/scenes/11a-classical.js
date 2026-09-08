@@ -124,8 +124,11 @@
       var sy = (py(wellV(st.x) + slope * du) - py(wellV(st.x) - slope * du));
       tangent.setAttribute('x1', bxp - sx / 2); tangent.setAttribute('y1', byp - sy / 2);
       tangent.setAttribute('x2', bxp + sx / 2); tangent.setAttribute('y2', byp + sy / 2);
-      slopeLbl.setAttribute('x', bxp + sx / 2 + 8);
-      slopeLbl.setAttribute('y', byp + sy / 2 + 4);
+      /* The label rides the far end of the tangent, which on a steep wall
+         swings above the top of the box, where SVG silently clips it. Keep it
+         inside: about 140 px of text at this size, plus room for the ascender. */
+      slopeLbl.setAttribute('x', M.clamp(bxp + sx / 2 + 8, 8, W - 142).toFixed(1));
+      slopeLbl.setAttribute('y', M.clamp(byp + sy / 2 + 4, 18, H - 12).toFixed(1));
       slopeLbl.textContent = 'slope dV/dx = ' + slope.toFixed(2);
 
       /* Force = -dV/dx, drawn horizontally at the base so its sign is visible. */
