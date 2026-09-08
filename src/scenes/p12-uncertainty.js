@@ -181,7 +181,7 @@
       gProb.appendChild(pProb);
       S.setD(pProb, S.polyD(probPts));
       var gSpanX = span(gProb, PX(-mx.sd), PX(mx.sd), yProbB + 22,
-        'Δx = ' + num(mx.sd, 3), 's-lbl-p');
+        '± Δx = ' + num(mx.sd, 3), 's-lbl-p');
 
       /* --- the component cosines, one lane each --- */
       var gLanes = S.g({});
@@ -223,7 +223,7 @@
         gSpec.appendChild(st);
       }
       var gSpanK = span(gSpec, PK(mk.mean - mk.sd), PK(mk.mean + mk.sd), ySpecB - hSpec - 2,
-        'Δk = ' + num(mk.sd, 3), 's-lbl-q');
+        '± Δk = ' + num(mk.sd, 3), 's-lbl-q');
 
       /* --- the numbers, all measured above --- */
       var gNum = S.g({});
@@ -326,7 +326,9 @@
       fs.push(0.5 * x * x * Math.exp(-x));
     }
     var m = moments(xs, fs);
-    /* The left-hand side of (1.12.2), integrated separately from the right. */
+    /* The left-hand side of (1.12.2), integrated separately from the right.
+       The trapezoid rule is linear, so the two sides agree for any grid at all;
+       what is left over is double-precision round-off, not discretisation. */
     var dev = [];
     for (i = 0; i <= N; i++) dev.push(Math.pow(xs[i] - m.mean, 2) * fs[i]);
     var lhs = integrate(xs, dev) / m.Z;
@@ -361,7 +363,7 @@
       ['⟨x̂⟩²           =  ' + num(m.mean * m.mean, 6), 's-lbl'],
       ['⟨x̂²⟩ − ⟨x̂⟩²    =  ' + num(rhs, 6) + '   ← right side', 's-lbl-q'],
       ['⟨(x̂ − ⟨x̂⟩)²⟩   =  ' + num(lhs, 6) + '   ← left side', 's-lbl-q'],
-      ['they differ by ' + sci(Math.abs(lhs - rhs), 1) + ', which is the grid', 's-lbl-w'],
+      ['they differ by ' + sci(Math.abs(lhs - rhs), 1) + ' — round-off, not the grid', 's-lbl-w'],
       ['⟨⟨x̂⟩⟩ = ' + num(m.mean, 6) + ' = ⟨x̂⟩   averaging a number returns it', 's-lbl-b'],
       ['Δx = √' + num(rhs, 4) + ' = ' + num(m.sd, 6), 's-lbl-p']
     ].map(function (r, i2) {
@@ -412,7 +414,9 @@
     var ax0 = 90, ax1 = 560, bx0 = 660, bx1 = 1130, yT = 120, yB = 340;
     var XV = 4.0;              /* the x axis is fixed at +/- 4 a            */
     var PV = 4.0;              /* the p axis is fixed at +/- 4 hbar/a       */
-    var YX = 0.88, YP = 1.75;  /* fixed vertical scales, chosen to fit both */
+    var YX = 0.90, YP = 1.90;  /* fixed vertical scales: tall enough to hold the
+                                  tallest curve either slider can produce, so no
+                                  peak is ever clipped flat by the axis */
 
     var PXa = function (x) { return M.map(x, -XV, XV, ax0, ax1); };
     var PYa = function (v) { return M.map(v, 0, YX, yB, yT); };
@@ -638,7 +642,7 @@
       fronts.push(l);
     }
     gIn.appendChild(S.arrow(svg, 96, SY, 190, SY, 'w'));
-    put(gIn, 96, SY - 14, 'photon, λ = 500 nm', 's-lbl-w', 'start', 12);
+    put(gIn, 96, SY - 14, 'photon, λ = ' + num(LAM * 1e9, 0) + ' nm', 's-lbl-w', 'start', 12);
     put(gIn, 96, yBot + 24, 'wavefronts one λ apart', 's-lbl', 'start', 11);
 
     /* --- the barrier and the localisation region --- */
@@ -665,7 +669,7 @@
     var elec = S.circle(SX, SY, 4.5, 's-fill-i');
     gSlit.appendChild(elec);
     put(gSlit, SX + 16, yTop - 14, 'the electron is somewhere in here', 's-lbl-p', 'start', 11);
-    put(gSlit, SX + 16, yBot + 24, 'axis x is across the page, z along the beam', 's-lbl', 'start', 11);
+    put(gSlit, SX + 16, yBot + 24, 'x runs up the page, z along the beam', 's-lbl', 'start', 11);
 
     /* --- the diffraction fan and the intensity lobe --- */
     var gFan = S.g({});
@@ -893,7 +897,7 @@
 
     var gEnd = S.g({});
     svg.appendChild(gEnd);
-    [['the five bars are all the same argument, with equally reasonable readings of "range"',
+    [['the four red bars are all the same argument, with equally reasonable readings of "range"',
       's-lbl', 12],
      ['so the microscope fixes the scale ~ h and the 1/Δx dependence, and nothing beyond that',
       's-lbl-b', 12],
@@ -926,15 +930,16 @@
     root.appendChild(svg);
 
     var SIG = 1e-10;               /* the packet is 1 angstrom wide, always */
+    var P0 = C.hbar / (2 * SIG);   /* the momentum width at the real hbar    */
     var ax0 = 90, ax1 = 540, bx0 = 660, bx1 = 1130, yT = 116, yB = 320;
     var XV = 3.6 * SIG;
-    var PFULL = 3.4 * (C.hbar / (2 * SIG));
+    var PFULL = 3.4 * P0;
 
     var PXa = function (x) { return M.map(x, -XV, XV, ax0, ax1); };
     var PXb = function (q) { return M.map(q, -PFULL, PFULL, bx0, bx1); };
 
     svg.appendChild(S.gridLines(ax0, yT, ax1, yB, 6, 3));
-    svg.appendChild(S.axes(ax0, yT, ax1, yB, 'x   (±3.6 Å)', null));
+    svg.appendChild(S.axes(ax0, yT, ax1, yB, 'x   (±' + num(XV * 1e10, 1) + ' Å)', null));
     svg.appendChild(S.gridLines(bx0, yT, bx1, yB, 6, 3));
     svg.appendChild(S.axes(bx0, yT, bx1, yB, 'p   (axis fixed)', null));
     put(svg, ax0, yT - 30, '|ψ(x)|²  —  held fixed, whatever ℏ is', 's-lbl-p', 'start', 12);
@@ -1012,7 +1017,7 @@
       'a short pulse cannot be monochromatic; p = ℏk turns that into the uncertainty principle',
       's-lbl-q', 'middle', 12);
     var close3 = put(svg, W / 2, 828,
-      'with ℏ = 0 the packet has no wavelength, φ collapses to a point, and both are exact',
+      'with ℏ = 0 the de Broglie wavelength h/p vanishes, φ collapses to a point, and both are exact',
       's-lbl-w', 'middle', 12);
     var close4 = put(svg, W / 2, 862,
       'which is the handout’s own closing sentence, and it is right',
@@ -1056,7 +1061,10 @@
 
       var prod = DX * DP;
       var dv = DP / C.me;
-      var lamdB = (C.h * frac) / (C.hbar / (2 * SIG));
+      /* Hold one momentum fixed at its real-world value while h is dialled down.
+         Δp itself shrinks with ℏ, so h_eff/Δp would stay put at 4πσ and show
+         nothing; it is the wavelength belonging to a *given* momentum that goes. */
+      var lamdB = (C.h * frac) / P0;
       readout[0].textContent = 'Δx = ' + num(DX * 1e10, 4) + ' Å, unchanged      Δp = ' +
         sci(DP, 4) + ' kg m s⁻¹, measured from the right-hand curve';
       readout[1].textContent = 'the electron’s velocity is uncertain by Δv = Δp/mₑ = ' +
@@ -1064,8 +1072,9 @@
       readout[2].textContent = 'Δx Δp = ' + sci(prod, 4) + ' J s      ℏ_eff/2 = ' +
         sci(hb / 2, 4) + ' J s      ratio ' + num(prod / (hb / 2), 4) +
         ' — saturated, but the floor itself has moved';
-      readout[3].textContent = 'de Broglie wavelength at this momentum: λ = h_eff/p = ' +
-        sci(lamdB, 3) + ' m — the wave shrinks away with ℏ';
+      readout[3].textContent = 'at a momentum held fixed at p = ' + sci(P0, 3) +
+        ' kg m s⁻¹, the de Broglie wavelength h_eff/p = ' + sci(lamdB, 3) +
+        ' m shrinks with ℏ';
 
       S.op(curveA, M.beat(p, 0.02, 0.14));
       S.op(fillA, M.beat(p, 0.04, 0.16));

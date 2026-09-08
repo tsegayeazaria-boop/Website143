@@ -522,9 +522,21 @@
     var x12 = integrate(xs, mix);
     var analyticX12 = -16 / (9 * Math.PI * Math.PI);
 
+    /* The tallest the density gets anywhere in the sweep, which is not at
+       either end of it: for a given x the largest (cosθ u₁ + sinθ u₂)² any
+       angle can produce is u₁² + u₂², so the maximum of that over the grid
+       covers every frame. Scaling to the ground state instead would clip the
+       interference peak flat against the top of the box for a third of the
+       scroll, and M.map clamps, so the clipping would be silent. */
+    var PMAX = 0, uu;
+    for (i = 0; i <= NG; i++) {
+      uu = u1(xs[i]) * u1(xs[i]) + u2(xs[i]) * u2(xs[i]);
+      if (uu > PMAX) PMAX = uu;
+    }
+
     var x0 = 90, x1 = 1030, yT = 90, yB = 390;
     var PXm = function (x) { return M.map(x, 0, 1, x0, x1); };
-    var PYm = function (v) { return M.map(v, 0, 2.35, yB, yT); };
+    var PYm = function (v) { return M.map(v, 0, PMAX * 1.08, yB, yT); };
 
     svg.appendChild(S.gridLines(x0, yT, x1, yB, 10, 4));
     svg.appendChild(S.axes(x0, yT, x1, yB, 'x / L', null));
@@ -607,7 +619,7 @@
         med.toFixed(5) + ' L        Δx = ' + sd.toFixed(5) + ' L';
       rows[4].textContent = 'P at the mode = ' + pAtMode.toFixed(5) +
         '/L        P at ⟨x̂⟩ = ' + pAtMean.toFixed(5) + '/L';
-      rows[5].textContent = 'grid value of −16/(9π²) = ' + num(analyticX12, 5) +
+      rows[5].textContent = 'closed form −16/(9π²) = ' + num(analyticX12, 5) +
         ' L, so the two lines above are the same statement';
       rows[4].setAttribute('class', pAtMean < 0.02 ? 's-lbl-f' : 's-lbl-p');
 
@@ -1159,7 +1171,7 @@
     put(gEnd, 60, 702, 'Δx = √(⟨x̂²⟩ − ⟨x̂⟩²) = ' + num(dx, 6) +
       '        Δp = √(⟨p̂²⟩ − ⟨p̂⟩²) = ' + num(dp, 6) + ' ℏ', 's-lbl-p', 'start', 11);
     put(gEnd, 60, 726, 'Δx · Δp = ' + num(dx * dp, 6) + ' ℏ,  and ℏ/2 = ' +
-      num(0.5, 6) + ' ℏ — this state sits exactly on the bound', 's-lbl-q', 'start', 11);
+      num(HB / 2, 6) + ' ℏ — this state sits exactly on the bound', 's-lbl-q', 'start', 11);
 
     var moral = put(svg, 60, H - 24,
       'the recipe needs Ô Hermitian, ψ normalised, and an ordering chosen. The handout mentions none of the three.',
@@ -1192,25 +1204,10 @@
       's-lbl-b', 'start', 14);
 
     var AMP = 3.0, SIG = Math.sqrt(0.5), NRUN = 64, NT = 41, TMAX = 2 * M.TAU;
-    var x0 = 90, x1 = 1150, yT = 90, yB = 400;
-    var PXt = function (t) { return M.map(t, 0, TMAX, x0, x1); };
-    var PYx = function (v) { return M.map(v, -4.6, 4.6, yB, yT); };
-
-    svg.appendChild(S.gridLines(x0, yT, x1, yB, 8, 4));
-    svg.appendChild(S.line(x0, PYx(0), x1, PYx(0), 's-axis'));
-    put(svg, x1, PYx(0) + 18, 'time', 's-lbl', 'end', 11);
-    put(svg, x0 - 8, yT - 8, 'position', 's-lbl', 'end', 11);
-
-    /* Classical trajectory: a harmonic oscillator, unit mass and frequency. */
-    var cls = S.path('', 's-wave');
-    svg.appendChild(cls);
-    S.setD(cls, S.polyD(S.sample(400, 0, TMAX, function (t) {
-      return [PXt(t), PYx(AMP * Math.cos(t))];
-    })));
-    put(svg, PXt(TMAX * 0.06), PYx(AMP) - 14, 'classical x(t) = A cos ωt', 's-lbl-w', 'start', 11);
 
     /* Individual measurement outcomes, sampled from the coherent-state density
-       whose centre is exactly the classical position at that time. */
+       whose centre is exactly the classical position at that time. Drawn first,
+       because the axis is scaled to them. */
     var rnd = M.rng(4211903);
     function gauss() {
       var u = rnd(), v = rnd();
@@ -1229,6 +1226,35 @@
       }
       cols.push({ t: t, mu: mu, draws: draws, mean: sum / NRUN });
     }
+
+    /* The axis has to reach the draws that actually came out. M.map clamps, so
+       a fixed range would silently stack the handful of outliers past three
+       standard deviations along the top and bottom rules — in a figure whose
+       entire point is the scatter. */
+    var YSPAN = AMP;
+    for (j = 0; j < NT; j++) {
+      for (i = 0; i < NRUN; i++) {
+        if (Math.abs(cols[j].draws[i]) > YSPAN) YSPAN = Math.abs(cols[j].draws[i]);
+      }
+    }
+    YSPAN *= 1.06;
+
+    var x0 = 90, x1 = 1150, yT = 90, yB = 400;
+    var PXt = function (t) { return M.map(t, 0, TMAX, x0, x1); };
+    var PYx = function (v) { return M.map(v, -YSPAN, YSPAN, yB, yT); };
+
+    svg.appendChild(S.gridLines(x0, yT, x1, yB, 8, 4));
+    svg.appendChild(S.line(x0, PYx(0), x1, PYx(0), 's-axis'));
+    put(svg, x1, PYx(0) + 18, 'time', 's-lbl', 'end', 11);
+    put(svg, x0 - 8, yT - 8, 'position', 's-lbl', 'end', 11);
+
+    /* Classical trajectory: a harmonic oscillator, unit mass and frequency. */
+    var cls = S.path('', 's-wave');
+    svg.appendChild(cls);
+    S.setD(cls, S.polyD(S.sample(400, 0, TMAX, function (t) {
+      return [PXt(t), PYx(AMP * Math.cos(t))];
+    })));
+    put(svg, PXt(TMAX * 0.06), PYx(AMP) - 14, 'classical x(t) = A cos ωt', 's-lbl-w', 'start', 11);
 
     var gDots = S.g({});
     svg.appendChild(gDots);
