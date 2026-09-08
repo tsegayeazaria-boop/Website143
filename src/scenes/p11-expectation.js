@@ -41,8 +41,17 @@
     return num(m, dd) + ' × 10' + sup(e);
   }
 
+  /* Combining marks (the hats on x and p) take no width, so ignore them when
+     padding a column of labels into alignment. */
+  function vlen(str) { return str.replace(/[\u0300-\u036F]/g, '').length; }
+  function pad(str, n) { var o = str; while (vlen(o) < n) o += ' '; return o; }
+
+  /* SVG collapses runs of whitespace by default, which would undo every column
+     of figures below; preserve it so the readouts line up. */
   function put(parent, x, y, str, cls, anchor, size) {
     var t = S.text(x, y, str, cls, anchor);
+    t.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'space', 'preserve');
+    t.style.whiteSpace = 'pre';
     if (size) t.setAttribute('font-size', String(size));
     parent.appendChild(t);
     return t;
@@ -228,7 +237,8 @@
     }
     var gA = marker(st.xA, 'A', 's-lbl-b', null, null, 0);
     var gB = marker(st.xB, 'B', 's-lbl-b', 'density largest here', 's-lbl-p', 18);
-    var gC = marker(st.xC, 'C', 's-lbl-b', 'density exactly zero here', 's-lbl-f', 14);
+    var gC = marker(st.xC, 'C', 's-lbl-b', null, null, 0);
+    put(gC, PXm(st.xC), yB + 46, 'density exactly zero here', 's-lbl-f', 'middle', 11);
 
     /* Two windows of identical width, one at B and one at C. */
     var dxw = 0.30;
@@ -269,7 +279,7 @@
       { s: 'and |ψ|² is a density, not a probability: its unit is m⁻¹, so that |ψ|² dx is a pure number',
         c: 's-lbl-f', z: 11 }
     ].map(function (d, i) {
-      return put(svg, 70, 462 + i * 26, d.s, d.c, 'start', d.z);
+      return put(svg, 70, 480 + i * 26, d.s, d.c, 'start', d.z);
     });
 
     var note = put(svg, W / 2, H - 22,
@@ -295,7 +305,7 @@
      =================================================================== */
 
   A.scene('two-scenarios', function (root) {
-    var W = 1200, H = 830;
+    var W = 1200, H = 860;
     var svg = S.root(W, H,
       'Three measurement protocols drawn side by side: many identical systems each measured ' +
       'once, one system reprepared and remeasured, and one system measured repeatedly ' +
@@ -362,25 +372,25 @@
         dots.push(c);
       }
 
-      var r1 = put(g, 560, by + 20, '', live ? 's-lbl-b' : 's-lbl-f', 'start', 12);
-      var r2 = put(g, 560, by + 40, '', 's-lbl', 'start', 11);
+      var r1 = put(g, 60, by + 190, '', live ? 's-lbl-b' : 's-lbl-f', 'start', 12);
+      var r2 = put(g, 60, by + 210, '', 's-lbl', 'start', 11);
 
       return { g: g, bars: bars, dots: dots, r1: r1, r2: r2, NB: NB, by: by, data: data, live: live };
     }
 
     var b1 = band(90,
       'protocol 1    N identical systems, each measured once',
-      'prepare N copies in the same ψ, wait the same time t, measure the position of each',
+      'N copies of the same ψ, all measured at the same elapsed time t',
       setA, true);
 
     var b2 = band(330,
       'protocol 2    one system, reprepared and remeasured N times',
-      'prepare, wait t, measure, throw the state away, prepare again — repeat N times',
+      'prepare, wait t, measure, discard, prepare again — N times over',
       setB, true);
 
     var b3 = band(570,
       'protocol 3    one system, measured again and again — NOT the same thing',
-      'the first measurement collapses ψ; every later measurement finds the particle where the first did',
+      'the first measurement collapses ψ; every later one only repeats it',
       setC, false);
 
     /* Schematics on the left of each band. */
@@ -409,17 +419,15 @@
     var s2 = S.g({});
     b2.g.appendChild(s2);
     miniPacket(s2, 60, 330 + 62, 62, 52, false, 0);
-    s2.appendChild(S.arrow(svg, 126, 330 + 88, 176, 330 + 88, 'q'));
-    put(s2, 182, 330 + 84, 'measure', 's-lbl-q', 'start', 11);
-    s2.appendChild(S.arrow(svg, 300, 330 + 88, 350, 330 + 88, 'w'));
-    put(s2, 356, 330 + 84, 'discard, prepare again', 's-lbl-w', 'start', 11);
-    var loop = S.path('M 92 ' + (330 + 62) + ' C 92 ' + (330 + 20) + ', 470 ' + (330 + 20) +
-      ', 470 ' + (330 + 74), 's-wave s-dash');
+    s2.appendChild(S.arrow(svg, 126, 330 + 88, 186, 330 + 88, 'q'));
+    put(s2, 192, 330 + 84, 'measure', 's-lbl-q', 'start', 11);
+    s2.appendChild(S.arrow(svg, 300, 330 + 88, 360, 330 + 88, 'w'));
+    put(s2, 366, 330 + 84, 'discard, prepare again', 's-lbl-w', 'start', 11);
+    var loop = S.path('M 92 ' + (330 + 118) + ' C 92 ' + (330 + 152) + ', 470 ' + (330 + 152) +
+      ', 470 ' + (330 + 96), 's-wave s-dash');
     loop.setAttribute('fill', 'none');
     s2.appendChild(loop);
-    put(s2, 280, 330 + 34, 'repeat N times, same ψ every time', 's-lbl-w', 'middle', 11);
-    s2.appendChild(S.arrow(svg, 200, 330 + 118, 200, 330 + 140, 'q'));
-    s2.appendChild(S.circle(200, 330 + 146, 2.4, 's-fill-q'));
+    put(s2, 280, 330 + 170, 'repeat N times, always the same ψ', 's-lbl-w', 'middle', 11);
 
     var s3 = S.g({});
     b3.g.appendChild(s3);
@@ -433,10 +441,10 @@
     put(s3, 320, 570 + 132, 'ψ collapsed', 's-lbl-f', 'start', 11);
     var xmark = S.g({});
     b3.g.appendChild(xmark);
-    xmark.appendChild(S.line(60, 570 + 4, 1150, 570 + 4, 's-fail s-dash'));
+    xmark.appendChild(S.line(60, 570 - 12, 1150, 570 - 12, 's-fail s-dash'));
 
-    var verdict1 = put(svg, 60, H - 44, '', 's-lbl-b', 'start', 12);
-    var verdict2 = put(svg, 60, H - 22,
+    var verdict1 = put(svg, 60, H - 48, '', 's-lbl-b', 'start', 12);
+    var verdict2 = put(svg, 60, H - 26,
       'an expectation value is a property of the state, not the outcome of any one measurement',
       's-lbl', 'start', 11);
 
@@ -708,18 +716,43 @@
         strike.setAttribute('stroke-width', '1.6');
         svg.appendChild(strike);
       }
-      return { g: g, strike: strike };
+      return { g: g, run: run, strike: strike };
     });
+
+    /* The run pieces are first placed with an estimated monospace advance. On
+       the first frame, once the browser has laid the text out, re-place them
+       from their measured widths so the segments butt up exactly and the
+       strike-through lands on the boundary term and nothing else. */
+    var laidOut = false;
+    function relayout() {
+      var ok = true;
+      built.forEach(function (b2) {
+        var cx = EQX;
+        b2.run.forEach(function (piece) {
+          var w = 0;
+          try { w = piece.el.getComputedTextLength(); } catch (e) { w = 0; }
+          if (!w) { ok = false; return; }
+          piece.el.setAttribute('x', String(cx));
+          piece.x0 = cx; piece.x1 = cx + w;
+          cx += w;
+        });
+        if (b2.strike && b2.run[1]) {
+          b2.strike.setAttribute('x1', String(b2.run[1].x0 - 2));
+          b2.strike.setAttribute('x2', String(b2.run[1].x1 + 2));
+        }
+      });
+      return ok;
+    }
 
     /* -------- the numerical check, on a genuinely evolved free packet -------- */
 
-    var NX = 241, XA = -14, XB = 14, NK = 61, K0 = 1.5, SIG = 1.2, XSTART = -5;
+    var NX = 241, XA = -14, XB = 14, NK = 81, K0 = 1.5, SIG = 1.2, XSTART = -5;
     var NT = 25, TMAX = 4, DT = TMAX / (NT - 1);
     var gx = [], ik;
     for (ik = 0; ik < NX; ik++) gx.push(XA + (XB - XA) * ik / (NX - 1));
     var ks = [], amp = [];
     for (ik = 0; ik < NK; ik++) {
-      var kk = K0 - 2 + 4 * ik / (NK - 1);
+      var kk = K0 - 3 + 6 * ik / (NK - 1);
       ks.push(kk);
       amp.push(Math.exp(-SIG * SIG * (kk - K0) * (kk - K0)));
     }
@@ -794,6 +827,7 @@
       's-lbl-b', 'start', 12);
 
     return function (p) {
+      if (!laidOut) laidOut = relayout();
       S.op(head, M.beat(p, 0.00, 0.04));
       built.forEach(function (b, i) {
         S.op(b.g, M.beat(p, 0.015 + i * 0.034, 0.06 + i * 0.034));
@@ -833,7 +867,7 @@
       reads[3].textContent = '∫ J dx               = ' + num(sl.Jint, 6) +
         '     ( J = Im ψ*∂ψ/∂x )';
       reads[4].textContent = '−(iℏ/m)∫ψ*∂ψ/∂x dx  = ' + num(sl.Jint, 6) +
-        '     ( real part )';
+        '     ( the same integral )';
       reads[5].textContent = 'imaginary part       = ' + num(-sl.Aint, 6) +
         '     ( it has to vanish )';
       reads[6].textContent = 'discarded [ x J ]    = ' + sci(sl.edgeXJ, 1) +
@@ -898,7 +932,7 @@
      =================================================================== */
 
   A.scene('operator-sandwich', function (root) {
-    var W = 1180, H = 720;
+    var W = 1180, H = 700;
     var svg = S.root(W, H,
       'The momentum operator drawn between psi star and psi, with an arrow showing that it ' +
       'differentiates only what stands to its right, and three integrals computed on the ' +
@@ -928,13 +962,13 @@
     }
     gS.appendChild(S.arrow(svg, 690, byy + bh + 26, 866, byy + bh + 4, 'q'));
     put(gS, 700, byy + bh + 44, 'the derivative acts on this one', 's-lbl-q', 'start', 12);
-    var bad = S.arrow(svg, 420, byy + bh + 26, 250, byy + bh + 4, 'f');
+    var bad = S.arrow(svg, 550, byy + bh + 26, 300, byy + bh + 4, 'f');
     gS.appendChild(bad);
     var badX = S.g({});
     gS.appendChild(badX);
-    badX.appendChild(S.line(320, byy + bh + 6, 344, byy + bh + 30, 's-fail'));
-    badX.appendChild(S.line(344, byy + bh + 6, 320, byy + bh + 30, 's-fail'));
-    put(gS, 140, byy + bh + 60, 'never on this one', 's-lbl-f', 'start', 12);
+    badX.appendChild(S.line(413, byy + bh + 3, 437, byy + bh + 27, 's-fail'));
+    badX.appendChild(S.line(437, byy + bh + 3, 413, byy + bh + 27, 's-fail'));
+    put(gS, 150, byy + bh + 44, 'never on this one', 's-lbl-f', 'start', 12);
 
     /* --- three integrals on the same state --- */
     var pRight = sandwich(st, function (j) { return [HB * st.dim[j], -HB * st.dre[j]]; });
@@ -979,14 +1013,14 @@
       K.toFixed(3) + ', σ = ' + SG.toFixed(2) + ', ℏ = 1', 's-lbl-b', 'start', 12);
 
     var rowsTxt = [
-      { s: '∫ ψ* ( −iℏ ∂ψ/∂x ) dx        =  ' + num(pRight[0], 6) + ' ℏ    (imag ' +
-           num(pRight[1], 6) + ')    correct — this is ⟨p̂⟩', c: 's-lbl-q' },
-      { s: '∫ ( −iℏ ∂ψ*/∂x ) ψ dx        =  ' + num(leftR, 6) + ' ℏ    (imag ' +
-           num(leftI, 6) + ')    the operator moved left: sign flipped', c: 's-lbl-f' },
-      { s: '−iℏ ∫ ∂(ψ*ψ)/∂x dx        =  −iℏ × ' + num(prodR, 6) +
-           '  =  0            a total derivative: nothing survives', c: 's-lbl-f' },
-      { s: '∫ ψ* x̂ ψ dx  =  ' + num(xSand[0], 6) + '        ∫ x |ψ|² dx  =  ' +
-           num(xWeighted, 6) + '        for x̂ the order does not matter', c: 's-lbl-b' }
+      { s: pad('∫ ψ* ( −iℏ ∂ψ/∂x ) dx', 24) + '=  ' + num(pRight[0], 6) + ' ℏ   (imag ' +
+           num(pRight[1], 6) + ')   correct — this is ⟨p̂⟩', c: 's-lbl-q' },
+      { s: pad('∫ ( −iℏ ∂ψ*/∂x ) ψ dx', 24) + '=  ' + num(leftR, 6) + ' ℏ   (imag ' +
+           num(leftI, 6) + ')   the operator moved left: the sign flips', c: 's-lbl-f' },
+      { s: pad('−iℏ ∫ ∂(ψ*ψ)/∂x dx', 24) + '=  −iℏ × ' + num(prodR, 6) +
+           ' = 0             a total derivative: nothing survives', c: 's-lbl-f' },
+      { s: pad('∫ ψ* x̂ ψ dx', 24) + '=  ' + num(xSand[0], 6) + '     and     ∫ x |ψ|² dx = ' +
+           num(xWeighted, 6) + '     for x̂ the order does not matter', c: 's-lbl-b' }
     ].map(function (d, j) {
       return put(svg, 60, 340 + j * 30, d.s, d.c, 'start', 11);
     });
@@ -1004,7 +1038,7 @@
       return put(svg, 60, 522 + j * 26, d.s, d.c, 'start', 11);
     });
 
-    var moral = put(svg, 60, H - 26,
+    var moral = put(svg, 60, H - 24,
       'x̂ acts by multiplication, so it can be folded into the density. p̂ is a derivative, and cannot.',
       's-lbl-b', 'start', 12);
 
@@ -1202,8 +1236,9 @@
       var g = S.g({});
       gDots.appendChild(g);
       cdat.draws.forEach(function (d) {
-        var c = S.circle(PXt(cdat.t), PYx(d), 1.7, 's-fill-i');
-        c.setAttribute('opacity', '0.30');
+        var c = S.circle(PXt(cdat.t), PYx(d), 1.7, null);
+        c.setAttribute('fill', 'var(--probability)');
+        c.setAttribute('opacity', '0.35');
         g.appendChild(c);
       });
       return g;
