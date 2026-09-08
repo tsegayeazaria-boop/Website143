@@ -953,7 +953,10 @@
     root.appendChild(svg);
 
     var HB = 1;
-    var K = 2.0, SG = 1.0, X0 = 0.0;
+    /* Centred off the origin on purpose: with x₀ = 0 the position row below
+       would compare 0.000000 with 0.000000, which agrees without saying
+       anything. */
+    var K = 2.0, SG = 1.0, X0 = 0.8;
     var xs = testGrid(X0, SG);
     var st = packet(xs, X0, SG, K);
     var stc = packet(xs, X0, SG, -K);   /* the complex conjugate state */
@@ -1021,8 +1024,9 @@
       if (Math.abs(g1 - g2) > densGap) densGap = Math.abs(g1 - g2);
     }
 
-    put(svg, 60, 300, 'the same state ψ = N e^(−(x−x₀)²/4σ²) e^(ikx), with k = ' +
-      K.toFixed(3) + ', σ = ' + SG.toFixed(2) + ', ℏ = 1', 's-lbl-b', 'start', 12);
+    put(svg, 60, 300, 'the same state ψ = N e^(−(x−x₀)²/4σ²) e^(ikx), with x₀ = ' +
+      X0.toFixed(2) + ', k = ' + K.toFixed(3) + ', σ = ' + SG.toFixed(2) +
+      ', ℏ = 1', 's-lbl-b', 'start', 12);
 
     var rowsTxt = [
       { s: pad('∫ ψ* ( −iℏ ∂ψ/∂x ) dx', 24) + '=  ' + num(pRight[0], 6) + ' ℏ   (imag ' +
