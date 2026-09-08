@@ -334,10 +334,10 @@
     var gHero = S.g({});
     svg.appendChild(gHero);
     card(gHero, 460, 492, 260, 46, 'var(--quantum)');
-    put(gHero, W / 2, 524, '[ x̂ , p̂ₓ ]  =  iℏ 1̂', 's-lbl-q', 'middle', 20);
+    put(gHero, W / 2, 524, '[ x̂ , p̂ₓ ]  =  iℏ Î', 's-lbl-q', 'middle', 20);
 
     var tail = [
-      [568, '1̂ is the identity operator: the right-hand side is a number times it', 's-lbl', 12],
+      [568, 'Î is the identity operator: the right-hand side is a number times it', 's-lbl', 12],
       [594, 'not a function of x, not a function of ψ, the same in every state', 's-lbl', 12],
       [628, 'iℏ  =  ' + sci(C.hbar, 6) + ' i J s        computed from ℏ = h/2π', 's-lbl-q', 12],
       [660, 'the handout prints iℏ alone; the left-hand side is an operator, so the right', 's-lbl-f', 12],
@@ -622,7 +622,7 @@
     ].map(function (L) { return put(svg, 130, L[0], L[1], L[2], 'start', L[3]); });
 
     var v1 = put(svg, W / 2, 650,
-      '[ x̂ᵢ , p̂ⱼ ]  =  iℏ δᵢⱼ 1̂          [ x̂ᵢ , x̂ⱼ ]  =  [ p̂ᵢ , p̂ⱼ ]  =  0',
+      '[ x̂ᵢ , p̂ⱼ ]  =  iℏ δᵢⱼ Î          [ x̂ᵢ , x̂ⱼ ]  =  [ p̂ᵢ , p̂ⱼ ]  =  0',
       's-lbl-b', 'middle', 15);
     var v2 = put(svg, W / 2, 686,
       'one operator identity holds the whole table', 's-lbl-q', 'middle', 12);
@@ -738,7 +738,7 @@
       put(g, 250, y, String(n), 's-lbl', 'start', 12);
       put(g, 400, y, num(cf, 6), 's-lbl-b', 'start', 12);
       var rhs = n === 1
-        ? '[ x̂ , p̂ₓ ]  =  iℏ 1̂'
+        ? '[ x̂ , p̂ₓ ]  =  iℏ Î'
         : '[ x̂ , p̂ₓ' + sup(n) + ' ]  =  ' + n + ' iℏ p̂ₓ' + (n === 2 ? '' : sup(n - 1));
       put(g, 640, y, rhs, n === 2 ? 's-lbl-q' : 's-lbl', 'start', 12);
       return g;
@@ -913,7 +913,7 @@
     var chain = [
       [618, 'δA δB  ≥  ½ | ⟨ [ Â , B̂ ] ⟩ |', 's-lbl-q', 17],
       [648, 'Robertson, 1929 — stated here, proved later in the course', 's-lbl-f', 12],
-      [682, 'Â = x̂ , B̂ = p̂ₓ :    ⟨ iℏ 1̂ ⟩ = iℏ ⟨ψ|ψ⟩ = iℏ ,    | iℏ | = ℏ', 's-lbl-b', 13],
+      [682, 'Â = x̂ , B̂ = p̂ₓ :    ⟨ iℏ Î ⟩ = iℏ ⟨ψ|ψ⟩ = iℏ ,    | iℏ | = ℏ', 's-lbl-b', 13],
       [712, 'δx δpₓ  ≥  ℏ/2  =  ' + sci(C.hbar / 2, 6) + ' J s', 's-lbl-p', 14],
       [746, 'Â = x̂ , B̂ = p̂_y :    ⟨ 0 ⟩ = 0 ,    | 0 | = 0', 's-lbl-b', 13],
       [774, 'δx δp_y  ≥  0    —    no restriction at all', 's-lbl-w', 13]
