@@ -297,13 +297,13 @@
     /* --- the chain, one line at a time --- */
     var chain = [
       { s: '(ΔO)²  =  ⟨(Ô − ⟨Ô⟩)²⟩', c: 's-lbl-b', z: 13 },
-      { s: '⟨Ô⟩ is a number, not an operator — so it carries an identity 1̂', c: 's-lbl', z: 12 },
-      { s: '(Ô − ⟨Ô⟩1̂)²  =  Ô² − Ô⟨Ô⟩1̂ − ⟨Ô⟩1̂Ô + ⟨Ô⟩²1̂', c: 's-lbl-q', z: 12 },
+      { s: '⟨Ô⟩ is a number, not an operator — so it carries an identity Î', c: 's-lbl', z: 12 },
+      { s: '(Ô − ⟨Ô⟩Î)²  =  Ô² − Ô⟨Ô⟩Î − ⟨Ô⟩ÎÔ + ⟨Ô⟩²Î', c: 's-lbl-q', z: 12 },
       { s: 'a number commutes with every operator, so those two middle terms', c: 's-lbl', z: 12 },
-      { s: 'are the same term twice:   Ô² − 2⟨Ô⟩Ô + ⟨Ô⟩²1̂', c: 's-lbl-q', z: 12 },
+      { s: 'are the same term twice:   Ô² − 2⟨Ô⟩Ô + ⟨Ô⟩²Î', c: 's-lbl-q', z: 12 },
       { s: 'now take ⟨·⟩ of both sides. it is linear, because ∫ is linear', c: 's-lbl', z: 12 },
-      { s: '(ΔO)²  =  ⟨Ô²⟩ − 2⟨Ô⟩⟨Ô⟩ + ⟨Ô⟩²⟨1̂⟩', c: 's-lbl-q', z: 12 },
-      { s: '⟨1̂⟩ = ∫ψ*ψ dx = 1 — normalisation, used exactly once, here', c: 's-lbl-w', z: 12 },
+      { s: '(ΔO)²  =  ⟨Ô²⟩ − 2⟨Ô⟩⟨Ô⟩ + ⟨Ô⟩²⟨Î⟩', c: 's-lbl-q', z: 12 },
+      { s: '⟨Î⟩ = ∫ψ*ψ dx = 1 — normalisation, used exactly once, here', c: 's-lbl-w', z: 12 },
       { s: '(ΔO)²  =  ⟨Ô²⟩ − ⟨Ô⟩²', c: 's-lbl-b', z: 14 }
     ];
     var gChain = S.g({});
