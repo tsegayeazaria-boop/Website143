@@ -195,16 +195,18 @@
     bad.setAttribute('font-size', '13');
     gBad.appendChild(bad);
     gBad.appendChild(S.text(622, 466, 'probability is then created or absorbed. For', 's-lbl', 'start'));
-    gBad.appendChild(S.text(622, 488, 'an absorptive Im V = −0.050 eV the norm halves', 's-lbl', 'start'));
+    gBad.appendChild(S.text(622, 488, 'an absorptive Im V = −0.050 eV the total probability', 's-lbl', 'start'));
     var half = S.text(622, 516, '', 's-lbl-f', 'start');
     half.setAttribute('font-size', '13');
     gBad.appendChild(half);
     gBad.appendChild(S.text(622, 546, 'which is exactly how optical potentials work', 's-lbl', 'start'));
 
-    /* Half-life of the norm, evaluated from SI constants on the page. */
+    /* Half-life of ∫P, evaluated from SI constants on the page. It is the total
+       probability that decays as exp(−2|Im V|t/ℏ), not the norm of ψ, which
+       takes twice as long to halve. */
     var ImV = 0.050 * M.C.e;
     var tHalf = M.C.hbar * Math.LN2 / (2 * ImV);
-    half.textContent = 'every  t½ = ℏ ln2 / (2|Im V|) = ' + (tHalf * 1e15).toFixed(2) + ' fs';
+    half.textContent = 'halves every  t½ = ℏ ln2 / (2|Im V|) = ' + (tHalf * 1e15).toFixed(2) + ' fs';
 
     var note = S.text(W / 2, 640,
       'reality of V is used once here, and once again — decisively — a few lines later',
@@ -500,8 +502,18 @@
     var LHS = lhsAt(TP[0], TP[1], TP[2]);
     var RHS = rhsAt(TP[0], TP[1], TP[2]);
     var gp = grad(TP[0], TP[1], TP[2]);
-    var cross = 0, i2;
-    for (i2 = 0; i2 < 3; i2++) cross += gp[i2][0] * gp[i2][0] + gp[i2][1] * gp[i2][1];
+
+    /* The two cross terms are accumulated separately, each as its own sum of
+       complex products in the order it is written, so the difference printed
+       below is a subtraction of two independently computed numbers rather than
+       a variable set against itself. */
+    var crossA = [0, 0], crossB = [0, 0], i2, ta, tb;
+    for (i2 = 0; i2 < 3; i2++) {
+      ta = cmul(cconj(gp[i2]), gp[i2]);          /* (∂ᵢψ*)(∂ᵢψ)  */
+      tb = cmul(gp[i2], cconj(gp[i2]));          /* (∂ᵢψ)(∂ᵢψ*)  */
+      crossA = [crossA[0] + ta[0], crossA[1] + ta[1]];
+      crossB = [crossB[0] + tb[0], crossB[1] + tb[1]];
+    }
 
     var gNum = S.g({});
     svg.appendChild(gNum);
@@ -534,9 +546,9 @@
     var s2 = S.text(580, 458, '', 's-lbl', 'start');
     var s3 = S.text(580, 482, '', 's-lbl-f', 'start');
     gSide.appendChild(s1); gSide.appendChild(s2); gSide.appendChild(s3);
-    s1.textContent = '∇ψ*·∇ψ    =  ' + cross.toFixed(6);
-    s2.textContent = '∇ψ·∇ψ*    =  ' + cross.toFixed(6);
-    s3.textContent = 'difference =  ' + (cross - cross).toFixed(1);
+    s1.textContent = '∇ψ*·∇ψ    =  ' + crossA[0].toFixed(6);
+    s2.textContent = '∇ψ·∇ψ*    =  ' + crossB[0].toFixed(6);
+    s3.textContent = 'difference =  ' + (crossA[0] - crossB[0]).toFixed(1);
 
     gSide.appendChild(S.text(580, 522, 'and in one dimension', 's-lbl-q', 'start'));
     gSide.appendChild(S.text(580, 550, 'd/dx( ψ*ψ′ − ψψ*′ ) = ψ*ψ″ − ψψ*″', 's-lbl', 'start'));
@@ -830,7 +842,7 @@
     slider.addEventListener('input', function () {
       kUser = Number(slider.value) / 100;
       touched = true;
-      out.textContent = kUser.toFixed(2) + ' × 10¹⁰ m⁻¹';
+      out.textContent = neg(kUser, 2) + ' × 10¹⁰ m⁻¹';
     });
 
     function cmul(a, b) { return [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]]; }
@@ -840,7 +852,7 @@
     return function (p, tSec) {
       var kU = touched ? kUser : M.lerp(0.35, 1.6, M.easeInOut(M.beat(p, 0.10, 0.70)));
       if (!touched) {
-        out.textContent = kU.toFixed(2) + ' × 10¹⁰ m⁻¹';
+        out.textContent = neg(kU, 2) + ' × 10¹⁰ m⁻¹';
         slider.value = String(Math.round(kU * 100));
       }
       var k = kU * 1e10;
@@ -857,7 +869,7 @@
       var J2 = (C.hbar / C.me) * cmul(cconj(psiV), dpsi)[1];
       var J3 = C.hbar * k * A2 / C.me;
 
-      nums[0].textContent = 'electron, k = ' + kU.toFixed(2) + ' × 10¹⁰ m⁻¹, λ = ' +
+      nums[0].textContent = 'electron, k = ' + neg(kU, 2) + ' × 10¹⁰ m⁻¹, λ = ' +
         (k === 0 ? '∞' : (lam * 1e9).toFixed(3) + ' nm');
       nums[1].textContent = 'v = ℏk/mₑ = ' + sci(v, 4) + ' m s⁻¹';
       nums[2].textContent = 'A = 0.6 − 1.1i,  |A|² = ' + A2.toFixed(4) + ' m⁻¹';
@@ -866,16 +878,25 @@
       nums[5].textContent = 'from ℏk|A|²/m:         J = ' + sci(J3, 6) + ' s⁻¹';
       nums[6].textContent = 'imaginary part of (1.9.5): ' + sci(J1[1], 1) + ' — J is real';
 
-      /* Draw the wave with a fixed number of cycles per unit k so the picture
-         stays legible; the physics is in the numbers above. */
+      /* The number of cycles across the frame is compressed so the picture stays
+         legible, but the curves are the real and imaginary parts of the same
+         A e^(i(kx − ωt)) the numbers above use, scaled by wamp/|A| — so the
+         quarter-cycle offset between them is A's own, not an assumption. The
+         travelling term carries no sign of its own: the sign of k already sits
+         in `cycles`, so a negative k sends the crests left, as it must. */
       var time = api.reduced ? 0.0 : tSec;
       var cycles = kU * 5.5;
       var sgn = kU >= 0 ? 1 : -1;
+      var wsc = wamp / Math.sqrt(A2);
       S.setD(reW, S.polyD(S.sample(320, 0, 1, function (u) {
-        return [M.lerp(wx0, wx1, u), wcy - Math.cos(M.TAU * cycles * u - time * 1.6 * sgn) * wamp];
+        var q = M.TAU * cycles * u - time * 1.6;
+        return [M.lerp(wx0, wx1, u),
+          wcy - (Are * Math.cos(q) - Aim * Math.sin(q)) * wsc];
       })));
       S.setD(imW, S.polyD(S.sample(320, 0, 1, function (u) {
-        return [M.lerp(wx0, wx1, u), wcy - Math.sin(M.TAU * cycles * u - time * 1.6 * sgn) * wamp];
+        var q = M.TAU * cycles * u - time * 1.6;
+        return [M.lerp(wx0, wx1, u),
+          wcy - (Are * Math.sin(q) + Aim * Math.cos(q)) * wsc];
       })));
 
       var drift = (api.reduced ? 0.25 : time * 0.09) * sgn * Math.min(2.5, Math.abs(kU) + 0.2);
