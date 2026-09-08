@@ -47,6 +47,38 @@ const browser = await chromium.launch({ executablePath: EXEC, args: ['--no-sandb
 
 /* ------------------------------------------------- 1. main scroll sweep -- */
 
+/* Runs inside the page. Returns one entry per label currently outside its
+   viewBox, with a stable key so repeated sightings across the sweep collapse. */
+function scanClipped() {
+  const out = [];
+  document.querySelectorAll('svg[viewBox]').forEach((sv) => {
+    /* Only the hand-authored scene figures. MathJax lays out in ex-units against
+       its own baseline, so its geometry is not comparable; missing glyphs are
+       checked separately. */
+    if (sv.closest('mjx-container')) return;
+    const vb = sv.getAttribute('viewBox').split(/[\s,]+/).map(Number);
+    sv.querySelectorAll('text').forEach((el) => {
+      let bb;
+      try { bb = el.getBBox(); } catch (e) { return; }
+      if (!bb.width) return;
+      /* Still parked at its mount position, to be placed by the first update. */
+      if (bb.y < 0 && bb.y > -14 && Math.abs(bb.y + bb.height) < 6) return;
+      if (bb.x < -2 || bb.x + bb.width > vb[2] + 2 ||
+          bb.y < -2 || bb.y + bb.height > vb[3] + 2) {
+        const label = (sv.getAttribute('aria-label') || '?').slice(0, 20);
+        const text = el.textContent.slice(0, 34);
+        out.push({
+          key: label + '|' + text,
+          msg: label + ' | "' + text + '" | x ' + Math.round(bb.x) + '..' +
+               Math.round(bb.x + bb.width) + '/' + vb[2] + ' y ' + Math.round(bb.y) +
+               '..' + Math.round(bb.y + bb.height) + '/' + vb[3]
+        });
+      }
+    });
+  });
+  return out;
+}
+
 async function sweep(theme) {
   const ctx = await browser.newContext({
     viewport: { width: 1440, height: 900 },
@@ -85,9 +117,17 @@ async function sweep(theme) {
   const vh = 900;
   const stepPx = Math.round(vh * 0.45);
   const steps = Math.ceil(height / stepPx);
+  /* Scene labels are rebuilt on every frame, so a label can sit inside its
+     viewBox at the end of the sweep and hang outside it halfway through. The
+     scan therefore runs at every scroll step and unions what it finds, rather
+     than taking one reading once the page has settled. */
+  const clippedSeen = new Map();
   for (let i = 0; i <= steps; i++) {
     await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), i * stepPx);
     await page.waitForTimeout(28);
+    for (const c of await page.evaluate(scanClipped)) {
+      if (!clippedSeen.has(c.key)) clippedSeen.set(c.key, c.msg);
+    }
   }
 
   const report = await page.evaluate(() => {
@@ -121,32 +161,9 @@ async function sweep(theme) {
   /* Text that spills outside its own viewBox is silently clipped by the SVG
      viewport — no error, no visual cue, the label simply is not there. This scan
      caught thirteen real cases while the atlas was being built, so it runs every
-     time. Elements still sitting at their mount position (y ~ 0, positioned later
-     by the scene's update) are not yet placed and are skipped. */
-  const clipped = await page.evaluate(() => {
-    const out = [];
-    document.querySelectorAll('svg[viewBox]').forEach((sv) => {
-      /* Only the hand-authored scene figures. MathJax lays out in ex-units with
-         its own baseline conventions, so its geometry is not comparable, and it
-         is checked separately below. */
-      if (sv.closest('mjx-container')) return;
-      const vb = sv.getAttribute('viewBox').split(/[\s,]+/).map(Number);
-      sv.querySelectorAll('text').forEach((el) => {
-        let bb;
-        try { bb = el.getBBox(); } catch (e) { return; }
-        if (!bb.width) return;
-        if (bb.y < 0 && bb.y > -14 && Math.abs(bb.y + bb.height) < 6) return;
-        if (bb.x < -2 || bb.x + bb.width > vb[2] + 2 ||
-            bb.y < -2 || bb.y + bb.height > vb[3] + 2) {
-          out.push((sv.getAttribute('aria-label') || '?').slice(0, 20) + ' | "' +
-                   el.textContent.slice(0, 34) + '" | x ' + Math.round(bb.x) + '..' +
-                   Math.round(bb.x + bb.width) + '/' + vb[2] + ' y ' + Math.round(bb.y) +
-                   '..' + Math.round(bb.y + bb.height) + '/' + vb[3]);
-        }
-      });
-    });
-    return out;
-  });
+     time, and it runs at every scroll step (see the sweep above) because a label
+     can be inside the box at rest and outside it mid-animation. */
+  const clipped = [...clippedSeen.values()];
   if (clipped.length) {
     fail('[' + theme + '] ' + clipped.length + ' SVG label(s) clipped by their viewBox:\n        ' +
          clipped.slice(0, 10).join('\n        '));

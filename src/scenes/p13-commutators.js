@@ -339,7 +339,7 @@
     var tail = [
       [568, 'Î is the identity operator: the right-hand side is a number times it', 's-lbl', 12],
       [594, 'not a function of x, not a function of ψ, the same in every state', 's-lbl', 12],
-      [628, 'iℏ  =  ' + sci(C.hbar, 6) + ' i J s        computed from ℏ = h/2π', 's-lbl-q', 12],
+      [628, 'iℏ  =  ' + sci(C.h / M.TAU, 6) + ' i J s        computed from ℏ = h/2π', 's-lbl-q', 12],
       [660, 'the handout prints iℏ alone; the left-hand side is an operator, so the right', 's-lbl-f', 12],
       [686, 'must be one too, and the identity operator is what makes the two sides match', 's-lbl-f', 12],
       [730, 'because iℏ ≠ 0, no state is an eigenstate of x̂ and of p̂ₓ at the same time', 's-lbl-b', 13],
@@ -473,7 +473,7 @@
       [732, 'on a grid over a two-dimensional ψ:   max | ∂_y(xψ) − x ∂_yψ |  =  ' +
             sci(worstY, 1), 's-lbl-w', 12],
       [758, 'the same grid:   ∂_x(xψ) − x ∂_xψ  matches ψ to  ' + sci(worstX, 1) +
-            ', which is rounding', 's-lbl-q', 12]
+            ', which is the finite difference', 's-lbl-q', 12]
     ].map(function (L) { return put(svg, W / 2, L[0], L[1], L[2], 'middle', L[3]); });
 
     var v1 = put(svg, W / 2, 804,
@@ -629,7 +629,7 @@
     var v2 = put(svg, W / 2, 686,
       'one operator identity holds the whole table', 's-lbl-q', 'middle', 12);
     var v3 = put(svg, W / 2, 716,
-      'the three families vanish for three different reasons, and only one of them is δᵢⱼ',
+      'the zeros in the three grids are zero for three different reasons, and only one is δᵢⱼ',
       's-lbl', 'middle', 12);
 
     return function (p) {
@@ -972,16 +972,19 @@
 
       var r1 = Wx.dx * Wx.dp / (C.hbar / 2);
       var r2 = Wx.dx * Wy.dp / (C.hbar / 2);
-      readY.textContent = 'the state is ' + num(Wy.dx / Wx.dx, 2) +
-        ' times longer in y than in x, and its p_y spread is that much narrower';
+      readY.textContent = 'the y factor is ' + num(Wy.dx / Wx.dx, 2) +
+        ' times as long as the x factor, and its p_y spread is ' +
+        num(Wy.dp / Wx.dp, 2) + ' times as wide';
 
       var n1x = GB(Math.min(VMAX, r1)), n2x = GB(Math.min(VMAX, r2));
       g1.needle.setAttribute('x1', n1x); g1.needle.setAttribute('x2', n1x);
       g2.needle.setAttribute('x1', n2x); g2.needle.setAttribute('x2', n2x);
       g1.lbl.setAttribute('x', n1x);
-      g1.lbl.textContent = num(r1, 3) + ' — exactly on the floor';
+      g1.lbl.textContent = num(r1, 6) + ' — exactly on the floor';
       g2.lbl.setAttribute('x', n2x);
-      g2.lbl.textContent = num(r2, 3) + ' — under it, and allowed';
+      g2.lbl.textContent = num(r2, 3) + (r2 < 1
+        ? ' — under ℏ/2, and allowed'
+        : ' — above ℏ/2, though nothing requires it');
 
       S.op(title, M.beat(p, 0.01, 0.06));
       S.op(curveX, M.beat(p, 0.03, 0.12));
