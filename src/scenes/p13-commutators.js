@@ -42,7 +42,7 @@
   function put(parent, x, y, str, cls, anchor, size) {
     var t = S.text(x, y, str, cls, anchor);
     if (size) t.setAttribute('font-size', String(size));
-    t.setAttribute('xml:space', 'preserve');
+    t.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
     parent.appendChild(t);
     return t;
   }
@@ -421,10 +421,12 @@
        Along the first ray it is read at each dot; along the second it is the
        x of the same vertical line, and both are printed as they come out. */
     function multiplier(pt) { return pt[0]; }
-    xRay.forEach(function (xv) {
+    xRay.forEach(function (xv, i) {
       gRay.appendChild(S.circle(RX(xv), RY(0.5), 4.2, 's-fill-q'));
-      put(gRay, RX(xv), RY(0.5) - 12, 'x = ' + num(multiplier([xv, 0.5]), 1),
-        's-lbl-q', 'middle', 11);
+      /* the first dot sits on the vertical ray, so its label steps aside */
+      put(gRay, RX(xv) - (i === 0 ? 9 : 0), RY(0.5) - 12,
+        'x = ' + num(multiplier([xv, 0.5]), 1),
+        's-lbl-q', i === 0 ? 'end' : 'middle', 11);
     });
     yRay.forEach(function (yv) {
       gRay.appendChild(S.circle(RX(0.9), RY(yv), 4.2, 's-fill-w'));
@@ -847,7 +849,7 @@
       svg.appendChild(S.line(P.x0, pyB, P.x1, pyB, 's-axis'));
       put(svg, (P.x0 + P.x1) / 2, 100, P.cap, 's-lbl-b', 'middle', 12);
     });
-    put(svg, 240, 344, 'x and y in ångström, ±' + num(XFULL / ANG, 0), 's-lbl', 'middle', 11);
+    put(svg, 240, 356, 'x and y in ångström, ±' + num(XFULL / ANG, 0), 's-lbl', 'middle', 11);
     put(svg, 620, 344, 'pₓ, fixed axis ±' + sci(PFULL, 1) + ' kg m s⁻¹', 's-lbl', 'middle', 11);
     put(svg, 1000, 344, 'p_y, the same axis', 's-lbl', 'middle', 11);
 
@@ -860,7 +862,7 @@
     var curvePx = S.path('', 's-prob'); svg.appendChild(curvePx);
     var curvePy = S.path('', 's-wave'); svg.appendChild(curvePy);
 
-    var spanX = span(svg, PXs(-Wx.dx), PXs(Wx.dx), 314, 'Δx = ' + num(Wx.dx / ANG, 3) + ' Å', 's-lbl-p');
+    var spanX = span(svg, PXs(-Wx.dx), PXs(Wx.dx), 312, 'Δx = ' + num(Wx.dx / ANG, 3) + ' Å', 's-lbl-p');
     var spanPx = span(svg, PPa(-Wx.dp), PPa(Wx.dp), 314, 'Δpₓ = ' + sci(Wx.dp, 3), 's-lbl-p');
     var gSpanY = S.g({}); svg.appendChild(gSpanY);
     var gSpanPy = S.g({}); svg.appendChild(gSpanPy);
@@ -898,16 +900,16 @@
       g.appendChild(lbl);
       return { g: g, needle: needle, lbl: lbl, yTop: yTop };
     }
-    var g1 = gauge(400, 'Δx Δpₓ  in units of ℏ/2', 1, 'p');
-    var g2 = gauge(506, 'Δx Δp_y  in units of ℏ/2', 0, 'w');
+    var g1 = gauge(410, 'Δx Δpₓ  in units of ℏ/2', 1, 'p');
+    var g2 = gauge(516, 'Δx Δp_y  in units of ℏ/2', 0, 'w');
 
     /* the two-bump state, marked once on the first gauge */
     var gBump = S.g({});
     svg.appendChild(gBump);
     var bx = GB(Math.min(VMAX, bumpRatio));
-    var bmk = S.circle(bx, 415, 5.5, 's-fill-q');
+    var bmk = S.circle(bx, 425, 5.5, 's-fill-q');
     gBump.appendChild(bmk);
-    put(gBump, bx, 386, 'a two-bump state:  ' + num(bumpRatio, 3), 's-lbl-q', 'middle', 11);
+    put(gBump, bx, 398, 'a two-bump state:  ' + num(bumpRatio, 3), 's-lbl-q', 'middle', 11);
 
     /* --- the chain that produces those two floors --- */
     var chain = [
@@ -943,7 +945,7 @@
       return [PPa(v), M.map(val / pkp, 0, 1.1, pyB, pyT)];
     })));
 
-    var readY = put(svg, W / 2, 372, '', 's-lbl-w', 'middle', 12);
+    var readY = put(svg, W / 2, 380, '', 's-lbl-w', 'middle', 12);
 
     return function (p) {
       /* The y factor is the only thing that moves: wide state, narrow p_y. */
@@ -965,7 +967,7 @@
 
       while (gSpanY.firstChild) gSpanY.removeChild(gSpanY.firstChild);
       while (gSpanPy.firstChild) gSpanPy.removeChild(gSpanPy.firstChild);
-      span(gSpanY, PXs(-Wy.dx), PXs(Wy.dx), 332, 'Δy = ' + num(Wy.dx / ANG, 3) + ' Å', 's-lbl-w');
+      span(gSpanY, PXs(-Wy.dx), PXs(Wy.dx), 334, 'Δy = ' + num(Wy.dx / ANG, 3) + ' Å', 's-lbl-w');
       span(gSpanPy, PPb(-Wy.dp), PPb(Wy.dp), 314, 'Δp_y = ' + sci(Wy.dp, 3), 's-lbl-w');
 
       var r1 = Wx.dx * Wx.dp / (C.hbar / 2);

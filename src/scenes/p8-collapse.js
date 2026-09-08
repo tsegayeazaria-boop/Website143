@@ -21,15 +21,70 @@
 
   function sci(v, d) {
     if (!v || !isFinite(v)) return '0';
+    var dd = (d == null ? 2 : d);
     var e = Math.floor(Math.log(Math.abs(v)) / Math.LN10);
     var m = v / Math.pow(10, e);
-    if (Math.abs(m) >= 9.9995) { m = m / 10; e = e + 1; }
-    return m.toFixed(d == null ? 2 : d) + ' × 10' + sup(e);
+    /* The mantissa is rounded to dd places for display, so carry at the value
+       that rounds up to ten at that precision — not at a fixed one. Otherwise a
+       sweep through, say, 9.996e-32 prints "10.00 × 10⁻³²". */
+    if (Math.abs(m) >= 10 - 0.5 * Math.pow(10, -dd)) { m = m / 10; e = e + 1; }
+    return m.toFixed(dd) + ' × 10' + sup(e);
   }
 
   /* Class rules set font-size, so a presentation attribute would be ignored;
      an inline style is the only way to change it. Widths are budgeted for it. */
   function size(node, px) { node.style.fontSize = px + 'px'; return node; }
+
+  /* ---- the prepared state, shared by the two figures that mark the point A ---
+     The two-slit pattern of section 1.3 on a fixed grid, normalised so the area
+     under it is one probability, together with the landing points a fixed seed
+     draws from it by inverting its cumulative integral. This lives here rather
+     than inside one scene because the question figure below has to mark the
+     same A the collapse figure computes, and copying the number across by hand
+     allows the two to drift apart. Built on first use, so it does not depend on
+     the order the engine and the scenes are evaluated in. */
+
+  var HALF = 10;                     /* half-width of the detector, in mm     */
+  var NG = 800, DXG = 2 * HALF / NG;
+
+  function areaOf(v) {
+    var s = 0, j;
+    for (j = 1; j < v.length; j++) s += 0.5 * (v[j - 1] + v[j]) * DXG;
+    return s;
+  }
+  function unitArea(v) {
+    var a = areaOf(v), o = [], j;
+    for (j = 0; j < v.length; j++) o.push(v[j] / a);
+    return o;
+  }
+
+  var prep = null;
+  function prepared() {
+    if (prep) return prep;
+    var grid = [], raw = [], i;
+    for (i = 0; i <= NG; i++) {
+      grid.push(-HALF + i * DXG);
+      raw.push(M.doubleSlit(grid[i] / 20, 2.2, 9));
+    }
+    var before = unitArea(raw);
+    var cdf = [0];
+    for (i = 1; i <= NG; i++) cdf.push(cdf[i - 1] + 0.5 * (before[i - 1] + before[i]) * DXG);
+    function drawFrom(u) {
+      var j;
+      for (j = 1; j <= NG; j++) {
+        if (cdf[j] >= u) {
+          return grid[j - 1] + DXG * (u - cdf[j - 1]) / Math.max(1e-12, cdf[j] - cdf[j - 1]);
+        }
+      }
+      return grid[NG];
+    }
+    var rnd = M.rng(90119);
+    prep = {
+      grid: grid, before: before,
+      hits: [drawFrom(rnd() * cdf[NG]), drawFrom(rnd() * cdf[NG])]
+    };
+    return prep;
+  }
 
   /* A bordered card with a title and a stack of body lines. */
   function card(x, y, w, h, stroke, titleCls, title, lines) {
@@ -61,53 +116,19 @@
       'event at a point A; and the state left behind, a peak whose width is the resolution ' +
       'of the detector rather than zero. A second run of the same experiment lands ' +
       'somewhere else entirely.');
-    S.defsArrows(svg);
     root.appendChild(svg);
 
     var x0 = 96, x1 = 1000, yT = 100, yB = 390;
-    var HALF = 10;                     /* half-width of the detector, in mm     */
     var SIG = 0.25;                    /* detector resolution sigma, in mm      */
     var PITCH = 0.5;                   /* one detector pixel, in mm             */
     var PX = function (x) { return M.map(x, -HALF, HALF, x0, x1); };
 
-    var N = 800, dx = 2 * HALF / N, i;
-    var grid = [];
-    for (i = 0; i <= N; i++) grid.push(-HALF + i * dx);
+    var state = prepared();
+    var grid = state.grid, before = state.before, hits = state.hits;
+    var N = NG, dx = DXG, i;
 
-    function areaOf(v) {
-      var s = 0, j;
-      for (j = 1; j <= N; j++) s += 0.5 * (v[j - 1] + v[j]) * dx;
-      return s;
-    }
-    function unitArea(v) {
-      var a = areaOf(v), o = [], j;
-      for (j = 0; j <= N; j++) o.push(v[j] / a);
-      return o;
-    }
-
-    /* The prepared state: the two-slit pattern of section 1.3, normalised so the
-       area under it is one probability. */
-    var raw = [];
-    for (i = 0; i <= N; i++) raw.push(M.doubleSlit(grid[i] / 20, 2.2, 9));
-    var before = unitArea(raw);
     var peak0 = 0;
     for (i = 0; i <= N; i++) if (before[i] > peak0) peak0 = before[i];
-
-    /* Landing points drawn from the state's own distribution, by inverting its
-       cumulative integral. Fixed seed, so the same scroll draws the same run. */
-    var cdf = [0];
-    for (i = 1; i <= N; i++) cdf.push(cdf[i - 1] + 0.5 * (before[i - 1] + before[i]) * dx);
-    function drawFrom(u) {
-      var j;
-      for (j = 1; j <= N; j++) {
-        if (cdf[j] >= u) {
-          return grid[j - 1] + dx * (u - cdf[j - 1]) / Math.max(1e-12, cdf[j] - cdf[j - 1]);
-        }
-      }
-      return grid[N];
-    }
-    var rnd = M.rng(90119);
-    var hits = [drawFrom(rnd() * cdf[N]), drawFrom(rnd() * cdf[N])];
 
     /* ---- frame ---- */
     svg.appendChild(size(S.text(W / 2, 42,
@@ -165,7 +186,9 @@
     var hitLine = S.line(0, yT, 0, yB, 's-quantum s-dash');
     var hitStub = S.line(0, yBar - 22, 0, yBar + hBar, 's-quantum s-dash');
     svg.appendChild(hitLine); svg.appendChild(hitStub);
-    var hitLbl = S.text(0, yT - 14, 'A', 's-lbl-q', 'middle');
+    /* Parked inside the box: the update sets x every frame, but a middle-anchored
+       glyph left at x = 0 hangs half its width outside the viewBox until then. */
+    var hitLbl = S.text(x0, yT - 14, 'A', 's-lbl-q', 'middle');
     svg.appendChild(hitLbl);
     var flash = S.circle(0, yBar + hBar / 2, 6, null);
     flash.setAttribute('fill', 'none');
@@ -255,7 +278,7 @@
       var dxm = Math.max(1e-9, width) * 1e-3;
       var dp = C.hbar / (2 * dxm);
       var Tmin = dp * dp / (2 * C.me) / C.e;
-      rows[3].textContent = 'the price: Δp ≥ ħ/2Δx = ' + sci(dp) + ' kg m/s, so Δx Δp = ' +
+      rows[3].textContent = 'the price: Δp ≥ ħ/2Δx = ' + sci(dp) + ' kg m/s, so Δx Δp ≥ ' +
         sci(dxm * dp) + ' J s = ħ/2, and T ≥ ' + sci(Tmin) + ' eV';
       rows[4].textContent = 'width zero is not merely hard, it is forbidden: ' +
         '∫|δ(x−A)|² dx = ∞, and ⟨p²⟩ = ∞ along with it';
@@ -360,7 +383,9 @@
       });
       g.appendChild(S.poly(pts, 's-prob'));
       if (withDot) {
-        var xa = M.map(4.27, -10, 10, x + 10, x + w - 10);
+        /* The same A the collapse figure sampled, taken from the same draw
+           rather than written down again. */
+        var xa = M.map(prepared().hits[0], -HALF, HALF, x + 10, x + w - 10);
         g.appendChild(S.line(xa, yb, xa, yb - ht - 6, 's-quantum s-dash'));
         var dot = S.circle(xa, yb, 5.5, 's-fill-q');
         g.appendChild(dot);
@@ -431,7 +456,6 @@
       'A map of the debate: the Copenhagen interpretation at the top, the four standing ' +
       'objections to it below, and the two alternative interpretations the handout names, ' +
       'each labelled with the assumption it gives up.');
-    S.defsArrows(svg);
     root.appendChild(svg);
 
     var spine = 590;

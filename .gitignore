@@ -2,10 +2,12 @@ node_modules/
 dist/
 .verify/
 
-# Throwaway probes and measurement scripts.
+# Agent scratch. Probes, measurement scripts and glyph dumps keep landing at
+# the repo root, and a blanket "git add -A" has swept them into a commit twice.
 _*.mjs
-.*.mjs
 *.probe.mjs
+/.*
+!/.gitignore
 
 # Course content is not redistributable.
 # The handout carries: "© Unauthorized posting or distribution outside Harvard prohibited."
