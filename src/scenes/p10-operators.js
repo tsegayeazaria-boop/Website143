@@ -83,7 +83,7 @@
     svg.appendChild(gL);
     put(gL, 70, 104, 'LEFT SIDE     iℏ ∂ψ/∂t', 's-lbl-w', 'start', 13);
     var Ltext = [
-      'e^{i(k·r − ωt)} = e^{i k·r} · e^{−iωt}, and only the second factor sees t',
+      'e^{i(k·r − ωt)} = e^{i k·r} · e^{−iωt} — only the second factor sees t',
       '∂ψ/∂t = A e^{i k·r} (−iω) e^{−iωt} = (−iω) ψ(r,t)',
       'iℏ · (−iω) = −i²ℏω = +ℏω        because  i² = −1'
     ];
@@ -97,7 +97,7 @@
     svg.appendChild(gR);
     put(gR, 620, 104, 'RIGHT SIDE     −(ℏ²/2m) ∇²ψ', 's-lbl-w', 'start', 13);
     var Rtext = [
-      'k·r = kₓx + k_y y + k_z z, so each ∂/∂xⱼ pulls down i kⱼ',
+      'k·r = k₁x₁ + k₂x₂ + k₃x₃, so each ∂/∂xⱼ pulls down a factor i kⱼ',
       '∇ψ = i k ψ,  then  ∇²ψ = ∇·(i k ψ) = (i k)·(i k) ψ = −k² ψ',
       'k² here means k·k = |k|², a scalar — k is constant, so it slides out'
     ];
@@ -120,7 +120,7 @@
     var gBox = S.g({});
     svg.appendChild(gBox);
     card(gBox, 330, 362, 520, 64, 'var(--quantum)');
-    put(gBox, W / 2, 402, 'ℏω = ℏ²k²/2m         ω(k) = ℏk²/2m', 's-lbl-b', 'middle', 17);
+    put(gBox, W / 2, 402, 'ℏω = ℏ²k²/2m   ⟺   ω(k) = ℏk²/2m', 's-lbl-b', 'middle', 17);
     put(gBox, W / 2, 448,
       'and only then: the plane wave solves the free equation if and only if this holds',
       's-lbl', 'middle', 12);
@@ -208,7 +208,7 @@
       svg.appendChild(g);
       var h = 130;
       card(g, 70, yTop, 250, h);
-      card(g, 400, yTop, 210, h, tone === 'q' ? 'var(--quantum)' : 'var(--probability)');
+      card(g, 380, yTop, 250, h, tone === 'q' ? 'var(--quantum)' : 'var(--probability)');
       card(g, 690, yTop, 400, h, tone === 'q' ? 'var(--quantum)' : 'var(--probability)');
 
       put(g, 195, yTop - 10, 'the state goes in', 's-lbl', 'middle', 11);
@@ -218,15 +218,15 @@
       var wOut = S.path('', tone === 'q' ? 's-quantum' : 's-prob');
       g.appendChild(wIn); g.appendChild(wOut);
 
-      put(g, 195, yTop + h - 16, 'ψ = A e^{i(k·r − ωt)}', 's-lbl-w', 'middle', 12);
-      put(g, 505, yTop + 62, opStr, 's-lbl-b', 'middle', 20);
-      put(g, 505, yTop + 96, opSub, 's-lbl', 'middle', 11);
-      put(g, 890, yTop + 58, outStr, tone === 'q' ? 's-lbl-q' : 's-lbl-p', 'middle', 17);
-      put(g, 890, yTop + h - 16, outNum, 's-lbl', 'middle', 12);
+      put(g, 195, yTop + 108, 'ψ = A e^{i(k·r − ωt)}', 's-lbl-w', 'middle', 12);
+      put(g, 505, yTop + 58, opStr, 's-lbl-b', 'middle', 20);
+      put(g, 505, yTop + 92, opSub, 's-lbl', 'middle', 11);
+      put(g, 890, yTop + 86, outStr, tone === 'q' ? 's-lbl-q' : 's-lbl-p', 'middle', 17);
+      put(g, 890, yTop + 114, outNum, 's-lbl', 'middle', 12);
 
-      g.appendChild(S.arrow(svg, 326, yTop + h / 2, 394, yTop + h / 2, 'm'));
-      g.appendChild(S.arrow(svg, 616, yTop + h / 2, 684, yTop + h / 2, 'm'));
-      return { g: g, wIn: wIn, wOut: wOut, y: yTop + h / 2 - 14 };
+      g.appendChild(S.arrow(svg, 326, yTop + h / 2, 374, yTop + h / 2, 'm'));
+      g.appendChild(S.arrow(svg, 636, yTop + h / 2, 684, yTop + h / 2, 'm'));
+      return { g: g, wIn: wIn, wOut: wOut, y: yTop + 44 };
     }
 
     var mA = machine(130, 'iℏ ∂/∂t', 'differentiates the label t',
@@ -259,7 +259,7 @@
       var phase = api.reduced ? 1.2 : t * 1.6;
       function waveD(x0, x1, yc) {
         return S.polyD(S.sample(120, 0, 1, function (u) {
-          return [M.lerp(x0, x1, u), yc - 22 * Math.cos(u * 4.4 * M.TAU - phase)];
+          return [M.lerp(x0, x1, u), yc - 20 * Math.cos(u * 4.4 * M.TAU - phase)];
         }));
       }
       S.setD(mA.wIn, waveD(92, 298, mA.y));
@@ -312,7 +312,7 @@
     bad.setAttribute('fill', 'var(--fail)');
     bad.setAttribute('opacity', '0.07');
     svg.appendChild(bad);
-    var badLbl = put(svg, PX(0.28), yT + 18,
+    var badLbl = put(svg, PX(0.26), yT - 12,
       'v > c/2 beyond here: the non-relativistic formula is already false',
       's-lbl-f', 'start', 11);
 
@@ -332,16 +332,16 @@
       return [PX(u), PY(-u)];
     })));
 
-    var labP = put(svg, PX(1.24), PY(1.62), 'Schrödinger:  ℏω = ℏ²k²/2m', 's-lbl-q', 'end', 12);
-    var labL = put(svg, PX(1.5), PY(1.62), 'wave equation:  ω = +ck', 's-lbl-w', 'start', 12);
-    var labM = put(svg, PX(0.06), PY(-0.62),
-      'and ω = −ck as well: second order in t keeps both roots', 's-lbl-w', 'start', 11);
+    var labP = put(svg, PX(1.16), PY(1.72), 'Schrödinger:  ℏω = ℏ²k²/2m', 's-lbl-q', 'end', 12);
+    var labL = put(svg, PX(1.58), PY(1.05), 'wave equation:  ω = +ck', 's-lbl-w', 'end', 12);
+    var labM = put(svg, PX(0.51), PY(-0.45),
+      'and ω = −ck as well — second order in t keeps both roots', 's-lbl-w', 'start', 11);
 
     var cross = S.g({});
     svg.appendChild(cross);
     cross.appendChild(S.line(PX(1), yT, PX(1), yB, 's-axis s-dash'));
     cross.appendChild(S.circle(PX(1), PY(1), 5, 's-fill-i'));
-    put(cross, PX(1) + 10, PY(1) - 12, 'the only crossing', 's-lbl-b', 'start', 11);
+    put(cross, PX(1) + 12, PY(1) + 26, 'the only crossing', 's-lbl-b', 'start', 11);
 
     /* Right-hand commentary. */
     var side = [
@@ -353,12 +353,12 @@
       ['ω* = ck* = ' + sci(wStar) + ' rad/s', 's-lbl-b'],
       ['λ* = 2π/k* = ' + (lamStar * 1e12).toFixed(3) + ' pm', 's-lbl-b'],
       ['which is half the Compton wavelength,', 's-lbl'],
-      ['λ_C = h/mc = ' + (lamC * 1e12).toFixed(3) + ' pm', 's-lbl'],
+      ['h/mc = ' + (lamC * 1e12).toFixed(3) + ' pm', 's-lbl'],
       ['and there v = ℏk*/m = 2c, so the crossing', 's-lbl-f'],
       ['is spurious: Schrödinger died long before it', 's-lbl-f'],
       ['', 's-lbl'],
-      ['E = p²/2m    massive, non-relativistic', 's-lbl-q'],
-      ['E = pc       massless, photon-like', 's-lbl-w'],
+      ['E = p²/2m — massive, non-relativistic', 's-lbl-q'],
+      ['E = pc — massless, photon-like', 's-lbl-w'],
       ['one plane wave cannot satisfy both', 's-lbl-b'],
       ['', 's-lbl'],
       ['cos(k·r − ωt) solves the wave equation but', 's-lbl'],
@@ -490,7 +490,7 @@
     var reps = [
       '( p̂ ψ )(r,t)  =  −iℏ ∇ψ(r,t)',
       '( r̂ ψ )(r,t)  =  r ψ(r,t)',
-      '( V̂ ψ )(r,t)  =  V(r,t) ψ(r,t)        V is real, so V̂ is Hermitian'
+      '( V̂ ψ )(r,t)  =  V(r,t) ψ(r,t)   —   V is real, so V̂ is Hermitian'
     ].map(function (s, i) {
       return put(g3, 300, 392 + i * 28, s, 's-lbl-b', 'start', 13);
     });
@@ -792,17 +792,17 @@
     var steps = [
       ['1', 'write the classical Hamiltonian', 'H(p, r, t) = p²/2m + V(r, t)'],
       ['2', 'add what has no classical counterpart', 'spin, for one'],
-      ['3', 'promote the symbols to operators', 'p → p̂,    r → r̂']
+      ['3', 'promote the symbols to operators', 'p → p̂   and   r → r̂']
     ];
     var boxes = steps.map(function (st, i) {
       var g = S.g({});
       svg.appendChild(g);
-      var x = 70 + i * 355;
-      card(g, x, 88, 330, 118, 'var(--wave)');
-      put(g, x + 20, 116, st[0], 's-lbl-q', 'start', 16);
-      put(g, x + 165, 148, st[1], 's-lbl', 'middle', 12);
-      put(g, x + 165, 180, st[2], 's-lbl-b', 'middle', 13);
-      if (i < 2) g.appendChild(S.arrow(svg, x + 334, 147, x + 421, 147, 'm'));
+      var x = 70 + i * 370;
+      card(g, x, 88, 320, 118, 'var(--wave)');
+      put(g, x + 18, 116, st[0], 's-lbl-q', 'start', 16);
+      put(g, x + 160, 148, st[1], 's-lbl', 'middle', 12);
+      put(g, x + 160, 180, st[2], 's-lbl-b', 'middle', 13);
+      if (i < 2) g.appendChild(S.arrow(svg, x + 328, 147, x + 364, 147, 'm'));
       return g;
     });
 
@@ -831,22 +831,22 @@
     var frames = [];
     var rnd = M.rng(101011);
     [0, 1, 2].forEach(function (i) {
-      var x = 90 + i * 160;
+      var x = 90 + i * 180;
       var g = S.g({});
       gT.appendChild(g);
-      card(g, x, 500, 140, 100, i === 1 ? 'var(--probability)' : null);
+      card(g, x, 500, 130, 100, i === 1 ? 'var(--probability)' : null);
       var seed = 0.6 + rnd() * 0.8;
       var w = S.path('', 's-wave');
       g.appendChild(w);
       S.setD(w, S.polyD(S.sample(80, 0, 1, function (u) {
-        return [M.lerp(x + 12, x + 128, u),
-          550 - 26 * Math.exp(-Math.pow((u - 0.5) * 3.1, 2)) * Math.cos(u * 5.2 * M.TAU + i * seed)];
+        return [M.lerp(x + 10, x + 120, u),
+          556 - 22 * Math.exp(-Math.pow((u - 0.5) * 3.1, 2)) * Math.cos(u * 5.2 * M.TAU + i * seed)];
       })));
-      put(g, x + 70, 620, 't' + ['₁', '₂', '₃'][i], 's-lbl-b', 'middle', 12);
-      if (i < 2) g.appendChild(S.arrow(svg, x + 144, 550, x + 246, 550, 'q'));
+      put(g, x + 65, 620, 't' + ['₁', '₂', '₃'][i], 's-lbl-b', 'middle', 12);
+      if (i < 2) g.appendChild(S.arrow(svg, x + 138, 556, x + 174, 556, 'q'));
       frames.push(g);
     });
-    var inner = S.arrow(svg, 200, 512, 240, 512, 'p');
+    var inner = S.arrow(svg, 102, 518, 206, 518, 'p');
     gT.appendChild(inner);
     var evoLbl = put(gT, 90, 648,
       'evolution carries you along this row; the operators act within one box',

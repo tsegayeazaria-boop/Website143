@@ -8,6 +8,7 @@
    ========================================================================= */
 
 import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -318,6 +319,21 @@ const sceneFiles = readdirSync(join(ROOT, 'src', 'scenes'))
   .filter((f) => f.endsWith('.js'))
   .filter((f) => DOC.scenes(f))
   .sort();
+/* Parse every scene file on its own before concatenating them. A syntax error
+   in one file otherwise takes down the whole inlined bundle at runtime, and the
+   only symptom is that no scene mounts. The classic cause is a block comment
+   containing a "*" followed by a "/", as in a derivative written d(psi-star)/dx,
+   which closes the comment early. */
+for (const f of sceneFiles) {
+  try {
+    execFileSync(process.execPath, ['--check', join(ROOT, 'src', 'scenes', f)], { stdio: 'pipe' });
+  } catch (err) {
+    console.error('\nsrc/scenes/' + f + ' does not parse:\n' +
+                  String(err.stderr || err.message).trim() + '\n');
+    process.exit(1);
+  }
+}
+
 const sceneSrc = sceneFiles
   .map((f) => '/* --- scenes/' + f + ' --- */\n' + readFileSync(join(ROOT, 'src', 'scenes', f), 'utf8'))
   .join('\n');

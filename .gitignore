@@ -4,6 +4,7 @@ dist/
 
 # Throwaway probes and measurement scripts.
 _*.mjs
+.*.mjs
 
 # Course content is not redistributable.
 # The handout carries: "© Unauthorized posting or distribution outside Harvard prohibited."
