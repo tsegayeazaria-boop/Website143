@@ -281,10 +281,15 @@ h3 {
   margin-block: 0 0.75rem;
 }
 h4 {
-  font-size: 1.0625rem;
-  line-height: 1.4;
+  font-size: 1.125rem;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.005em;
   color: var(--ink-bright);
 }
+/* In the reading flow an h4 needs air above it; inside a stage panel it is
+   already the first thing in its own box, so leave those alone. */
+.band > .measure > h4 { margin-block: 2.25rem 0.6rem; }
 
 .kicker {
   display: block;

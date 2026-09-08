@@ -27,12 +27,20 @@ const DOCS = {
   atlas: {
     content: './content/index.js',
     out: 'index.html',
+    tag: 'Physics 143a &middot; Lecture 1',
     scenes: (f) => /^(00-hero|1[1-7])/.test(f)
   },
   math: {
     content: './content/math/index.js',
     out: 'math.html',
+    tag: 'Physics 143a &middot; Math toolkit',
     scenes: (f) => /^m[0-9]/.test(f)
+  },
+  pre2: {
+    content: './content/pre2/index.js',
+    out: 'pre2.html',
+    tag: 'Physics 143a &middot; Pre-lecture notes 2',
+    scenes: (f) => /^p[0-9]/.test(f)
   }
 };
 
@@ -417,7 +425,7 @@ const html = '<title>' + esc(doc.title) + '</title>\n' +
 '<link rel="stylesheet" href="' + FONTS + '">\n' +
 '<style>\n' + css + '\n/* MathJax SVG output stylesheet, emitted at build time. */\n' + mjCss + '\n</style>\n\n' +
 '<div class="toolbar">\n' +
-'  <span>Physics 143a &middot; Lecture 1</span>\n' +
+'  <span>' + DOC.tag + '</span>\n' +
 '  <span class="toolbar__spacer"></span>\n' +
 '  <span class="toolbar__now"></span>\n' +
 '  <button class="theme-toggle" type="button">Light</button>\n' +
