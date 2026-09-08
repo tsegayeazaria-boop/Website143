@@ -680,24 +680,27 @@
       'not a constant, and the shapes differ — g is not an eigenfunction of Ĥ',
       's-lbl-b', 'start', 12);
 
-    var diff = put(gR, 540, 542,
-      'what the matrix picture does not have: the vectors are functions, the operator is a ' +
-      'derivative,', 's-lbl', 'start', 11);
+    var diff = put(gR, 540, 544,
+      'what the matrix picture does not have: the vectors are functions and',
+      's-lbl', 'start', 11);
     var diff2 = put(gR, 540, 562,
-      'the space has no finite basis, and the spectrum here is continuous rather than a list',
+      'the operator is a derivative, the space has no finite basis, and here',
+      's-lbl', 'start', 11);
+    var diff3 = put(gR, 540, 580,
+      'the spectrum is a continuum rather than a list of numbers',
       's-lbl', 'start', 11);
 
     /* ---------------- the honest caveat ---------------- */
-    svg.appendChild(S.line(60, 592, 1120, 592, 's-axis'));
+    svg.appendChild(S.line(60, 598, 1120, 598, 's-axis'));
     var gC = S.g({});
     svg.appendChild(gC);
-    put(gC, 60, 620, 'and one thing to be careful about', 's-lbl-q', 'start', 13);
+    put(gC, 60, 624, 'and one thing to be careful about', 's-lbl-q', 'start', 13);
     [
       'iℏ ∂ψ/∂t = Ĥψ is satisfied by every physical state, so it singles nothing out; it is not the',
       'eigenvalue equation. the eigenvalue equation is Ĥφ(r) = E φ(r) with E a number, and only',
       'special φ satisfy it. substituting E → iℏ∂/∂t into Eψ = Ĥψ gives that same equation back.'
     ].forEach(function (s, i) {
-      put(gC, 60, 648 + i * 24, s, 's-lbl', 'start', 12);
+      put(gC, 60, 650 + i * 22, s, 's-lbl', 'start', 12);
     });
 
     /* A two-energy superposition: the spread computed two independent ways. */
@@ -709,10 +712,10 @@
 
     var gS = S.g({});
     svg.appendChild(gS);
-    put(gS, 60, 724, 'superpose E₁ = ' + E1.toFixed(2) + ' eV and E₂ = ' + E2.toFixed(2) +
+    put(gS, 60, 722, 'superpose E₁ = ' + E1.toFixed(2) + ' eV and E₂ = ' + E2.toFixed(2) +
       ' eV with weights ' + wa.toFixed(2) + ' and ' + wb.toFixed(2) + ':   ⟨E⟩ = ' +
       mean.toFixed(3) + ' eV', 's-lbl-q', 'start', 12);
-    put(gS, 60, 746, 'ΔE = √(⟨E²⟩ − ⟨E⟩²) = ' + spread.toFixed(3) + ' eV = √(ab)|E₁ − E₂| = ' +
+    put(gS, 60, 744, 'ΔE = √(⟨E²⟩ − ⟨E⟩²) = ' + spread.toFixed(3) + ' eV = √(ab)|E₁ − E₂| = ' +
       spread2.toFixed(3) + ' eV, so no single E exists', 's-lbl-q', 'start', 12);
 
     return function (p) {
@@ -749,6 +752,7 @@
       S.op(r2b, M.beat(p, 0.62, 0.70));
       S.op(diff, M.beat(p, 0.68, 0.76));
       S.op(diff2, M.beat(p, 0.71, 0.79));
+      S.op(diff3, M.beat(p, 0.73, 0.81));
       S.op(gC, M.beat(p, 0.76, 0.86));
       S.op(gS, M.beat(p, 0.88, 0.97));
     };
