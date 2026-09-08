@@ -66,11 +66,26 @@
     };
   })();
 
-  /* Small formatting helper: 1.234e-6 as "1.23 × 10⁻⁶" style, ASCII exponent. */
+  /* Small formatting helper: 1.234e-6 printed as 1.23 × 10⁻⁶. */
+  var SUPS = {
+    '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
+    '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻'
+  };
   function sci(v, digits) {
+    if (!isFinite(v)) return '∞';
     if (v === 0) return '0';
-    var s = v.toExponential(digits == null ? 2 : digits);
-    return s.replace('e+', ' × 10^').replace('e-', ' × 10^−');
+    var parts = v.toExponential(digits == null ? 2 : digits).split('e');
+    var exp = parts[1].replace('+', ''), out = '', i;
+    for (i = 0; i < exp.length; i++) out += SUPS[exp.charAt(i)] || exp.charAt(i);
+    return parts[0].replace('-', '−') + ' × 10' + out;
+  }
+
+  /* Signed real part plus signed imaginary part, so a negative imaginary part
+     does not print as "+ −0.053". */
+  function cplx(re, im, digits) {
+    var d = digits == null ? 6 : digits;
+    return re.toFixed(d).replace('-', '−') + (im < 0 ? ' − ' : ' + ') +
+      Math.abs(im).toFixed(d) + ' i';
   }
 
   /* --------------------------------------------- 1. the conjugate equation --- */
@@ -156,7 +171,7 @@
       'both right-hand signs flip here, and this is the form the next step needs',
       's-lbl', 'start'));
     gPrime.appendChild(S.text(60, 478,
-      'reaching for (1.9.2) instead makes the Laplacian terms add and the derivation dies',
+      'using (1.9.2) instead makes the Laplacian terms add — no divergence',
       's-lbl-f', 'start'));
 
     /* If V were complex the potential terms would not cancel. How fast would
@@ -450,17 +465,21 @@
       }
       return [sr, si];
     }
-    /* psi* L - psi L*  =  2i Im(psi* L), written out so the algebra is visible. */
+    function cmul(a, b) { return [a[0] * b[0] - a[1] * b[1], a[0] * b[1] + a[1] * b[0]]; }
+    function cconj(a) { return [a[0], -a[1]]; }
+    function csub(a, b) { return [a[0] - b[0], a[1] - b[1]]; }
+
+    /* psi* (Laplacian psi) - psi (Laplacian psi*), as an honest subtraction of
+       two complex products, so the vanishing real part is arithmetic and not
+       an assertion. */
     function lhsAt(x, y, z) {
       var q = psi(x, y, z), L = lap(x, y, z);
-      var ar = q[0] * L[0] + q[1] * L[1], ai = q[0] * L[1] - q[1] * L[0];
-      return [0, 2 * ai].map(function (v, i) { return i === 0 ? ar - ar : v; });
+      return csub(cmul(cconj(q), L), cmul(q, cconj(L)));
     }
     /* F_i = psi* d_i psi - psi d_i psi*, then take its divergence. */
     function Fcomp(i, x, y, z) {
       var g = grad(x, y, z)[i], q = psi(x, y, z);
-      var ar = q[0] * g[0] + q[1] * g[1], ai = q[0] * g[1] - q[1] * g[0];
-      return [ar - ar, 2 * ai];
+      return csub(cmul(cconj(q), g), cmul(q, cconj(g)));
     }
     function rhsAt(x, y, z) {
       var sr = 0, si = 0, i, a, b, d;
@@ -496,8 +515,8 @@
     var nC = S.text(60, 542, '', 's-lbl', 'start');
     gNum.appendChild(nC);
 
-    nA.textContent = 'ψ*∇²ψ − ψ∇²ψ*      = ' + LHS[0].toFixed(6) + ' + ' + LHS[1].toFixed(6) + ' i';
-    nB.textContent = '∇·( ψ*∇ψ − ψ∇ψ* )  = ' + RHS[0].toFixed(6) + ' + ' + RHS[1].toFixed(6) + ' i';
+    nA.textContent = 'ψ*∇²ψ − ψ∇²ψ*      = ' + cplx(LHS[0], LHS[1]);
+    nB.textContent = '∇·( ψ*∇ψ − ψ∇ψ* )  = ' + cplx(RHS[0], RHS[1]);
     nC.textContent = 'difference = ' + sci(Math.abs(LHS[1] - RHS[1]), 1) +
       ', the truncation error of the differencing';
 
@@ -565,13 +584,14 @@
     svg.appendChild(S.text(90, 64,
       'P(x,t) = |ψ(x,t)|², from an exact superposition of plane waves', 's-lbl-p', 'start'));
 
-    /* Sign-of-dP/dt shading, one thin bar per sample. */
-    var NB = 96, bars = [], ib;
+    /* Sign-of-dP/dt shading, one thin bar per sample of the curve. */
+    var NS = 160;
+    var NB = NS, bars = [], ib;
     var gBars = S.g({});
     svg.appendChild(gBars);
     var bw = (x1 - x0) / NB;
     for (ib = 0; ib < NB; ib++) {
-      var rb = S.rect(x0 + ib * bw, yB, bw + 0.6, 0, null);
+      var rb = S.rect(x0 + ib * bw, yB, bw + 0.8, 0, null);
       rb.setAttribute('fill', 'var(--fail)');
       rb.setAttribute('fill-opacity', '0');
       gBars.appendChild(rb);
@@ -631,7 +651,6 @@
       return [PX(x), PY(PK.P(x, 0))];
     })));
 
-    var NS = 160;
     return function (p) {
       var t = M.easeInOut(M.beat(p, 0.08, 0.94)) * 1.5;
 
@@ -652,11 +671,10 @@
       for (i = 0; i <= NS; i++) pts.push([PX(xs[i]), PY(Ps[i])]);
       S.setD(curve, S.polyD(pts));
 
-      /* Shade under the curve by the sign of dP/dt at that x. */
+      /* Shade under the curve by the sign of dP/dt at that x, reusing the
+         samples already taken rather than evaluating psi a second time. */
       for (ib = 0; ib < NB; ib++) {
-        var xb = xL + (xR - xL) * (ib + 0.5) / NB;
-        var pb = PK.P(xb, t), db = PK.dPdt(xb, t);
-        var yb = PY(pb);
+        var db = Ds[ib], yb = PY(Ps[ib]);
         bars[ib].setAttribute('y', String(yb));
         bars[ib].setAttribute('height', String(Math.max(0, yB - yb)));
         bars[ib].setAttribute('fill', db < 0 ? 'var(--fail)' : 'var(--wave)');
@@ -677,16 +695,15 @@
           String(0.15 + 0.85 * M.clamp(Math.abs(ja) / mxJ, 0, 1)));
       }
 
-      S.setD(dP, S.polyD(S.sample(NS, 0, 1, function (u, ii) {
-        var k = Math.round(u * NS);
-        return [PX(xs[k]), DY(Ds[k])];
-      })));
-      S.setD(dJ, S.polyD(S.sample(NS, 0, 1, function (u) {
-        var k = Math.round(u * NS);
-        return [PX(xs[k]), DY(-Gs[k])];
-      })));
+      var dPpts = [], dJpts = [];
+      for (i = 0; i <= NS; i++) {
+        dPpts.push([PX(xs[i]), DY(Ds[i])]);
+        dJpts.push([PX(xs[i]), DY(-Gs[i])]);
+      }
+      S.setD(dP, S.polyD(dPpts));
+      S.setD(dJ, S.polyD(dJpts));
 
-      var totalP = PK.total(t, xL - 2, xR + 2, 900);
+      var totalP = PK.total(t, xL - 2.5, xR + 2.5, 420);
       read1.textContent = 'time t = ' + t.toFixed(2) +
         '        ∫ P dx = ' + totalP.toFixed(6) +
         '        peak of P = ' + Math.max.apply(null, Ps).toFixed(4);
@@ -750,7 +767,8 @@
     svg.appendChild(gFlow);
     var dots = [], rnd = M.rng(90917), idot;
     for (idot = 0; idot < 120; idot++) {
-      var dd = S.circle(0, 0, 2.2, 's-fill-p');
+      var dd = S.circle(0, 0, 2.2, null);
+      dd.setAttribute('fill', 'var(--probability)');
       dd.setAttribute('fill-opacity', '0.7');
       gFlow.appendChild(dd);
       dots.push({ el: dd, u: rnd(), y: 322 + rnd() * 40 });
@@ -906,14 +924,14 @@
       }
       return s * hh / 3;
     }
-    var RMAX = 5, PXR = 40;
+    var RMAX = 5, PXR = 34;
     var fluxMax = 0, jMax = Jr(0), ii;
     for (ii = 1; ii <= 500; ii++) fluxMax = Math.max(fluxMax, flux(RMAX * ii / 500));
 
     svg.appendChild(S.text(60, 62, 'a normalised state carrying an outward current',
       's-lbl-p', 'start'));
 
-    var cx = 280, cy = 300;
+    var cx = 280, cy = 288;
     var gBlob = S.g({});
     svg.appendChild(gBlob);
     var ir;
@@ -939,7 +957,7 @@
       gSphere.appendChild(ra);
       rays.push(ra);
     }
-    var rlbl = S.text(cx, 546, '', 's-lbl-q', 'middle');
+    var rlbl = S.text(cx, 508, '', 's-lbl-q', 'middle');
     gSphere.appendChild(rlbl);
 
     /* Two stacked plots on the right: what is inside, and what crosses out. */
@@ -980,7 +998,7 @@
     S.setD(flxPath, S.polyD(S.sample(200, 0, RMAX, function (R) {
       return [RX(R), M.map(flux(R) / fluxMax, 0, 1.08, fB, fT)];
     })));
-    gFlx.appendChild(S.text(px1, 466, 'area ∝ R² rising · |J_r| falling · product in amber',
+    gFlx.appendChild(S.text(px1, 482, 'area ∝ R² rising · |J_r| falling · product in amber',
       's-lbl', 'end'));
     var flxMark = S.circle(RX(1), fB, 4.5, 's-fill-q');
     gFlx.appendChild(flxMark);
@@ -994,11 +1012,11 @@
 
     var gConc = S.g({});
     svg.appendChild(gConc);
-    gConc.appendChild(S.text(60, 566,
+    gConc.appendChild(S.text(60, 552,
       'd/dt ∫_Ω P d³r = − ∮_∂Ω J·da     for any fixed region Ω', 's-lbl-b', 'start'));
-    gConc.appendChild(S.text(60, 590,
+    gConc.appendChild(S.text(60, 576,
       'the probability inside changes only through what crosses the boundary', 's-lbl', 'start'));
-    var conc = S.text(60, 618, 'as R → ∞ the flux → 0, so   d/dt ∫ P d³r = 0        (1.9.7)',
+    var conc = S.text(60, 606, 'as R → ∞ the flux → 0, so   d/dt ∫ P d³r = 0        (1.9.7)',
       's-lbl-q', 'start');
     conc.setAttribute('font-size', '12');
     gConc.appendChild(conc);
@@ -1115,14 +1133,14 @@
     var gTan = S.g({});
     svg.appendChild(gTan);
     var slope = dJdx(0, 0);
-    var dxTan = 1.1;
+    var dxTan = 0.55;
     var tanD = 'M' + PX(-dxTan) + ' ' + JY(J(0, 0) - slope * dxTan) +
       'L' + PX(dxTan) + ' ' + JY(J(0, 0) + slope * dxTan);
     var tan = S.path(tanD, 's-quantum');
     tan.setAttribute('stroke-width', '2');
     gTan.appendChild(tan);
     gTan.appendChild(S.circle(PX(0), JY(J(0, 0)), 4.5, 's-fill-q'));
-    gTan.appendChild(S.text(PX(dxTan) + 12, JY(J(0, 0) + slope * dxTan) - 6,
+    gTan.appendChild(S.text(80, 560,
       'slope > 0: more current leaves to the right than arrives from the left',
       's-lbl-q', 'start'));
 
