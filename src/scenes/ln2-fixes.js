@@ -82,18 +82,16 @@
     divider.setAttribute('stroke-width', 1);
     svg.appendChild(divider);
 
-    /* Left: two wafers and their roses. */
-    function slab() {
-      var el = ln.path('', null);
-      el.setAttribute('stroke-width', 1.3);
-      svg.appendChild(el);
-      return el;
-    }
-    var slabA = slab(), slabB = slab();
-    slabA.setAttribute('fill', S.mixHex(pal.vd, pal.wafer, 0.12));
-    slabA.setAttribute('stroke', S.mixHex(pal.vd, pal.wafer, 0.4));
-    slabB.setAttribute('fill', S.mixHex(pal.vd, pal.wafer, 0.17));
-    slabB.setAttribute('stroke', S.mixHex(pal.vd, pal.wafer, 0.62));
+    /* One ground plane, not two. Scene 5 already established what the wafer
+       is; this half is about the property changing, and the rose is that
+       property, so the swap happens on the rose and the slab stays put as
+       context. It was two sliding slabs, which made the busiest frame in the
+       piece busier for nothing. */
+    var slab = ln.path('');
+    slab.setAttribute('stroke-width', 1.3);
+    slab.setAttribute('fill', S.mixHex(pal.vd, pal.wafer, 0.1));
+    slab.setAttribute('stroke', S.mixHex(pal.vd, pal.wafer, 0.34));
+    svg.appendChild(slab);
 
     var roseA = ln.path('', null);
     roseA.setAttribute('fill', 'none');
@@ -139,19 +137,13 @@
       /* ---- left: buy a different crystal ---- */
       var slide = M.smooth(M.beat(q, 0.12, 0.62));
       var LC = lay.left, LS = LC.s;
-      function flA(u, v) {
+      function fl(u, v) {
         return [LC.cx + (u * e1.x + v * e2.x) * LS,
-                LC.cy + (u * e1.y + v * e2.y) * LS + slide * 210];
-      }
-      function flB(u, v) {
-        return [LC.cx + (u * e1.x + v * e2.x) * LS,
-                LC.cy + (u * e1.y + v * e2.y) * LS + (1 - slide) * -230];
+                LC.cy + (u * e1.y + v * e2.y) * LS];
       }
       var R = 1.7;
-      S.setD(slabA, S.polyD([flA(-R, -R), flA(R, -R), flA(R, R), flA(-R, R)]) + ' Z');
-      S.setD(slabB, S.polyD([flB(-R, -R), flB(R, -R), flB(R, R), flB(-R, R)]) + ' Z');
-      S.op(slabA, (1 - slide) * 0.85);
-      S.op(slabB, slide);
+      S.setD(slab, S.polyD([fl(-R, -R), fl(R, -R), fl(R, R), fl(-R, R)]) + ' Z');
+      S.op(slab, 0.9);
       /* Both roses share one centre and one scale, so the only difference the
          reader sees is their shape. The standard cut's rose stays behind as a
          dim reference instead of leaving with its wafer, which is what makes

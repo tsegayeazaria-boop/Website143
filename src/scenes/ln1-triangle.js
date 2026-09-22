@@ -36,13 +36,14 @@
      a circular cone; unequal ones give ellipses; past the threshold the low
      rings stop existing, which is the gap. */
   ln.conePanel = function (parent, pal) {
-    /* Measured up from the band edge, not from zero, so the stack of rings
-       survives once a gap opens instead of disappearing under it: what changes
-       then is the void between the upper and lower sheets, whose height is the
-       gap. Kept well below the van Hove saddle, where a constant-energy curve
-       stops being a loop around one Dirac point and joins its neighbour;
-       anything that still fails to close is dropped below. */
-    var BASE = [0.12, 0.30, 0.52];
+    /* Ring energies are fractions of the highest one that still closes into a
+       loop around this Dirac point, found per frame. A fixed ladder does not
+       work: near the merge the loops shrink to nothing, and near the van Hove
+       saddle they stop being loops at all, so fixed energies either draw
+       nothing or draw a curve that belongs to both cones at once. Measured up
+       from the band edge rather than from zero, so the stack survives once a
+       gap opens and what changes is the void beneath it. */
+    var FRAC = [0.22, 0.52, 0.86];
     var NRAY = 60;
     var RMAX = 0.72;
     var g = S.g();
@@ -59,7 +60,7 @@
     g.appendChild(edge);
 
     var rings = [], i, j, sgn;
-    for (i = 0; i < BASE.length; i++) {
+    for (i = 0; i < FRAC.length; i++) {
       for (sgn = 0; sgn < 2; sgn++) {
         for (j = 0; j < 2; j++) {
           var r = ln.path('');
@@ -94,8 +95,13 @@
          radius of the largest ring. */
       var span = L.KR / 2 + 0.46;
       KS = rect.w * 0.44 / span;
-      /* Equal scales on k and E, so the slope drawn is the group velocity. */
-      ES = KS;
+      /* The energy axis is exaggerated by a constant factor. The rings have to
+         stay near the Dirac point to be circular rather than trigonally warped,
+         which makes them small, and at equal scales the cone would then be too
+         shallow to read as one. The factor is the same in every scene, so what
+         the reader compares between them -- round against elliptical, touching
+         against gapped -- is unaffected. */
+      ES = KS * 1.8;
       X0 = rect.x + rect.w / 2;
       Y0 = rect.y + rect.h * 0.5;
     }
@@ -149,15 +155,39 @@
         /* One contour per level per cone. |h(-k)| = |h(k)| for real couplings,
            so the second cone is the first reflected through the merge point;
            tracing one and reflecting it is exact, not an approximation. */
+        /* A ring belongs to this cone only for as long as it closes without
+           reaching the other one. As the two Dirac points approach, a curve of
+           constant energy around one of them stops being a loop around one cone
+           and starts wrapping towards its partner, so both the reach and the
+           energy spacing are tied to their separation: the cone shrinks into the
+           merge, which is what actually happens, instead of the contour drawing
+           a scribble across both points. */
+        var sep = gapless
+          ? Math.sqrt((pair[0].kx - pair[1].kx) * (pair[0].kx - pair[1].kx) +
+                      (pair[0].ky - pair[1].ky) * (pair[0].ky - pair[1].ky))
+          : Infinity;
+        /* Stop a ray before it can reach the other cone, so a ring stays this
+           cone's own. As the two points converge the window closes with them
+           and the cone visibly collapses into the merge. */
+        var reach = Math.max(0.10, Math.min(RMAX, 0.46 * sep));
+
+        /* Largest energy above the band edge whose contour still closes, then
+           held below the van Hove scale. Closing is not enough on its own: a
+           curve near the saddle is still a loop but a trigonally warped one,
+           and drawn as a cone ring it reads as a blob rather than as a cone. */
+        var lo = 0, hi = 0.9, it;
+        for (it = 0; it < 13; it++) {
+          var mid = (lo + hi) / 2;
+          if (L.contour(kappa, centres[0], half + mid, 24, reach)) lo = mid; else hi = mid;
+        }
+        var kmin = Math.min(Math.abs(kappa[0]), Math.abs(kappa[1]), Math.abs(kappa[2]));
+        var top = Math.max(0.02, Math.min(lo, 0.34 * kmin));
+
         var traced = {}, levelOf = {};
-        for (var li = 0; li < BASE.length; li++) {
-          var lev = half + BASE[li];
+        for (var li = 0; li < FRAC.length; li++) {
+          var lev = half + top * FRAC[li];
           levelOf[li] = lev;
-          var c = L.contour(kappa, centres[0], lev, NRAY, RMAX);
-          /* A contour that runs off the window is not a closed loop around this
-             Dirac point, so it is not part of this cone. Drop it. */
-          if (c && c.some(function (q) { return q.clipped; })) c = null;
-          traced[li] = c;
+          traced[li] = L.contour(kappa, centres[0], lev, NRAY, reach);
         }
 
         rings.forEach(function (r) {
@@ -175,7 +205,7 @@
                              : S.mixHex(pal.bal, pal.over, 0.7);
           r.el.setAttribute('stroke', tone);
           var band = M.clamp(reveal * 4 - r.li * 0.7, 0, 1);
-          S.op(r.el, (0.5 + 0.4 * (1 - r.li / BASE.length)) * band);
+          S.op(r.el, (0.5 + 0.4 * (1 - r.li / FRAC.length)) * band);
           if (!gapless && r.pt === 1) S.op(r.el, 0);
         });
 

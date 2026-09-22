@@ -195,37 +195,59 @@
     };
   };
 
-  /* A constant-energy contour, traced by bisecting |h| along rays from a centre.
-     Circular when the three couplings match, elliptical when they do not, which
-     is the anisotropic group velocity made visible. Returns null when the level
-     lies below the band edge, which is how a gap shows up: the low contours
-     simply stop existing. */
+  /* A constant-energy contour around a Dirac point, traced ray by ray.
+
+     The trace follows the curve: each ray looks for its crossing next to the
+     previous ray's, and only falls back to a full outward march when that
+     window holds none. Starting every ray at the centre instead would let the
+     trace hop onto a different branch, because on the way towards the
+     neighbouring Dirac point |h| dips again, and the first crossing found there
+     belongs to that cone rather than this one -- which drew a kink.
+
+     Returns null when no closed loop exists at this level, which is how a gap
+     shows up: below the band edge there is simply nothing to trace. */
   L.contour = function (kappa, centre, level, nRay, rMax) {
-    var pts = [], i, j;
     if (L.energy(centre.kx, centre.ky, kappa) > level) return null;
-    var STEPS = 48;
-    for (i = 0; i < nRay; i++) {
-      var th = i / nRay * Math.PI * 2;
-      var cx = Math.cos(th), cy = Math.sin(th);
-      /* March outward to bracket the first crossing. |h| is not monotonic all
-         the way out -- it dips again at the neighbouring zone corner -- so the
-         bracket has to be found rather than assumed. */
-      var lo = 0, hi = -1, prev = 0;
-      for (j = 1; j <= STEPS; j++) {
-        var rr = rMax * j / STEPS;
-        if (L.energy(centre.kx + rr * cx, centre.ky + rr * cy, kappa) >= level) { lo = prev; hi = rr; break; }
+
+    var at = function (r, cx, cy) {
+      return L.energy(centre.kx + r * cx, centre.ky + r * cy, kappa);
+    };
+
+    /* Bisect a bracket known to straddle the level. -1 when it does not. */
+    var cross = function (cx, cy, lo, hi) {
+      if ((at(lo, cx, cy) < level) === (at(hi, cx, cy) < level)) return -1;
+      for (var k = 0; k < 24; k++) {
+        var mid = (lo + hi) / 2;
+        if (at(mid, cx, cy) < level) lo = mid; else hi = mid;
+      }
+      return (lo + hi) / 2;
+    };
+
+    /* First crossing going out from the centre. */
+    var scan = function (cx, cy) {
+      var prev = 0, STEPS = 64, k;
+      for (k = 1; k <= STEPS; k++) {
+        var rr = rMax * k / STEPS;
+        if (at(rr, cx, cy) >= level) return cross(cx, cy, prev, rr);
         prev = rr;
       }
-      /* No crossing inside the window: the contour runs past the panel edge. */
-      if (hi < 0) { lo = rMax; hi = rMax; }
-      for (j = 0; j < 24; j++) {
-        var mid = (lo + hi) / 2;
-        if (L.energy(centre.kx + mid * cx, centre.ky + mid * cy, kappa) < level) lo = mid;
-        else hi = mid;
+      return -1;
+    };
+
+    var pts = [], last = -1, i;
+    for (i = 0; i < nRay; i++) {
+      var th = i / nRay * Math.PI * 2;
+      var cx = Math.cos(th), cy = Math.sin(th), r = -1;
+      if (last > 0) {
+        r = cross(cx, cy, Math.max(1e-5, last * 0.55), Math.min(rMax, last * 1.7));
       }
-      var r = (lo + hi) / 2;
-      pts.push({ kx: centre.kx + r * cx, ky: centre.ky + r * cy, r: r, theta: th, clipped: r >= rMax - 1e-9 });
+      if (r < 0) r = scan(cx, cy);
+      if (r < 0) return null;
+      last = r;
+      pts.push({ kx: centre.kx + r * cx, ky: centre.ky + r * cy, r: r, theta: th });
     }
+    /* A loop has to come back to where it started. */
+    if (Math.abs(pts[0].r - last) > 0.5 * Math.max(pts[0].r, last)) return null;
     return pts;
   };
 
