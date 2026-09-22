@@ -1,21 +1,26 @@
 # Physics 143a Derivation Atlas — build system
 
-Build tooling and scroll engine for a single-page, scroll-driven walkthrough of
-Physics 143a (Quantum Mechanics I) Lecture 1, in which every equation is derived
-step by step and every step gets its own animated diagram.
+Build tooling and scroll engine for single-page, scroll-driven physics
+explainers. Three documents walk through Physics 143a (Quantum Mechanics I)
+Lecture 1, deriving every equation step by step and giving every step its own
+animated diagram. A fourth, `linbo3`, is unrelated to the course: it is a visual
+argument about lattice anisotropy on lithium niobate.
 
 ## What is here, and what is not
 
 This repository contains the **machinery**: the build script, the verification
-harness, the scroll runtime, and the ~59 scene modules that draw the physics.
+harness, the scroll runtime, and the scene modules that draw the physics.
 
 It does **not** contain `content/`, which holds the prose, the equation source,
-the exercise statements and the worked solutions. That material derives from a
-course handout marked *"Unauthorized posting or distribution outside Harvard
-prohibited"*, so it is gitignored and stays out of a public repository. The
-finished site is published privately instead.
+the exercise statements and the worked solutions for the three course documents.
+That material derives from a course handout marked *"Unauthorized posting or
+distribution outside Harvard prohibited"*, so it is gitignored and stays out of a
+public repository. The finished site is published privately instead.
 
 `node build.mjs` exits with an explanatory message if `content/` is absent.
+
+The lithium niobate page carries no course material, so its content module is
+committed, under `content-open/`. It builds and verifies from a clean clone.
 
 ## Layout
 
@@ -27,17 +32,68 @@ src/engine/
   math.js           numerics: Newton solver, Planck/Rayleigh-Jeans, sinc^2, PRNG, constants
   svg.js            SVG construction helpers, arrow markers, sampling, canvas fitting
   scroll.js         one rAF loop; hands every visible scene a 0 -> 1 progress value
+  lattice.js        honeycomb tight binding: bands, Dirac points, the gap
 src/scenes/*.js     one file per group of scenes; each registers via A.scene(id, fn)
 content/            gitignored; see above
+content-open/       content that is redistributable, so it is committed
 ```
+
+## Documents
+
+| name | output | content | scene prefix |
+|---|---|---|---|
+| `atlas` | `index.html` | `content/index.js` | `00-hero`, `1*` |
+| `math` | `math.html` | `content/math/index.js` | `m*` |
+| `pre2` | `pre2.html` | `content/pre2/index.js` | `p*` |
+| `linbo3` | `linbo3.html` | `content-open/linbo3/index.js` | `ln*` |
+
+A document is declared in the `DOCS` map in `build.mjs` and named again in the
+one in `verify.mjs`. Scene files are assigned to a document by a regex on their
+filename, so a new document needs a prefix no other document claims.
+
+`linbo3` sets three keys the course pages do not. `chrome: false` drops the
+toolbar and the progress rail, which between them would put more words on screen
+than that piece is allowed. `wordCap` fails the build if the text over its
+figures exceeds its budget. `doc` puts a `data-doc` attribute on the root
+element, which is what scopes that page's own colour tokens; the course pages
+emit byte-identical output to before it existed.
 
 ## Build
 
 ```sh
 npm install
-node build.mjs      # -> dist/index.html   (single self-contained file)
-node verify.mjs     # -> .verify/*.png plus pass/fail checks
+node build.mjs           # -> dist/index.html   (single self-contained file)
+node verify.mjs          # -> .verify/*.png plus pass/fail checks
+
+node build.mjs linbo3 && node verify.mjs linbo3
 ```
+
+Both scripts take a document name and default to `atlas`.
+
+### The lattice page
+
+`linbo3` argues one thing: a honeycomb lattice of resonant pillars needs its
+three bond directions to be equivalent, and lithium niobate will not let them
+be. Ten scenes, almost no words, and the text budget enforced at build time.
+
+Its mathematics lives in `src/engine/lattice.js` and is exact rather than
+illustrative. A Dirac point exists where three coupling phasors close into a
+triangle, so it exists exactly when no coupling exceeds the other two together;
+past that the gap is twice the shortfall. Both the stick that fails to close and
+the gap in the cone are driven by the one `diracMargin` value per frame, so they
+cannot disagree, and `build.mjs` checks the closed forms for the gap width and
+the Dirac point positions against a brute-force minimum of `|h(k)|` over the
+zone.
+
+One correction worth recording: the closure condition is a triangle inequality
+on the coupling **magnitudes**. Sorting signed values gets every case with a
+negative coupling wrong, which is exactly the triaxial pattern in the last
+scene, where the lines along which couplings change sign are what cut out the
+zigzag-terminated triangle.
+
+The page claims no result. The threshold is exact and the in-plane anisotropy of
+128 degree Y-cut lithium niobate is large and documented, but where that cut
+sits relative to the threshold has not been measured, and the page says so.
 
 ### Why the maths is prerendered
 

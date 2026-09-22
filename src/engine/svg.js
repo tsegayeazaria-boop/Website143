@@ -143,4 +143,52 @@
   S.cssVar = function (name) {
     return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   };
+
+  /* Interpolate two hex colours. Every colour on the lattice page is either a
+     token or a mix of two tokens, so the token block stays the only source. */
+  S.mixHex = function (a, b, t) {
+    var pa = parseInt(a.replace('#', ''), 16), pb = parseInt(b.replace('#', ''), 16);
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
+    var r = Math.round(((pa >> 16) & 255) + (((pb >> 16) & 255) - ((pa >> 16) & 255)) * t);
+    var g = Math.round(((pa >> 8) & 255) + (((pb >> 8) & 255) - ((pa >> 8) & 255)) * t);
+    var bl = Math.round((pa & 255) + ((pb & 255) - (pa & 255)) * t);
+    return 'rgb(' + r + ',' + g + ',' + bl + ')';
+  };
+
+  /* A three-stop ramp through a middle colour, for the hot amplitude sequence
+     and the diverging imbalance scale. */
+  S.ramp3 = function (lo, mid, hi, t) {
+    return t <= 0.5 ? S.mixHex(lo, mid, t * 2) : S.mixHex(mid, hi, (t - 0.5) * 2);
+  };
+
+  /* Camera rig. One composited transform on a wrapper div: translate plus
+     scale, driven by scroll progress.
+
+     The SVG's own coordinate system never moves. That keeps the camera on the
+     GPU, and it means getBBox() is unaffected by the camera, so flying into the
+     lattice can never push a label outside its viewBox. Targets are given in
+     SVG user units; pixels-per-unit is measured once and refreshed on resize. */
+  S.camera = function (host) {
+    var rig = document.createElement('div');
+    rig.className = 'cam-rig';
+    host.appendChild(rig);
+    var svg = null, ppu = 1, cx = 0, cy = 0;
+    var cam = {
+      el: rig,
+      mount: function (node) { svg = node; rig.appendChild(node); cam.measure(); return node; },
+      measure: function () {
+        if (!svg) return;
+        var r = svg.getBoundingClientRect();
+        var w = +svg.dataset.w || 1, h = +svg.dataset.h || 1;
+        ppu = Math.min(r.width / w, r.height / h) || 1;
+        cx = w / 2; cy = h / 2;
+      },
+      lookAt: function (ux, uy, zoom) {
+        var dx = -(ux - cx) * ppu * zoom, dy = -(uy - cy) * ppu * zoom;
+        rig.style.transform = 'translate(' + dx.toFixed(2) + 'px,' + dy.toFixed(2) +
+                              'px) scale(' + zoom.toFixed(4) + ')';
+      }
+    };
+    return cam;
+  };
 })(window.A = window.A || {});

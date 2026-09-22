@@ -14,7 +14,7 @@ const ROOT = dirname(fileURLToPath(import.meta.url));
 
 /* Which page to drive: `node verify.mjs` for the atlas, `node verify.mjs math`
    for the maths companion. Matches build.mjs's document names. */
-const DOCS = { atlas: 'index.html', math: 'math.html', pre2: 'pre2.html' };
+const DOCS = { atlas: 'index.html', math: 'math.html', pre2: 'pre2.html', linbo3: 'linbo3.html' };
 const DOC_NAME = process.argv.slice(2).find((a) => !a.startsWith('--')) || 'atlas';
 const OUT = DOCS[DOC_NAME];
 if (!OUT) {
@@ -271,6 +271,7 @@ async function reducedMotion() {
 await sweep('dark');
 if (!shotsOnly) {
   await sweep('light');
+  await narrow(380);
   await narrow(390);
   await narrow(768);
   await reducedMotion();

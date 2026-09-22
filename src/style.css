@@ -896,3 +896,191 @@ input[type="range"]::-moz-range-thumb {
 .problem details > summary:hover { color: var(--ink); }
 .problem__body { padding-top: 0.8rem; }
 .problem__body > *:last-child { margin-bottom: 0; }
+
+/* ===================================================== lattice explainer == */
+/* The LiNbO3 anisotropy page. It carries its own token block because the piece
+   is about things emerging from darkness, and that needs a true black rather
+   than the atlas's blue-biased near-black. Dark only, deliberately: the theme
+   toggle and the rail are not emitted for this document.
+ 
+   Six hexes, sampled from the subject. Two scales derive from them and every
+   other colour on the page is a mix of two tokens or an alpha of one:
+     sublattice amplitude, hot to black : void -> over -> amp
+     bond imbalance, diverging, signed  : under -> balance -> over
+   Warm therefore means more coupling and more amplitude on one shared axis, and
+   the neutral sits at balance, so equal couplings can never read as signal.
+ 
+   Specificity note: :root[data-doc] matches the light-theme blocks above, so
+   this block must stay last in the file to win on source order.             */
+:root[data-doc="linbo3"] {
+  --ln-void:    #000000;
+  --ln-amp:     #FFF1DA;
+  --ln-over:    #E2542B;
+  --ln-under:   #4C93CC;
+  --ln-balance: #9A9A9A;
+  --ln-wafer:   #C9C0AE;
+
+  color-scheme: dark;
+
+  --ground:      var(--ln-void);
+  --ground-deep: var(--ln-void);
+  --surface:     var(--ln-void);
+  --surface-2:   var(--ln-void);
+  --ink:         var(--ln-amp);
+  --ink-bright:  var(--ln-amp);
+  --muted:       color-mix(in srgb, var(--ln-balance) 80%, var(--ln-void));
+  --faint:       color-mix(in srgb, var(--ln-balance) 50%, var(--ln-void));
+  --hairline:    color-mix(in srgb, var(--ln-balance) 20%, var(--ln-void));
+  --hairline-2:  color-mix(in srgb, var(--ln-balance) 32%, var(--ln-void));
+  --grid:        color-mix(in srgb, var(--ln-balance) 10%, transparent);
+  --axis:        color-mix(in srgb, var(--ln-balance) 40%, transparent);
+}
+
+[data-doc="linbo3"] body { background: var(--ln-void); }
+
+/* Every motion here either moves the camera or demonstrates a physical
+   process, so the atlas's fade-and-slide-up entrance is switched off. It also
+   means nothing on this page can be left faded out under reduced motion. */
+[data-doc="linbo3"] [data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* No prose column to reserve, so the visual keeps the whole stage and the
+   overlay's percentage positions stay locked to the figure. */
+[data-doc="linbo3"] .stage:not(.stage--split) .stage__canvas {
+  padding: clamp(1.5rem, 5vh, 3rem) clamp(1rem, 4vw, 3rem);
+}
+[data-doc="linbo3"] .stage__panels {
+  padding-block: 0;
+  height: calc(var(--ln-travel, 1.6) * 100svh);
+}
+
+/* Camera rig: one composited transform. */
+[data-doc="linbo3"] .cam-rig {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+[data-doc="linbo3"] .cam-rig > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* ------------------------------------------------- text, used sparingly --- */
+/* One family. It appears so rarely that it has to hold up when it does, and on
+   true black a grotesque survives the halation that eats a serif's hairlines.
+   No uppercase and no tracking: the atlas's mono UI ladder is all caps, so this
+   page needs its own labels. */
+[data-doc="linbo3"] .stage__over {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--mono);
+  font-weight: 400;
+  color: var(--ln-amp);
+  z-index: 3;
+}
+[data-doc="linbo3"] .stage__over > * {
+  position: absolute;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+[data-doc="linbo3"] .ln-word {
+  left: clamp(1rem, 6vw, 5rem);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: clamp(2.1rem, 6.5vw, 4.5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+[data-doc="linbo3"] .ln-eq {
+  left: clamp(1rem, 6vw, 5rem);
+  top: calc(50% + clamp(2.2rem, 5vw, 3.6rem));
+  font-size: 0.9375rem;
+  color: var(--ln-balance);
+}
+[data-doc="linbo3"] .ln-note {
+  left: clamp(1rem, 6vw, 5rem);
+  bottom: clamp(1.5rem, 6vh, 3rem);
+  max-width: min(26ch, calc(100vw - 2rem));
+  font-size: 0.75rem;
+  line-height: 1.6;
+  color: var(--ln-balance);
+}
+[data-doc="linbo3"] .ln-cut {
+  left: 50%;
+  bottom: clamp(1.5rem, 6vh, 3rem);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.875rem;
+  color: var(--ln-wafer);
+}
+[data-doc="linbo3"] .ln-num {
+  left: 50%;
+  bottom: clamp(1.5rem, 7vh, 3.5rem);
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: clamp(1.4rem, 4vw, 2.4rem);
+  color: var(--ln-amp);
+}
+
+/* The three coupling labels sit at their own bond directions: up, lower left,
+   lower right, matching rho_1, rho_2, rho_3. */
+[data-doc="linbo3"] .ln-k { font-size: 1rem; transform: translate(-50%, -50%); }
+[data-doc="linbo3"] .ln-k--1 { left: 50%; top: 29%; }
+[data-doc="linbo3"] .ln-k--2 { left: 38%; top: 62%; }
+[data-doc="linbo3"] .ln-k--3 { left: 62%; top: 62%; }
+[data-doc="linbo3"] .ln-k--solo { left: 50%; top: 37%; }
+
+/* Scene 9 is the only scene with real text: one caption under each half. */
+[data-doc="linbo3"] .ln-cap {
+  bottom: clamp(1.5rem, 6vh, 3rem);
+  width: min(30ch, 42vw);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--ln-amp);
+}
+[data-doc="linbo3"] .ln-cap--l { left: clamp(1rem, 4vw, 3rem); }
+[data-doc="linbo3"] .ln-cap--r { right: clamp(1rem, 4vw, 3rem); }
+
+@media (max-width: 45rem) {
+  [data-doc="linbo3"] .ln-cap { width: min(34ch, calc(100vw - 2rem)); }
+  [data-doc="linbo3"] .ln-cap--l { left: clamp(1rem, 4vw, 3rem); bottom: auto; top: 27%; }
+  [data-doc="linbo3"] .ln-cap--r { right: auto; left: clamp(1rem, 4vw, 3rem); }
+}
+
+/* ------------------------------------------------------------- footer ---- */
+[data-doc="linbo3"] .refs {
+  width: min(46rem, calc(100vw - 3rem));
+  margin: 0 auto;
+  padding: clamp(3rem, 10vh, 6rem) 0 clamp(2rem, 6vh, 4rem);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  line-height: 1.8;
+  color: var(--faint);
+}
+[data-doc="linbo3"] .refs summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--muted);
+}
+[data-doc="linbo3"] .refs summary::-webkit-details-marker { display: none; }
+[data-doc="linbo3"] .refs h3 {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted);
+  margin: 1.4rem 0 0.3rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+[data-doc="linbo3"] .refs ul { list-style: none; padding: 0; margin: 0; }
+[data-doc="linbo3"] .refs li { margin: 0 0 0.25rem; }

@@ -42,6 +42,19 @@ const DOCS = {
     out: 'pre2.html',
     tag: 'Physics 143a &middot; Pre-lecture notes 2',
     scenes: (f) => /^p[0-9]/.test(f)
+  },
+  /* Not a Physics 143a page. A visual argument about lattice anisotropy on
+     lithium niobate, which carries no course material, so its content module
+     lives in content-open/ and is committed alongside the code. chrome: false
+     drops the toolbar and the rail, which between them would put more words on
+     screen than the whole piece is allowed. */
+  linbo3: {
+    content: './content-open/linbo3/index.js',
+    out: 'linbo3.html',
+    doc: 'linbo3',
+    chrome: false,
+    wordCap: 40,
+    scenes: (f) => /^ln[0-9]/.test(f)
   }
 };
 
@@ -53,6 +66,12 @@ if (!DOC) {
 }
 
 if (!existsSync(join(ROOT, ...DOC.content.replace('./', '').split('/')))) {
+  /* Only the course documents are missing for copyright reasons; say so just
+     for those, so a genuine missing file elsewhere is not explained away. */
+  if (!DOC.content.startsWith('./content/')) {
+    console.error('\nMissing ' + DOC.content + '\n');
+    process.exit(1);
+  }
   console.error(
     '\nMissing ' + DOC.content + '\n\n' +
     'The prose, equation source, exercise statements and worked solutions for this\n' +
@@ -156,6 +175,9 @@ const attr = (s) => esc(s).replace(/"/g, '&quot;');
 
 const usedScenes = new Set();
 let revealSeq = 0;
+/* Everything that renders as words over the figures, collected as it is
+   emitted, so a page with a hard text budget can be held to it at build time. */
+const screenText = [];
 
 function reveal(delay) {
   revealSeq++;
@@ -283,15 +305,31 @@ function stage(s) {
     '<div class="stage__panel"' + reveal() + '>' + blocks(p, {}) + '</div>'
   ).join('');
   const hud = s.hud ? '<div class="stage__hud">' + esc(s.hud) + '</div>' : '';
+  if (s.hud) screenText.push(s.hud);
+  /* An overlay carries markup and maths, unlike the plain-text hud, and sits
+     over the figure rather than in a scrolling prose card. */
+  let over = '';
+  if (s.overlay) {
+    over = '<div class="stage__over">' + inlineMath(s.overlay) + '</div>';
+    screenText.push(s.overlay);
+  }
+  /* Scroll travel per stage, so a scene with more to demonstrate gets more room
+     without needing prose panels to lengthen it. */
+  const travel = s.travel ? ' style="--ln-travel:' + Number(s.travel) + '"' : '';
   return '<section class="stage ' + (s.split ? 'stage--split' : '') + '">' +
          '<div class="stage__pin"><div class="stage__canvas">' +
-         '<div data-scene="' + attr(s.scene) + '" class="scene-host"></div></div>' + hud + '</div>' +
-         '<div class="stage__scroll"><div class="stage__panels">' + panels + '</div></div>' +
+         '<div data-scene="' + attr(s.scene) + '" class="scene-host"></div></div>' + hud + over + '</div>' +
+         '<div class="stage__scroll"><div class="stage__panels"' + travel + '>' + panels + '</div></div>' +
          '</section>';
 }
 
 function section(sec) {
-  const head =
+  if (!sec.bare) {
+    screenText.push(sec.kicker || ('\u00a7 ' + sec.number));
+    screenText.push(sec.title);
+    if (sec.standfirst) screenText.push(sec.standfirst);
+  }
+  const head = sec.bare ? '' :
     '<header class="section-head measure"' + reveal() + '>' +
     '<span class="kicker">' + esc(sec.kicker || ('§ ' + sec.number)) + '</span>' +
     '<h2>' + inlineMath(sec.title) + '</h2>' +
@@ -338,7 +376,7 @@ const sceneSrc = sceneFiles
   .map((f) => '/* --- scenes/' + f + ' --- */\n' + readFileSync(join(ROOT, 'src', 'scenes', f), 'utf8'))
   .join('\n');
 
-const engineSrc = ['math.js', 'svg.js', 'field.js', 'scroll.js']
+const engineSrc = ['math.js', 'svg.js', 'field.js', 'lattice.js', 'scroll.js']
   .map((f) => '/* --- engine/' + f + ' --- */\n' + readFileSync(join(ROOT, 'src', 'engine', f), 'utf8'))
   .join('\n');
 
@@ -410,7 +448,103 @@ function assertFieldMath() {
   return checked;
 }
 
+/* ------------------------------------------- assert the lattice physics -- */
+/* The page's whole argument is that a gap opens at an exact threshold, so the
+   threshold cannot be approximate and the gap cannot be eyeballed. Check the
+   closed forms against a brute-force minimum of |h(k)| over the zone: if the
+   triangle inequality, the gap width or the Dirac point positions were ever
+   wrong, the build fails instead of the page teaching it. */
+function assertLatticeMath() {
+  const sandbox = { window: {} };
+  new Function('window', readFileSync(join(ROOT, 'src', 'engine', 'lattice.js'), 'utf8'))(sandbox.window);
+  const L = sandbox.window.A.lattice;
+
+  const near = (got, want, tol, what) => {
+    if (!(Math.abs(got - want) < tol)) {
+      console.error('\nlattice.js is wrong: ' + what +
+                    '\n  expected ' + want + ', got ' + got + '\n');
+      process.exit(1);
+    }
+  };
+
+  /* Brute-force min |h(k)| over a window that contains the whole zone. */
+  const gridMin = (kappa, n, R) => {
+    let m = Infinity;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        const e = L.energy(-R + 2 * R * i / n, -R + 2 * R * j / n, kappa);
+        if (e < m) m = e;
+      }
+    }
+    return m;
+  };
+
+  let checked = 0;
+
+  /* Isotropic couplings put the Dirac points at the corners of the zone. */
+  const K = L.diracPoints([1, 1, 1]);
+  if (K.length !== 2) { console.error('\nlattice.js is wrong: isotropic lattice has no Dirac points\n'); process.exit(1); }
+  near(Math.hypot(K[0].kx, K[0].ky), 4 * Math.PI / (3 * Math.sqrt(3) * L.A), 1e-9, '|K| at equal couplings');
+  checked++;
+
+  /* Negative couplings are included on purpose: the coda's triaxial pattern is
+     defined by couplings changing sign, and a signed sort of the three values
+     gets every one of those cases wrong. */
+  const cases = [
+    [1, 1, 1], [0.5, 1.25, 1.25], [1.5, 0.75, 0.75], [1.6, 0.7, 0.7],
+    [2 / 3, 7 / 6, 7 / 6], [1.8, 0.6, 0.6],
+    [-0.1, 1.55, 1.55], [-0.3, 1.65, 1.65], [-2, 0.5, 0.5],
+    [-1, -1, -1], [0.9, -1.1, 1.0], [-0.4, -0.4, 1.0], [-1.2, 0.6, 0.5]
+  ];
+  for (const kappa of cases) {
+    const tag = '[' + kappa.map((v) => v.toFixed(3)).join(' ') + ']';
+    /* The gap is exactly twice the shortfall in the triangle inequality. */
+    near(L.gap(kappa), 2 * gridMin(kappa, 700, 4.6), 3e-2, 'gap of ' + tag);
+    /* Dirac points exist exactly when the gap is closed, and |h| vanishes at
+       them to machine precision, not to a tolerance. */
+    const dp = L.diracPoints(kappa);
+    const gapped = L.gap(kappa) > 1e-9;
+    if (gapped !== (dp.length === 0)) {
+      console.error('\nlattice.js is wrong: Dirac count disagrees with the gap at ' + tag + '\n');
+      process.exit(1);
+    }
+    for (const d of dp) near(L.energy(d.kx, d.ky, kappa), 0, 1e-9, '|h| at a Dirac point of ' + tag);
+    checked += 2 + dp.length;
+  }
+
+  /* The merging threshold is the point where the margin changes sign, and it
+     depends on how the lattice sits against the crystal axes: a single strong
+     bond is twice as fragile as a single weak one. */
+  near(L.diracMargin(L.kappas({ eta: 1.0, thetaX: 0 })), 0, 1e-12, 'threshold at eta = 1 with one weak bond');
+  near(L.diracMargin(L.kappas({ eta: 0.5, thetaX: Math.PI / 2 })), 0, 1e-12, 'threshold at eta = 1/2 with one strong bond');
+  /* The three couplings redistribute without changing their sum. */
+  for (const eta of [0, 0.3, 0.7]) {
+    near(L.kappas({ eta }).reduce((a, b) => a + b, 0), 3, 1e-12, 'sum of couplings at eta = ' + eta);
+  }
+  checked += 5;
+
+  /* The lines where the triaxial couplings change sign are perpendicular to
+     their own bonds, which is the zigzag direction, so they cut out an
+     equilateral zigzag-terminated triangle rather than anything hand-drawn. */
+  const tri = L.signTriangle(0.16);
+  const side = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  near(side(tri[0], tri[1]), side(tri[1], tri[2]), 1e-9, 'sign-line triangle is equilateral');
+  near(side(tri[1], tri[2]), side(tri[2], tri[0]), 1e-9, 'sign-line triangle is equilateral');
+  for (let l = 0; l < 3; l++) {
+    /* Each vertex lies on two of the three lines: r . rho_l = -1/C. */
+    const on = tri.filter((v) => Math.abs(v.x * L.RHO[l].x + v.y * L.RHO[l].y + 1 / 0.16) < 1e-9);
+    if (on.length !== 2) {
+      console.error('\nlattice.js is wrong: sign line ' + l + ' touches ' + on.length + ' vertices, expected 2\n');
+      process.exit(1);
+    }
+  }
+  checked += 5;
+
+  return checked;
+}
+
 const fieldChecks = assertFieldMath();
+const latticeChecks = assertLatticeMath();
 
 const css = readFileSync(join(ROOT, 'src', 'style.css'), 'utf8');
 const mjCss = adaptor.textContent(svgOut.styleSheet(mjDoc));
@@ -435,11 +569,10 @@ if (missing.length) {
 const FONTS = 'https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,400;0,600;1,400' +
               '&family=IBM+Plex+Mono:wght@400;500&display=swap';
 
-const html = '<title>' + esc(doc.title) + '</title>\n' +
-'<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
-'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-'<link rel="stylesheet" href="' + FONTS + '">\n' +
-'<style>\n' + css + '\n/* MathJax SVG output stylesheet, emitted at build time. */\n' + mjCss + '\n</style>\n\n' +
+/* The toolbar names the document and the rail names every section, so a page
+   whose whole argument is meant to be wordless opts out of both. The engine
+   already returns early when neither element is present. */
+const chromeHTML = DOC.chrome === false ? '' : (
 '<div class="toolbar">\n' +
 '  <span>' + DOC.tag + '</span>\n' +
 '  <span class="toolbar__spacer"></span>\n' +
@@ -450,7 +583,23 @@ const html = '<title>' + esc(doc.title) + '</title>\n' +
 '  <span class="rail__label"></span>\n' +
 '  <div class="rail__track"><div class="rail__fill"></div></div>\n' +
 '  <span class="rail__pct">0%</span>\n' +
-'</nav>\n\n' +
+'</nav>\n\n');
+
+/* Scoped to documents that declare a doc name so the existing three pages keep
+   byte-identical output. They have no viewport meta either, which is a separate
+   thing to fix. */
+const rootHTML = DOC.doc
+  ? '<html lang="en" data-doc="' + attr(DOC.doc) + '">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+  : '';
+
+const html = rootHTML +
+'<title>' + esc(doc.title) + '</title>\n' +
+'<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
+'<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
+'<link rel="stylesheet" href="' + FONTS + '">\n' +
+'<style>\n' + css + '\n/* MathJax SVG output stylesheet, emitted at build time. */\n' + mjCss + '\n</style>\n\n' +
+chromeHTML +
 '<main class="page">\n' + heroHTML + '\n' + sectionsHTML + '\n</main>\n\n' +
 colophonHTML + '\n\n' +
 '<script>\n' + engineSrc + '\n' + sceneSrc + '\n<' + '/script>\n';
@@ -470,7 +619,30 @@ if (dupes.length) {
 const kb = (Buffer.byteLength(html) / 1024).toFixed(0);
 console.log('built dist/' + DOC.out + '  ' + kb + ' KB   (' + DOC_NAME + ', ' +
             sceneFiles.length + ' scene files)');
-console.log('  field-math assertions passed: ' + fieldChecks);
+console.log('  field-math assertions passed: ' + fieldChecks +
+            '   lattice-math assertions passed: ' + latticeChecks);
+
+/* A page whose brief caps the on-screen text has that cap enforced here rather
+   than counted by hand. Each maths expression counts as one word; prose is
+   counted after the markup and the maths are stripped out. */
+if (DOC.wordCap) {
+  const joined = screenText.join(' ');
+  const mathCount2 = (joined.match(/\$[^$]+\$/g) || []).length;
+  const prose = joined
+    .replace(/\$[^$]+\$/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const proseWords = prose ? prose.split(' ').length : 0;
+  const total = proseWords + mathCount2;
+  console.log('  on-screen words: ' + proseWords + ' prose + ' + mathCount2 +
+              ' maths = ' + total + ' of ' + DOC.wordCap);
+  if (total > DOC.wordCap) {
+    console.error('\nOn-screen word budget exceeded: ' + total + ' > ' + DOC.wordCap +
+                  '\n  ' + prose + '\n');
+    process.exit(1);
+  }
+}
 console.log('  sections ' + doc.sections.length + '   scenes ' + usedScenes.size +
             '   equations ' + mathCount + '   reveals ' + revealSeq);
 if (unused.length) console.log('  note: scenes implemented but unused: ' + unused.join(', '));
