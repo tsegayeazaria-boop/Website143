@@ -991,6 +991,27 @@ input[type="range"]::-moz-range-thumb {
   letter-spacing: 0;
 }
 
+/* The scene captions. Top left of every stage: the one corner the piece does
+   not otherwise use, so a caption cannot collide with a label. */
+[data-doc="linbo3"] .ln-say {
+  left: clamp(1rem, 4vw, 3rem);
+  top: clamp(1rem, 4vh, 2.5rem);
+  max-width: min(44ch, calc(100vw - 2rem));
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  color: var(--ln-amp);
+  opacity: 0.9;
+  text-wrap: pretty;
+}
+
+@media (max-width: 45rem) {
+  [data-doc="linbo3"] .ln-say {
+    max-width: calc(100vw - 2rem);
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+}
+
 [data-doc="linbo3"] .ln-word {
   left: clamp(1rem, 6vw, 5rem);
   top: 50%;

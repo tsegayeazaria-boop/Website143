@@ -8,8 +8,16 @@
    is on screen, so adding one is a deliberate act. */
 
 /* No prose panels anywhere: the scroll length of each stage comes from travel
-   instead, so nothing rides over the figures except the few words above. */
-const stage = (scene, travel, overlay) => ({ t: 'stage', scene, travel, overlay, panels: [] });
+   instead. `say` is the scene's caption; it sits in the top left corner of every
+   stage, the one corner nothing else in the piece uses, so a caption can never
+   land on a label. `labels` is whatever else that scene puts on screen. */
+const stage = (scene, travel, say, labels) => ({
+  t: 'stage',
+  scene,
+  travel,
+  overlay: '<span class="ln-say">' + say + '</span>' + (labels || ''),
+  panels: []
+});
 
 export default {
   title: 'Three bonds, one crystal',
@@ -23,46 +31,76 @@ export default {
     bare: true,
     body: [
       /* 1. One pillar becomes a lattice. */
-      stage('ln-pillar', 1.8),
+      stage('ln-pillar', 1.8,
+        'Each pillar is a mechanical resonator standing on a substrate. Set a few ' +
+        'hundred of them on a honeycomb and they behave as one two-dimensional ' +
+        'crystal for sound.'),
 
       /* 2. One bond, and the coupling that lives on it. */
       stage('ln-bond', 1.4,
+        'Neighbouring pillars trade energy through the substrate surface. How fast ' +
+        'they trade it is the coupling $\\kappa$, measured in hertz. That one number ' +
+        'is what the whole piece is about.',
         '<span class="ln-k ln-k--solo">$\\kappa$</span>'),
 
       /* 3. Three bond directions, all alike. */
-      stage('ln-three', 1.3),
+      stage('ln-three', 1.3,
+        'Every site has three neighbours, 120 degrees apart. On an ideal lattice the ' +
+        'three bond directions are interchangeable, and nothing distinguishes one ' +
+        'from another.'),
 
       /* 4. The three couplings close into a triangle, and a Dirac cone. */
-      stage('ln-close', 1.9),
+      stage('ln-close', 1.9,
+        'Treat the three couplings as lengths. When they close into a triangle the ' +
+        'two bands touch at a point, and the cone beside it is what every ' +
+        'topological acoustic device is built on.'),
 
       /* 5. The substrate underneath, and its directional rose. */
       stage('ln-substrate', 1.7,
+        'The substrate is lithium niobate, cut at 128 degrees. It is trigonal and ' +
+        'strongly anisotropic in plane: wave speed and electromechanical coupling ' +
+        'both depend on direction. The rose is that dependence, and it turns with ' +
+        'the crystal.',
         '<span class="ln-cut">128° Y-cut</span>'),
 
       /* 6. The same rose, sampled at the three bond angles. */
       stage('ln-disagree', 1.4,
+        'Read the rose off at each bond angle and the three couplings no longer ' +
+        'match: one direction over-coupled, two under-coupled. Nothing in the ' +
+        'lattice did this. The crystal underneath did.',
         '<span class="ln-k ln-k--1">$\\kappa_1$</span>' +
         '<span class="ln-k ln-k--2">$\\kappa_2$</span>' +
         '<span class="ln-k ln-k--3">$\\kappa_3$</span>'),
 
       /* 7. The payload: one stick cannot reach, and the cone gaps out. */
-      stage('ln-fail', 3.2),
+      stage('ln-fail', 3.2,
+        'Push the imbalance far enough and one coupling exceeds the other two ' +
+        'together. Then no triangle closes: the two band-touching points slide ' +
+        'along a zone edge, merge, and a gap opens, exactly twice the shortfall.'),
 
       /* 8. The whole field is wrong the same way everywhere, which is why it
             makes no pseudomagnetic field, and the open question. */
       stage('ln-scale', 1.6,
+        'The same imbalance sits in every cell. A uniform imbalance is a constant ' +
+        'vector potential, and a constant field has no curl, so it makes no ' +
+        'pseudomagnetic field. It only corrupts the bands everything else is ' +
+        'built on.',
         '<span class="ln-word">Uniform</span>' +
         '<span class="ln-eq">$\\nabla \\times \\mathbf{A} = 0$</span>' +
         '<span class="ln-note">Nobody has measured where 128YX sits.</span>'),
 
       /* 9. The field's fix, and the one nobody has tried. */
       stage('ln-fixes', 2.2,
+        'Two ways out: change the crystal, or change the geometry.',
         '<span class="ln-cap ln-cap--l">152° cut: 66.5% better in-plane isotropy, ' +
         '37.0% better coupling.</span>' +
         '<span class="ln-cap ln-cap--r">Grade the pillars instead. Never tried.</span>'),
 
       /* 10. Coda: what an equalised lattice buys you. */
       stage('ln-coda', 2.0,
+        'Equalise the bonds and the imbalance can be put back on purpose, varying ' +
+        'across the lattice. Now it has a curl: a real pseudomagnetic field, ' +
+        'Landau levels, and amplitude collecting on one sublattice.',
         '<span class="ln-num">1567 : 1</span>')
     ]
   }],

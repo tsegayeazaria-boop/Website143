@@ -52,9 +52,9 @@ one in `verify.mjs`. Scene files are assigned to a document by a regex on their
 filename, so a new document needs a prefix no other document claims.
 
 `linbo3` sets three keys the course pages do not. `chrome: false` drops the
-toolbar and the progress rail, which between them would put more words on screen
-than that piece is allowed. `wordCap` fails the build if the text over its
-figures exceeds its budget. `doc` puts a `data-doc` attribute on the root
+toolbar and the progress rail, whose document name and section list would
+otherwise be the loudest text on a page of figures. `wordCap` fails the build if
+the text over its figures exceeds its budget. `doc` puts a `data-doc` attribute on the root
 element, which is what scopes that page's own colour tokens; the course pages
 emit byte-identical output to before it existed.
 
@@ -74,7 +74,13 @@ Both scripts take a document name and default to `atlas`.
 
 `linbo3` argues one thing: a honeycomb lattice of resonant pillars needs its
 three bond directions to be equivalent, and lithium niobate will not let them
-be. Ten scenes, almost no words, and the text budget enforced at build time.
+be. Ten scenes, each with a caption explaining what it shows.
+
+It was built to a brief that capped it at forty words on screen, as a wordless
+visual argument. That cap was later given up deliberately, in favour of a
+caption on every scene, which makes it an illustrated explainer instead. The
+build still counts the words and still fails over a limit, but the limit is now
+only there to catch runaway text.
 
 Its mathematics lives in `src/engine/lattice.js` and is exact rather than
 illustrative. A Dirac point exists where three coupling phasors close into a
